@@ -91,19 +91,33 @@ class TicketService extends BaseService implements TicketServiceContract
 
         $filename = "tickets/qr/{$ticket->id}.png";
 
-        Storage::disk('public')->put($filename, $qrImage);
-
-        $qrPath = Storage::disk('public')->url($filename);
+        // Stockage sur disque local (privé)
+        Storage::disk('local')->put($filename, $qrImage);
 
         $this->repository->update($ticket, [
-            'qr_path' => $qrPath,
+            'qr_path' => $filename,  // Chemin relatif, pas URL publique
             'qr_hmac' => $signature,
         ]);
 
         return [
-            'qr_path' => $qrPath,
+            'qr_path' => $filename,
             'qr_hmac' => $signature,
             'magic_link_token' => $ticket->magic_link_token,
+        ];
+    }
+
+    public function getQRCodeFile(string $ticketId)
+    {
+        $ticket = $this->repository->findOrFail($ticketId);
+
+        if (!$ticket->qr_path || !Storage::disk('local')->exists($ticket->qr_path)) {
+            throw new \Exception('QR code file not found', 404);
+        }
+
+        return [
+            'path' => $ticket->qr_path,
+            'content' => Storage::disk('local')->get($ticket->qr_path),
+            'mime_type' => 'image/png',
         ];
     }
 

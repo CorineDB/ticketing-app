@@ -71,6 +71,8 @@ app/
 - Génération automatique de QR codes pour chaque ticket
 - Signature HMAC pour la sécurité
 - QR codes statiques (ne changent pas après génération)
+- **Stockage sécurisé** : Fichiers QR stockés sur disque local privé (pas d'accès direct)
+- **Accès sécurisé** : Endpoint dédié `/tickets/{id}/qr/download` avec validation magic link ou authentification
 
 ### ✅ 2. Magic Links
 - Tokens sécurisés pour accès sans compte
@@ -91,11 +93,17 @@ app/
 - Compteurs atomiques pour la capacité
 - Logs immutables de tous les scans
 
-### ✅ 6. Règles Métier
-- Vérification de la capacité de l'événement
-- Gestion des statuts de tickets (issued → reserved → paid → in → out)
-- Usage limits et quotas
-- Validation des périodes de validité
+### ✅ 6. Règles Métier Complètes
+- ✅ Vérification de la capacité de l'événement (current_in < capacity)
+- ✅ Gestion des statuts de tickets (issued → reserved → paid → in → out)
+- ✅ Usage limits et quotas par type de ticket
+- ✅ Validation des périodes de validité (validity_from / validity_to)
+- ✅ **Validation des dates d'événement** : Scan possible uniquement entre start_datetime et end_datetime
+- ✅ **Allow Reentry** : Respect de la règle allow_reentry pour les re-entrées
+- ✅ **Cooldown anti-fraude** : 60 secondes entre sortie et re-entrée
+- ✅ Vérification du statut des gates (active/pause/inactive)
+- ✅ Double-scan detection (already_in / already_out)
+- ✅ Atomicité des compteurs avec locks Redis
 
 ## Installation
 
@@ -156,7 +164,8 @@ GET  /api/public/events                        # Liste des événements
 GET  /api/public/events/{id}                   # Détails d'un événement
 GET  /api/public/events/{id}/ticket-types      # Types de tickets d'un événement
 GET  /api/public/tickets/{id}?token=xxx        # Voir un ticket avec magic link
-GET  /api/public/tickets/{id}/qr?token=xxx     # QR code avec magic link
+GET  /api/public/tickets/{id}/qr?token=xxx     # Métadonnées QR code avec magic link
+GET  /api/public/tickets/{id}/qr/download?token=xxx  # Télécharger fichier QR (PNG)
 POST /api/scan/request                         # Demande de scan (QR validation)
 ```
 
@@ -177,7 +186,8 @@ POST   /api/tickets                 # Générer un/des ticket(s)
 GET    /api/tickets/{id}            # Détails d'un ticket
 PUT    /api/tickets/{id}            # Modifier un ticket
 DELETE /api/tickets/{id}            # Supprimer un ticket
-GET    /api/tickets/{id}/qr         # Obtenir le QR code
+GET    /api/tickets/{id}/qr         # Métadonnées du QR code
+GET    /api/tickets/{id}/qr/download # Télécharger fichier QR (PNG)
 POST   /api/tickets/{id}/mark-paid  # Marquer comme payé
 
 # Gates

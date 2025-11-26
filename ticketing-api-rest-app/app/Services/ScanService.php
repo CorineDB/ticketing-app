@@ -99,6 +99,21 @@ class ScanService implements ScanServiceContract
         $event = $this->eventRepository->findOrFail($ticket->event_id);
         $gate = $this->gateRepository->findOrFail($gateId);
 
+        // Règle métier : Vérifier que l'événement est en cours
+        if (now()->lt($event->start_datetime)) {
+            return $this->logAndReturnScanResult($ticketId, $agentId, $gateId, $action, 'invalid', [
+                'message' => 'Event has not started yet',
+                'event_starts_at' => $event->start_datetime->toISOString(),
+            ], $ticket);
+        }
+
+        if (now()->gt($event->end_datetime)) {
+            return $this->logAndReturnScanResult($ticketId, $agentId, $gateId, $action, 'expired', [
+                'message' => 'Event has already ended',
+                'event_ended_at' => $event->end_datetime->toISOString(),
+            ], $ticket);
+        }
+
         if ($gate->status !== 'active') {
             return $this->logAndReturnScanResult($ticketId, $agentId, $gateId, $action, 'invalid', [
                 'message' => 'Gate is not active',
@@ -150,6 +165,39 @@ class ScanService implements ScanServiceContract
                 ['message' => 'Ticket is already inside'],
                 $ticket
             );
+        }
+
+        // Règle métier : Vérifier allow_reentry pour les re-entrées
+        if ($ticket->status === 'out') {
+            if (!$event->allow_reentry) {
+                return $this->logAndReturnScanResult(
+                    $ticket->id,
+                    $agentId,
+                    $gateId,
+                    'entry',
+                    'invalid',
+                    ['message' => 'Re-entry is not allowed for this event'],
+                    $ticket
+                );
+            }
+
+            // Règle métier : Cooldown de 60 secondes après sortie (anti-fraude)
+            $cooldownSeconds = 60;
+            if ($ticket->last_used_at && now()->diffInSeconds($ticket->last_used_at) < $cooldownSeconds) {
+                $remainingSeconds = $cooldownSeconds - now()->diffInSeconds($ticket->last_used_at);
+                return $this->logAndReturnScanResult(
+                    $ticket->id,
+                    $agentId,
+                    $gateId,
+                    'entry',
+                    'invalid',
+                    [
+                        'message' => 'Re-entry cooldown active',
+                        'wait_seconds' => $remainingSeconds,
+                    ],
+                    $ticket
+                );
+            }
         }
 
         $this->counterRepository->createOrGetCounter($event->id);
