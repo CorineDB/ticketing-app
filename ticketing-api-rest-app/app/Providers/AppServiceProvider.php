@@ -102,6 +102,11 @@ class AppServiceProvider extends ServiceProvider
             \App\Services\Contracts\UserServiceContract::class,
             \App\Services\UserService::class
         );
+
+        $this->app->bind(
+            \App\Services\Contracts\PaymentServiceContract::class,
+            \App\Services\PaymentService::class
+        );
     }
 
     /**

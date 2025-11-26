@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\ScanController;
 use App\Http\Controllers\Api\TicketController;
 use App\Http\Controllers\Api\TicketTypeController;
+use App\Http\Controllers\Api\WebhookController;
 use Illuminate\Support\Facades\Route;
 
 // Public routes (no authentication required)
@@ -24,6 +25,9 @@ Route::prefix('public')->group(function () {
 // Scan endpoints (public request, authenticated confirm)
 Route::post('/scan/request', [ScanController::class, 'request']);
 Route::post('/scan/confirm', [ScanController::class, 'confirm'])->middleware('auth:sanctum');
+
+// Webhooks (public, no authentication)
+Route::post('/webhooks/fedapay', [WebhookController::class, 'fedapayWebhook']);
 
 // Protected routes (authentication required)
 Route::middleware('auth:sanctum')->group(function () {
