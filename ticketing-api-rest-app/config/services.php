@@ -35,4 +35,12 @@ return [
         ],
     ],
 
+    'fedapay' => [
+        'public_key' => env('FEDAPAY_PUBLIC_KEY'),
+        'secret_key' => env('FEDAPAY_SECRET_KEY'),
+        'webhook_secret' => env('FEDAPAY_WEBHOOK_SECRET'),
+        'environment' => env('FEDAPAY_ENVIRONMENT', 'sandbox'), // sandbox ou live
+        'currency' => env('FEDAPAY_CURRENCY', 'XOF'), // XOF pour Franc CFA
+    ],
+
 ];
