@@ -20,6 +20,9 @@ class TicketType extends Model
         'validity_to',
         'usage_limit',
         'quota',
+        'payment_url',
+        'payment_transaction_id',
+        'payment_token',
     ];
 
     protected $casts = [
