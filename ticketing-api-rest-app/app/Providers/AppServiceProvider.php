@@ -2,6 +2,9 @@
 
 namespace App\Providers;
 
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -107,6 +110,11 @@ class AppServiceProvider extends ServiceProvider
             \App\Services\Contracts\PaymentServiceContract::class,
             \App\Services\PaymentService::class
         );
+
+        $this->app->bind(
+            \App\Services\Contracts\NotificationServiceContract::class,
+            \App\Services\NotificationService::class
+        );
     }
 
     /**
@@ -114,6 +122,31 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        $this->configureRateLimiting();
+    }
+
+    /**
+     * Configure the rate limiters for the application.
+     */
+    protected function configureRateLimiting(): void
+    {
+        // Rate limiter for scan request endpoint
+        // 60 requests per minute per IP address
+        RateLimiter::for('scan-request', function (Request $request) {
+            return Limit::perMinute(60)->by($request->ip());
+        });
+
+        // Rate limiter for scan confirm endpoint
+        // 30 requests per minute per authenticated user
+        RateLimiter::for('scan-confirm', function (Request $request) {
+            return $request->user()
+                ? Limit::perMinute(30)->by($request->user()->id)
+                : Limit::perMinute(10)->by($request->ip());
+        });
+
+        // General API rate limiter (can be used for other endpoints)
+        RateLimiter::for('api', function (Request $request) {
+            return Limit::perMinute(100)->by($request->user()?->id ?: $request->ip());
+        });
     }
 }

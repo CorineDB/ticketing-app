@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Repositories\Contracts\TicketRepositoryContract;
 use App\Repositories\Contracts\TicketTypeRepositoryContract;
+use App\Services\Contracts\NotificationServiceContract;
 use App\Services\Contracts\TicketServiceContract;
 use App\Services\Core\Eloquent\BaseService;
 use Illuminate\Support\Facades\DB;
@@ -14,13 +15,16 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
 class TicketService extends BaseService implements TicketServiceContract
 {
     protected TicketTypeRepositoryContract $ticketTypeRepository;
+    protected NotificationServiceContract $notificationService;
 
     public function __construct(
         TicketRepositoryContract $repository,
-        TicketTypeRepositoryContract $ticketTypeRepository
+        TicketTypeRepositoryContract $ticketTypeRepository,
+        NotificationServiceContract $notificationService
     ) {
         parent::__construct($repository);
         $this->ticketTypeRepository = $ticketTypeRepository;
+        $this->notificationService = $notificationService;
     }
 
     public function generateTicket(array $data)
@@ -41,6 +45,9 @@ class TicketService extends BaseService implements TicketServiceContract
             $ticket = $this->repository->create($data);
 
             $this->generateQRCodeForTicket($ticket);
+
+            // Send ticket confirmation email
+            $this->notificationService->sendTicketConfirmation($ticket->id);
 
             return $ticket->fresh();
         });
