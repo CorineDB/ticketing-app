@@ -18,6 +18,8 @@ interface TicketServiceContract extends BaseServiceInterface
 
     public function generateQRCode(string $ticketId);
 
+    public function getQRCodeFile(string $ticketId);
+
     public function markAsPaid(string $ticketId);
 
     public function invalidateTicket(string $ticketId, string $reason);

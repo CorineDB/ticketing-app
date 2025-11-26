@@ -18,6 +18,7 @@ Route::prefix('public')->group(function () {
     // Tickets with magic link
     Route::get('/tickets/{id}', [TicketController::class, 'show']);
     Route::get('/tickets/{id}/qr', [TicketController::class, 'qr']);
+    Route::get('/tickets/{id}/qr/download', [TicketController::class, 'downloadQr']);
 });
 
 // Scan endpoints (public request, authenticated confirm)
@@ -43,6 +44,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Tickets
     Route::apiResource('tickets', TicketController::class);
     Route::get('/tickets/{id}/qr', [TicketController::class, 'qr']);
+    Route::get('/tickets/{id}/qr/download', [TicketController::class, 'downloadQr']);
     Route::post('/tickets/{id}/mark-paid', [TicketController::class, 'markPaid']);
 
     // Gates
