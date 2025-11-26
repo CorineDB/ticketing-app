@@ -11,7 +11,102 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Repository bindings
+        $this->app->bind(
+            \App\Repositories\Core\Contracts\BaseRepositoryInterface::class,
+            \App\Repositories\Core\Eloquent\BaseRepository::class
+        );
+
+        $this->app->bind(
+            \App\Repositories\Contracts\RoleRepositoryContract::class,
+            \App\Repositories\RoleRepository::class
+        );
+
+        $this->app->bind(
+            \App\Repositories\Contracts\EventRepositoryContract::class,
+            \App\Repositories\EventRepository::class
+        );
+
+        $this->app->bind(
+            \App\Repositories\Contracts\TicketTypeRepositoryContract::class,
+            \App\Repositories\TicketTypeRepository::class
+        );
+
+        $this->app->bind(
+            \App\Repositories\Contracts\TicketRepositoryContract::class,
+            \App\Repositories\TicketRepository::class
+        );
+
+        $this->app->bind(
+            \App\Repositories\Contracts\GateRepositoryContract::class,
+            \App\Repositories\GateRepository::class
+        );
+
+        $this->app->bind(
+            \App\Repositories\Contracts\TicketScanLogRepositoryContract::class,
+            \App\Repositories\TicketScanLogRepository::class
+        );
+
+        $this->app->bind(
+            \App\Repositories\Contracts\EventCounterRepositoryContract::class,
+            \App\Repositories\EventCounterRepository::class
+        );
+
+        $this->app->bind(
+            \App\Repositories\Contracts\UserRepositoryContract::class,
+            \App\Repositories\UserRepository::class
+        );
+
+        // Service bindings
+        $this->app->bind(
+            \App\Services\Core\Contracts\BaseServiceInterface::class,
+            \App\Services\Core\Eloquent\BaseService::class
+        );
+
+        $this->app->bind(
+            \App\Services\Contracts\RoleServiceContract::class,
+            \App\Services\RoleService::class
+        );
+
+        $this->app->bind(
+            \App\Services\Contracts\EventServiceContract::class,
+            \App\Services\EventService::class
+        );
+
+        $this->app->bind(
+            \App\Services\Contracts\TicketTypeServiceContract::class,
+            \App\Services\TicketTypeService::class
+        );
+
+        $this->app->bind(
+            \App\Services\Contracts\TicketServiceContract::class,
+            \App\Services\TicketService::class
+        );
+
+        $this->app->bind(
+            \App\Services\Contracts\GateServiceContract::class,
+            \App\Services\GateService::class
+        );
+
+        $this->app->bind(
+            \App\Services\Contracts\TicketScanLogServiceContract::class,
+            \App\Services\TicketScanLogService::class
+        );
+
+        $this->app->bind(
+            \App\Services\Contracts\ScanServiceContract::class,
+            \App\Services\ScanService::class
+        );
+
+        $this->app->bind(
+            \App\Services\Contracts\UserServiceContract::class,
+            \App\Services\UserService::class
+        );
+
+        $this->app->bind(
+            \App\Services\Contracts\PaymentServiceContract::class,
+            \App\Services\PaymentService::class
+        );
     }
 
     /**
