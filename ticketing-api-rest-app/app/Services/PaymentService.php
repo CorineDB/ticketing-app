@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Repositories\Contracts\TicketRepositoryContract;
 use App\Repositories\Contracts\TicketTypeRepositoryContract;
+use App\Services\Contracts\NotificationServiceContract;
 use App\Services\Contracts\PaymentServiceContract;
 use FedaPay\FedaPay;
 use FedaPay\Transaction;
@@ -14,13 +15,16 @@ class PaymentService implements PaymentServiceContract
 {
     protected TicketTypeRepositoryContract $ticketTypeRepository;
     protected TicketRepositoryContract $ticketRepository;
+    protected NotificationServiceContract $notificationService;
 
     public function __construct(
         TicketTypeRepositoryContract $ticketTypeRepository,
-        TicketRepositoryContract $ticketRepository
+        TicketRepositoryContract $ticketRepository,
+        NotificationServiceContract $notificationService
     ) {
         $this->ticketTypeRepository = $ticketTypeRepository;
         $this->ticketRepository = $ticketRepository;
+        $this->notificationService = $notificationService;
 
         // Initialiser FedaPay
         FedaPay::setApiKey(config('services.fedapay.secret_key'));
@@ -174,7 +178,13 @@ class PaymentService implements PaymentServiceContract
                     'transaction_id' => $entity['id'],
                 ]);
 
-                // TODO: Envoyer notification au participant
+                // Envoyer notification de paiement confirmé
+                $this->notificationService->sendPaymentConfirmation($ticketId, [
+                    'transaction_id' => $entity['id'],
+                    'reference' => $entity['reference'] ?? null,
+                    'amount' => $entity['amount'] ?? 0,
+                    'currency' => $entity['currency']['iso'] ?? 'XOF',
+                ]);
             }
         } catch (\Exception $e) {
             Log::error('Failed to update ticket after payment approval', [
@@ -194,8 +204,6 @@ class PaymentService implements PaymentServiceContract
                 'ticket_id' => $ticketId,
                 'transaction_id' => $entity['id'],
             ]);
-
-            // TODO: Notification au participant du paiement échoué
         }
     }
 

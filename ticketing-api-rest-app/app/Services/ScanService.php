@@ -7,6 +7,7 @@ use App\Repositories\Contracts\EventRepositoryContract;
 use App\Repositories\Contracts\GateRepositoryContract;
 use App\Repositories\Contracts\TicketRepositoryContract;
 use App\Repositories\Contracts\TicketScanLogRepositoryContract;
+use App\Services\Contracts\NotificationServiceContract;
 use App\Services\Contracts\ScanServiceContract;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -19,19 +20,22 @@ class ScanService implements ScanServiceContract
     protected GateRepositoryContract $gateRepository;
     protected TicketScanLogRepositoryContract $scanLogRepository;
     protected EventCounterRepositoryContract $counterRepository;
+    protected NotificationServiceContract $notificationService;
 
     public function __construct(
         TicketRepositoryContract $ticketRepository,
         EventRepositoryContract $eventRepository,
         GateRepositoryContract $gateRepository,
         TicketScanLogRepositoryContract $scanLogRepository,
-        EventCounterRepositoryContract $counterRepository
+        EventCounterRepositoryContract $counterRepository,
+        NotificationServiceContract $notificationService
     ) {
         $this->ticketRepository = $ticketRepository;
         $this->eventRepository = $eventRepository;
         $this->gateRepository = $gateRepository;
         $this->scanLogRepository = $scanLogRepository;
         $this->counterRepository = $counterRepository;
+        $this->notificationService = $notificationService;
     }
 
     public function requestScan(string $ticketId, string $signature): array
@@ -245,6 +249,14 @@ class ScanService implements ScanServiceContract
             'gate_in' => $gateId,
         ]);
 
+        $gate = $this->gateRepository->find($gateId);
+
+        // Envoyer notification d'entrée
+        $this->notificationService->sendScanNotification($ticket->id, 'in', [
+            'gate_name' => $gate ? $gate->name : 'N/A',
+            'scan_time' => now(),
+        ]);
+
         return $this->logAndReturnScanResult(
             $ticket->id,
             $agentId,
@@ -276,6 +288,14 @@ class ScanService implements ScanServiceContract
             'status' => 'out',
             'last_used_at' => now(),
             'last_gate_out' => $gateId,
+        ]);
+
+        $gate = $this->gateRepository->find($gateId);
+
+        // Envoyer notification de sortie
+        $this->notificationService->sendScanNotification($ticket->id, 'out', [
+            'gate_name' => $gate ? $gate->name : 'N/A',
+            'scan_time' => now(),
         ]);
 
         return $this->logAndReturnScanResult(
