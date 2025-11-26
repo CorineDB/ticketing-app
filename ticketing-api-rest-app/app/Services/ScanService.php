@@ -1,0 +1,279 @@
+<?php
+
+namespace App\Services;
+
+use App\Repositories\Contracts\EventCounterRepositoryContract;
+use App\Repositories\Contracts\EventRepositoryContract;
+use App\Repositories\Contracts\GateRepositoryContract;
+use App\Repositories\Contracts\TicketRepositoryContract;
+use App\Repositories\Contracts\TicketScanLogRepositoryContract;
+use App\Services\Contracts\ScanServiceContract;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+
+class ScanService implements ScanServiceContract
+{
+    protected TicketRepositoryContract $ticketRepository;
+    protected EventRepositoryContract $eventRepository;
+    protected GateRepositoryContract $gateRepository;
+    protected TicketScanLogRepositoryContract $scanLogRepository;
+    protected EventCounterRepositoryContract $counterRepository;
+
+    public function __construct(
+        TicketRepositoryContract $ticketRepository,
+        EventRepositoryContract $eventRepository,
+        GateRepositoryContract $gateRepository,
+        TicketScanLogRepositoryContract $scanLogRepository,
+        EventCounterRepositoryContract $counterRepository
+    ) {
+        $this->ticketRepository = $ticketRepository;
+        $this->eventRepository = $eventRepository;
+        $this->gateRepository = $gateRepository;
+        $this->scanLogRepository = $scanLogRepository;
+        $this->counterRepository = $counterRepository;
+    }
+
+    public function requestScan(string $ticketId, string $signature): array
+    {
+        $ticket = $this->ticketRepository->find($ticketId);
+
+        if (!$ticket) {
+            throw new \Exception('TICKET_NOT_FOUND', 404);
+        }
+
+        if (!$this->validateTicketSignature($ticketId, $signature)) {
+            throw new \Exception('QR_SIGNATURE_MISMATCH: Invalid QR signature', 400);
+        }
+
+        $sessionToken = Str::random(64);
+        $expiresIn = 20;
+
+        Cache::put("scan_session:{$sessionToken}", [
+            'ticket_id' => $ticketId,
+            'nonce' => Str::random(32),
+        ], now()->addSeconds($expiresIn));
+
+        return [
+            'scan_session_token' => $sessionToken,
+            'expires_in' => $expiresIn,
+        ];
+    }
+
+    public function confirmScan(string $sessionToken, string $nonce, string $gateId, string $agentId, string $action): array
+    {
+        $sessionData = Cache::get("scan_session:{$sessionToken}");
+
+        if (!$sessionData) {
+            throw new \Exception('CONFLICT_SCAN: Session expired or invalid', 409);
+        }
+
+        if ($sessionData['nonce'] !== $nonce) {
+            throw new \Exception('CONFLICT_SCAN: Invalid nonce', 409);
+        }
+
+        Cache::forget("scan_session:{$sessionToken}");
+
+        $ticketId = $sessionData['ticket_id'];
+
+        $lockKey = "ticket_scan_lock:{$ticketId}";
+
+        $lock = Cache::lock($lockKey, 3);
+
+        if (!$lock->get()) {
+            throw new \Exception('CONFLICT_SCAN: Ticket is currently being processed', 409);
+        }
+
+        try {
+            return DB::transaction(function () use ($ticketId, $gateId, $agentId, $action) {
+                return $this->processScan($ticketId, $gateId, $agentId, $action);
+            });
+        } finally {
+            $lock->release();
+        }
+    }
+
+    protected function processScan(string $ticketId, string $gateId, string $agentId, string $action): array
+    {
+        $ticket = $this->ticketRepository->findOrFail($ticketId);
+        $event = $this->eventRepository->findOrFail($ticket->event_id);
+        $gate = $this->gateRepository->findOrFail($gateId);
+
+        if ($gate->status !== 'active') {
+            return $this->logAndReturnScanResult($ticketId, $agentId, $gateId, $action, 'invalid', [
+                'message' => 'Gate is not active',
+            ], $ticket);
+        }
+
+        if (!in_array($ticket->status, ['paid', 'in', 'out'])) {
+            return $this->logAndReturnScanResult($ticketId, $agentId, $gateId, $action, 'invalid', [
+                'message' => 'Ticket status is invalid for scanning',
+                'current_status' => $ticket->status,
+            ], $ticket);
+        }
+
+        if ($ticket->ticket_type_id) {
+            $ticketType = $this->ticketRepository->find($ticket->ticket_type_id);
+            if ($ticketType) {
+                if ($ticketType->validity_from && now()->lt($ticketType->validity_from)) {
+                    return $this->logAndReturnScanResult($ticketId, $agentId, $gateId, $action, 'expired', [
+                        'message' => 'Ticket not yet valid',
+                    ], $ticket);
+                }
+
+                if ($ticketType->validity_to && now()->gt($ticketType->validity_to)) {
+                    return $this->logAndReturnScanResult($ticketId, $agentId, $gateId, $action, 'expired', [
+                        'message' => 'Ticket has expired',
+                    ], $ticket);
+                }
+            }
+        }
+
+        if ($action === 'in' || $action === 'entry') {
+            return $this->processEntry($ticket, $event, $gateId, $agentId);
+        } elseif ($action === 'out' || $action === 'exit') {
+            return $this->processExit($ticket, $event, $gateId, $agentId);
+        }
+
+        throw new \Exception('Invalid action', 400);
+    }
+
+    protected function processEntry($ticket, $event, $gateId, $agentId): array
+    {
+        if ($ticket->status === 'in') {
+            return $this->logAndReturnScanResult(
+                $ticket->id,
+                $agentId,
+                $gateId,
+                'entry',
+                'already_in',
+                ['message' => 'Ticket is already inside'],
+                $ticket
+            );
+        }
+
+        $this->counterRepository->createOrGetCounter($event->id);
+        $currentIn = $this->counterRepository->getCurrentIn($event->id);
+
+        if ($currentIn >= $event->capacity) {
+            return $this->logAndReturnScanResult(
+                $ticket->id,
+                $agentId,
+                $gateId,
+                'entry',
+                'capacity_full',
+                [
+                    'message' => 'Event capacity reached',
+                    'current_in' => $currentIn,
+                    'capacity' => $event->capacity,
+                ],
+                $ticket
+            );
+        }
+
+        if ($ticket->ticket_type_id) {
+            $ticketType = $this->ticketRepository->find($ticket->ticket_type_id);
+            if ($ticketType && $ticketType->usage_limit) {
+                if ($ticket->used_count >= $ticketType->usage_limit) {
+                    return $this->logAndReturnScanResult(
+                        $ticket->id,
+                        $agentId,
+                        $gateId,
+                        'entry',
+                        'invalid',
+                        ['message' => 'Usage limit reached'],
+                        $ticket
+                    );
+                }
+            }
+        }
+
+        $this->counterRepository->incrementCurrentIn($event->id);
+
+        $this->ticketRepository->update($ticket, [
+            'status' => 'in',
+            'used_count' => $ticket->used_count + 1,
+            'last_used_at' => now(),
+            'gate_in' => $gateId,
+        ]);
+
+        return $this->logAndReturnScanResult(
+            $ticket->id,
+            $agentId,
+            $gateId,
+            'entry',
+            'ok',
+            ['message' => 'Entry successful'],
+            $ticket->fresh()
+        );
+    }
+
+    protected function processExit($ticket, $event, $gateId, $agentId): array
+    {
+        if ($ticket->status !== 'in') {
+            return $this->logAndReturnScanResult(
+                $ticket->id,
+                $agentId,
+                $gateId,
+                'exit',
+                'already_out',
+                ['message' => 'Ticket is not currently inside'],
+                $ticket
+            );
+        }
+
+        $this->counterRepository->decrementCurrentIn($event->id);
+
+        $this->ticketRepository->update($ticket, [
+            'status' => 'out',
+            'last_used_at' => now(),
+            'last_gate_out' => $gateId,
+        ]);
+
+        return $this->logAndReturnScanResult(
+            $ticket->id,
+            $agentId,
+            $gateId,
+            'exit',
+            'ok',
+            ['message' => 'Exit successful'],
+            $ticket->fresh()
+        );
+    }
+
+    protected function logAndReturnScanResult($ticketId, $agentId, $gateId, $scanType, $result, $details, $ticket): array
+    {
+        $scanLog = $this->scanLogRepository->create([
+            'ticket_id' => $ticketId,
+            'agent_id' => $agentId,
+            'gate_id' => $gateId,
+            'scan_type' => $scanType,
+            'scan_time' => now(),
+            'result' => $result,
+            'details' => $details,
+            'metadata' => [],
+        ]);
+
+        return [
+            'valid' => $result === 'ok',
+            'code' => strtoupper($result),
+            'message' => $details['message'] ?? $result,
+            'ticket' => $ticket,
+            'scan_log_id' => $scanLog->id,
+        ];
+    }
+
+    public function validateTicketSignature(string $ticketId, string $signature): bool
+    {
+        $ticket = $this->ticketRepository->find($ticketId);
+
+        if (!$ticket) {
+            return false;
+        }
+
+        $secret = config('app.ticket_hmac_secret', config('app.key'));
+        $expectedSignature = hash_hmac('sha256', $ticketId . '|' . $ticket->event_id, $secret);
+
+        return hash_equals($expectedSignature, $signature);
+    }
+}
