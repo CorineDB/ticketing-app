@@ -1,0 +1,158 @@
+Parfait, on va rédiger toutes les règles métiers pour ta plateforme de génération et contrôle de tickets, de façon claire, exhaustive et directement exploitable pour le développement et les tests. Je vais structurer par domaine et par type d’utilisateur.
+
+1. Événements
+
+Création / modification d’un événement :
+
+Un événement appartient à un organisateur (organisateur_id).
+
+L’organisateur peut créer plusieurs événements, mais le titre d’un événement doit être unique pour un même organisateur.
+
+La capacité (capacity) doit être ≥ 0.
+
+La date de fin (end_datetime) doit être postérieure à la date de début (start_datetime).
+
+Les événements peuvent avoir un dress code optionnel.
+
+Suppression d’un événement :
+
+Supprimer un événement supprime tous les tickets et types de tickets associés.
+
+2. Types de tickets
+
+Chaque type de ticket appartient à un événement spécifique (event_id).
+
+Chaque type de ticket a un nom unique pour un événement.
+
+usage_limit ≥ 1.
+
+quota ≥ 0 ou NULL pour illimité.
+
+validity_from et validity_to optionnels : si définis, un ticket ne peut être utilisé qu’entre ces dates.
+
+3. Tickets
+
+Génération :
+
+Un ticket est associé à un événement et éventuellement à un type de ticket.
+
+Chaque ticket a un code unique (humain lisible) par événement.
+
+Chaque ticket peut avoir un QR code et HMAC pour validation.
+
+Chaque ticket peut avoir un magic_link_token pour accès sans compte.
+
+Initial status = issued.
+
+Paiement :
+
+Le ticket peut être payé via lien de paiement (payment_url) ou cash (par caissier).
+
+Status transition : issued → reserved → paid → valid → in/out → invalid → refunded.
+
+paid_at doit être renseigné lors du paiement.
+
+Utilisation / scan :
+
+Un ticket ne peut être scanné qu’après paiement (sauf gratuit).
+
+Chaque scan en entrée (entry) :
+
+Vérifie la validité du ticket (status non invalidé, non expiré).
+
+Vérifie la capacité de l’événement (current_in < capacity).
+
+Incrémente used_count et current_in.
+
+Enregistre gate_in et last_gate_out si sortie ultérieure.
+
+Chaque scan en sortie (exit) :
+
+Vérifie que le ticket est actuellement in.
+
+Décrémente current_in de l’événement.
+
+Enregistre last_gate_out.
+
+Un ticket ne peut pas être scanné plusieurs fois au même gate pour le même type d’action (évite double entrée).
+
+Validation échoue si status = invalid ou refunded ou si capacité dépassée.
+
+Restrictions :
+
+Un participant ne peut voir que son ticket.
+
+Un agent ne peut voir que les scans du gate qui lui est assigné.
+
+Un organisateur peut voir toutes les entrées/sorties de ses événements.
+
+Superadmin peut voir tous les tickets et scans.
+
+4. Gates / contrôles
+
+Chaque gate a un type (gate_type) : entrance, exit, vip, other.
+
+Chaque gate a un status (active, pause, inactive).
+
+Un agent est assigné à un gate et ne peut scanner que ce gate.
+
+Si gate est inactive ou en pause, le scan est refusé.
+
+Chaque entrée/sortie est journalisée dans ticket_scan_logs avec action, résultat et metadata.
+
+5. Utilisateurs et rôles
+Role	Permissions	Règles
+Super Admin	CRUD Events, Users, Roles, Stats, Logs	Peut tout faire, voir tous les tickets et scans
+Organisateur	CRUD Events & Tickets, Dashboards, Export	Ne peut pas toucher aux utilisateurs Super Admin, peut voir scans de ses événements
+Agent / Contrôleur	Scanner tickets	Ne peut pas créer/modifier tickets ou événements, ne voit que son gate
+Participant	Acheter / voir ticket	Ne peut voir que ses tickets, payer, télécharger QR, status correct
+Caissier (optionnel)	Enregistrer paiement cash	Peut générer tickets manuels, marquer comme payé, voir transactions, mais pas scanner
+6. Règles de cohérence et contraintes
+
+event.capacity ≥ total tickets utilisés simultanément.
+
+ticket.status doit évoluer de manière logique :
+
+issued → reserved → paid → valid → in → out → invalid/refunded.
+
+used_count ne peut pas dépasser usage_limit.
+
+current_in par événement doit être atomique pour éviter dépassement de capacité (Redis lock ou DB transaction).
+
+Magic link token doit être unique et sécurisé pour accès direct au ticket.
+
+Tous les logs de scans sont immutables (ne jamais supprimer).
+
+Les tickets remboursés passent automatiquement status = refunded et ne peuvent plus être utilisés.
+
+Les tickets expirés (validity_to dépassée) passent automatiquement status = invalid.
+
+7. Notifications / queues
+
+Envoi email / SMS sur :
+
+Création de ticket
+
+Paiement validé
+
+État du ticket modifié (invalid, refunded)
+
+Tous les envois passent par queue jobs pour scalabilité et non blocage de la requête.
+
+
+8. Priorisation / MVP (pour demain)
+
+CRUD événements (organisateur).
+
+Gestion tickets (organisateur).
+
+Scan QR (agent).
+
+Magic link + QR code download (participant).
+
+Logs et compteur capacité atomique.
+
+Paiement minimal via URL externe (cash optionnel).
+
+Dashboard minimal pour organiser / superadmin.
+

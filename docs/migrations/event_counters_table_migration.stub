@@ -1,0 +1,17 @@
+return new class extends Migration {
+    public function up(): void
+    {
+        Schema::create('event_counters', function (Blueprint $table) {
+            $table->uuid('event_id')->primary();
+            $table->integer('current_in')->default(0);
+            $table->timestampTz('updated_at')->default(DB::raw('NOW()'));
+
+            $table->foreign('event_id')->references('id')->on('events')->onDelete('cascade');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('event_counters');
+    }
+};

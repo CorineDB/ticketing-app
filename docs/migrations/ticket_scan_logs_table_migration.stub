@@ -1,0 +1,30 @@
+return new class extends Migration {
+    public function up(): void
+    {
+        Schema::create('ticket_scan_logs', function (Blueprint $table) {
+            $table->uuid('id')->primary()->default(DB::raw('uuid_generate_v4()'));
+            $table->uuid('ticket_id');
+            $table->uuid('agent_id')->nullable();
+            $table->uuid('gate_id')->nullable();
+            $table->string('scan_type')->default("entry");
+            $table->timestampTz('scan_time')->default(DB::raw('NOW()'));
+            $table->string('result'); // ok, already_in, already_out, invalid, expired, capacity_full
+            $table->jsonb('details')->default('{}');
+            $table->jsonb('metadata')->default('{}');
+            $table->timestampsTz();
+
+            $table->foreign('ticket_id')->references('id')->on('tickets')->onDelete('cascade');
+            $table->foreign('agent_id')->references('id')->on('users');
+            $table->foreign('gate_id')->references('id')->on('gates');
+
+            $table->index('ticket_id');
+            $table->index('created_at');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('ticket_scan_logs');
+    }
+};
+
