@@ -23,6 +23,13 @@ components:
       bearerFormat: JWT
 
   parameters:
+    uuidParam:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
     eventId:
       name: id
       in: path
@@ -62,6 +69,8 @@ components:
           type: string
         slug:
           type: string
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
     User:
       type: object
       properties:
@@ -70,9 +79,11 @@ components:
         email: { type: string, format: email }
         type:
           type: string
+          enum: [super-admin, organizer, agent-de-controle, comptable]
           description: "superadmin|organizer|agent|caissier"
         role_id: { type: string, format: uuid }
         created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
     Event:
       type: object
       properties:
@@ -96,6 +107,10 @@ components:
           type: boolean
           description: "Si false, pas de re-entry autorisée"
           default: true
+        ticket_types:
+          type: array
+          items:
+            $ref: "#/components/schemas/TicketType"
         created_by: { type: string, format: uuid, nullable: true }
         created_at: { type: string, format: date-time }
         updated_at: { type: string, format: date-time }
@@ -113,6 +128,7 @@ components:
         usage_limit: { type: integer, default: 1, minimum: 1 }
         quota: { type: integer, nullable: true, minimum: 0 }
         created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
       required: [event_id, name]
 
     Ticket:
@@ -136,7 +152,8 @@ components:
           nullable: true
           description: "Token pour accès sans compte"
         status:
-          type: string
+          type: string          
+          enum: [issued, reserved, paid, in, out, invalid, refunded]
           description: "issued|reserved|paid|inside|outside|invalid|refunded"
           default: issued
         buyer_name: { type: string, nullable: true }
@@ -161,15 +178,34 @@ components:
         location: { type: string, nullable: true }
         gate_type:
           type: string
+          enum: [entrance, exit, vip, other]
           description: "entrance|exit|vip|other"
           default: entrance
         status:
           type: string
+          enum: [active, pause, inactive]
           description: "active|pause|inactive"
           default: active
         created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
       required: [name, gate_type, status]
 
+
+    TicketScanLog:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        ticket_id: { type: string, format: uuid }
+        agent_id: { type: string, format: uuid, nullable: true }
+        gate_id: { type: string, format: uuid, nullable: true }
+        scan_type: { type: string, enum: [entry, exit] }
+        scan_time: { type: string, format: date-time }
+        result: { type: string, enum: [ok, already_in, already_out, invalid, expired, capacity_full] }
+        details: { type: object, default: {} }
+        metadata: { type: object, default: {} }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+        
     ScanRequest:
       type: object
       properties:
@@ -246,6 +282,39 @@ components:
               value:
                 code: NOT_FOUND
                 message: "Resource not found"
+    BadRequest:
+      description: Requête invalide
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            notfound:
+              value:
+                code: NOT_FOUND
+                message: "Resource not found"
+    Conflict:
+      description: Conflit / violation de contrainte
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            notfound:
+              value:
+                code: NOT_FOUND
+                message: "Resource not found"
+    InternalError:
+      description: Erreur interne serveur
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            notfound:
+              value:
+                code: NOT_FOUND
+                message: "Resource not found"
 
 paths:
 
@@ -286,6 +355,97 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+
+  # ------------------------
+  # Users
+  # ------------------------
+  /users:
+    get:
+      summary: Liste des utilisateurs
+      security: [{ oauth2: [] }]
+      responses:
+        "200": { description: OK, content: { "application/json": { schema: { type: array, items: { $ref: "#/components/schemas/User" } } } } }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+    post:
+      summary: Créer un utilisateur
+      security: [{ oauth2: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+      responses:
+        "201": { description: Utilisateur créé, content: { "application/json": { schema: { $ref: "#/components/schemas/User" } } } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "409": { $ref: "#/components/responses/Conflict" }
+
+  /users/{id}:
+    get:
+      summary: Détails utilisateur
+      parameters:
+        - $ref: "#/components/parameters/uuidParam"
+      security: [{ oauth2: [] }]
+      responses:
+        "200": { description: OK, content: { "application/json": { schema: { $ref: "#/components/schemas/User" } } } }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+    put:
+      summary: Mettre à jour utilisateur
+      parameters:
+        - $ref: "#/components/parameters/uuidParam"
+      security: [{ oauth2: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+      responses:
+        "200": { description: OK, content: { "application/json": { schema: { $ref: "#/components/schemas/User" } } } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+    delete:
+      summary: Supprimer utilisateur
+      parameters:
+        - $ref: "#/components/parameters/uuidParam"
+      security: [{ oauth2: [] }]
+      responses:
+        "204": { description: Utilisateur supprimé }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  # ------------------------
+  # Roles
+  # ------------------------
+  /roles:
+    get:
+      summary: Liste des rôles
+      security: [{ oauth2: [] }]
+      responses:
+        "200": { description: OK, content: { "application/json": { schema: { type: array, items: { $ref: "#/components/schemas/Role" } } } } }
+
+    post:
+      summary: Créer un rôle
+      security: [{ oauth2: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Role"
+      responses:
+        "201": { description: OK, content: { "application/json": { schema: { $ref: "#/components/schemas/Role" } } } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+
+  # ------------------------
+  # Events (incl. création ticket types)
+  # ------------------------
   /events:
     get:
       summary: Lister les événements (public)
@@ -353,6 +513,47 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+    post:
+      summary: Créer un événement et ses types de tickets
+      security:
+        - oauth2: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Event"
+      responses:
+        "201":
+          description: Événement créé avec succès
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+        "400":
+          description: Requête invalide (champ manquant ou contrainte violée)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFound"
+        "401":
+          description: Non autorisé
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Unauthorized"
+        "409":
+          description: Conflit (titre d'événement déjà existant pour cet organisateur)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFound"
+        "500":
+          description: Erreur interne serveur
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFound"
 
   /events/{id}:
     get:
@@ -554,7 +755,7 @@ paths:
 
   /tickets/{id}:
     get:
-      summary: Voir ticket (organizer / owner via magic link)
+      summary: Récupérer les informations d’un ticket (token magique possible)
       parameters:
         - $ref: '#/components/parameters/ticketId'
         - name: token
@@ -564,11 +765,15 @@ paths:
             type: string
       responses:
         '200':
-          description: Ticket
+          description: Détails du ticket
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Ticket'
+        "404":
+          description: Ticket non trouvé
+        "401":
+          description: Non autorisé si token invalide
       security: []
 
     put:
@@ -622,6 +827,44 @@ paths:
                 type: string
                 format: binary
       security: []
+
+  /tickets/{ticket_id}/scan:
+    post:
+      summary: Scanner un ticket
+      security:
+        - oauth2: []
+      parameters:
+        - name: ticket_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                agent_id: { type: string, format: uuid }
+                gate_id: { type: string, format: uuid }
+                scan_type: { type: string, enum: [entry, exit] }
+      responses:
+        "200":
+          description: Ticket scanné avec succès
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TicketScanLog"
+        "400":
+          description: Requête invalide
+        "401":
+          description: Non autorisé
+        "404":
+          description: Ticket non trouvé
+        "409":
+          description: Action impossible (ex: déjà inside, capacité atteinte)
+        "500":
+          description: Erreur interne serveur
 
   /scan/request:
     post:

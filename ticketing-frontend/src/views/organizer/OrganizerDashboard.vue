@@ -44,7 +44,7 @@
               </template>
               <template v-slot:item.actions="{ item }">
                 <v-btn small color="primary" @click="editEvent(item.id)">Edit</v-btn>
-                <v-btn small color="secondary" class="ml-2" @click="viewTickets(item.id)">View Tickets</v-btn>
+                <v-btn small color="secondary" class="ml-2" @click="viewDetails(item.id)">View Details</v-btn>
               </template>
             </v-data-table>
           </v-card-text>
@@ -85,9 +85,9 @@ onMounted(async () => {
   loading.value = true;
   const organizerId = authStore.currentUser?.id;
   if (organizerId) {
-    // In a real app, you might have a dedicated endpoint for tickets per organizer
     const [fetchedEvents, fetchedTickets] = await Promise.all([
       apiService.getEventsByOrganizerId(organizerId),
+      // In a real app, you'd likely have a more efficient way to get all tickets for an organizer
       Promise.all(mockEvents.filter(e => e.organizerId === organizerId).map(e => apiService.getTicketsByEventId(e.id))).then(res => res.flat())
     ]);
     myEvents.value = fetchedEvents;
@@ -100,8 +100,7 @@ function editEvent(eventId: string) {
   router.push({ name: 'organizer-edit-event', params: { id: eventId } });
 }
 
-function viewTickets(eventId: string) {
-  // We can create a dedicated page for this later
-  alert(`Navigating to view tickets for event ${eventId}`);
+function viewDetails(eventId: string) {
+  router.push({ name: 'organizer-event-detail', params: { id: eventId } });
 }
 </script>

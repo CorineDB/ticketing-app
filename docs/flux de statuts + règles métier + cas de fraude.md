@@ -53,56 +53,7 @@ Capacité non respectée + entrées frauduleuses.
 
 🎯 Objectif
 
-Empêcher la réutilisation d’un ticket sorti pendant une période suspecte ou dans des conditions illégitimes.
 
-🛡️ Solution : Anti-fraude "cooldown exit" (sortie temporairement verrouillée)
-✔️ Règle :
-
-Lorsqu’un ticket passe au status out, il entre dans un état temporairement verrouillé.
-
-in → out
-out → out_locked (pendant X minutes)
-out_locked → out (normal)
-
-✔️ Exemple
-
-cooldown : 5 minutes (configurable)
-
-ticket OUT → ne peut pas repasser en IN dans les 5 minutes
-
-✔️ Effet métier
-
-Si un participant sort, impossible de faire entrer quelqu’un d’autre immédiatement.
-
-Empêche la fraude "donne ton QR à un ami".
-
-🛡️ Alternative ou complément : Sortie définitive si le type d'événement l’interdit
-
-Certains événements interdisent les allers-retours.
-
-✔️ Règle :
-
-Si event.allow_reentry = false :
-
-in → out → invalid
-
-✔️ Effet :
-
-Aucun scan IN possible après un OUT.
-
-🛡️ Autre mesure : Gate pairing
-
-Chaque ticket ne peut être scanné OUT que par une gate de sortie.
-
-Si OUT est scanné hors gate sortie → flag "suspicious".
-
-🛡️ Anti-fraude automatique : analyse comportementale
-Cas détectables automatiquement :
-Cas	Détection	Action métier
-Deux scans OUT en moins de 10 sec	agent_id ou gate_id différent	Flag suspicion
-Essais de scan IN simultanés (2 devices)	même ticket_id, timestamps < 1sec	Blocage + invalid
-Scan IN alors que QR déjà capturé par caméra d’un autre agent	double-scan log pairé	Blocage + notifier organisateur
-Nombre anormal de OUT/IN successifs	seuil configurable	verrouillage ticket
 ✅ 5. Scénarios complets incluant cas de fraude
 🔰 Scénario A — Entrée valide
 
@@ -134,14 +85,6 @@ Condition	Règle	Résultat
 status = in	Interdit	result=already_in
 log fraud_attempt	Oui	-
 possibilité invalidate ticket	optionnel	-
-🔰 Scénario E — Scan OUT frauduleux
-
-Un agent malveillant scanne OUT pour valider une future entrée.
-
-Condition	Règle	Résultat
-OUT sur gate entrée	non autorisé	refused
-OUT trop rapide après IN (ex <5 sec)	flagged	notify organiser
-OUT multiple sans IN	flagged	-
 🔰 Scénario F — Ticket expiré / annulé
 Condition	Règle	Résultat
 validity_to < now	status automatically invalid	refused

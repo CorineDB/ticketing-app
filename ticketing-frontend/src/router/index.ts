@@ -87,6 +87,12 @@ const router = createRouter({
           name: 'organizer-manage-staff',
           component: () => import('../views/organizer/ManageStaff.vue'),
         },
+        {
+          path: 'events/:id',
+          name: 'organizer-event-detail',
+          component: () => import('../views/organizer/EventDetail.vue'),
+          props: true,
+        },
       ],
     },
      {
