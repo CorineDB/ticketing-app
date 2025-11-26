@@ -23,8 +23,13 @@ Route::prefix('public')->group(function () {
 });
 
 // Scan endpoints (public request, authenticated confirm)
-Route::post('/scan/request', [ScanController::class, 'request']);
-Route::post('/scan/confirm', [ScanController::class, 'confirm'])->middleware('auth:sanctum');
+// Rate limiting: 60 requests per minute per IP for scan requests
+Route::post('/scan/request', [ScanController::class, 'request'])
+    ->middleware('throttle:scan-request');
+
+// Rate limiting: 30 requests per minute per user for scan confirmations
+Route::post('/scan/confirm', [ScanController::class, 'confirm'])
+    ->middleware(['auth:sanctum', 'throttle:scan-confirm']);
 
 // Webhooks (public, no authentication)
 Route::post('/webhooks/fedapay', [WebhookController::class, 'fedapayWebhook']);
