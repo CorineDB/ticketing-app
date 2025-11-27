@@ -23,9 +23,23 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import Header from './Header.vue'
 import Sidebar from './Sidebar.vue'
 
-const sidebarOpen = ref(false)
+const sidebarOpen = ref(window.innerWidth >= 1024)
+
+const handleResize = () => {
+  if (window.innerWidth >= 1024) {
+    sidebarOpen.value = true
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('resize', handleResize)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize)
+})
 </script>
