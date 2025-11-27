@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\TicketTypeController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\WebhookController;
+use App\Http\Controllers\Api\PaymentController;
 use Illuminate\Support\Facades\Route;
 
 // Auth routes
@@ -31,6 +32,7 @@ Route::prefix('public')->group(function () {
     // Events
     Route::get('/events', [EventController::class, 'index']);
     Route::get('/events/{id}', [EventController::class, 'show']);
+    Route::get('/events/slug/{slug}', [EventController::class, 'showBySlug']);
     Route::get('/events/{id}/ticket-types', [TicketTypeController::class, 'index']);
 
     // Tickets with magic link
@@ -51,12 +53,19 @@ Route::post('/scan/confirm', [ScanController::class, 'confirm'])
 // Webhooks (public, no authentication)
 Route::post('/webhooks/fedapay', [WebhookController::class, 'fedapayWebhook']);
 
+// Payment callback (public, no authentication - FedaPay redirects users here)
+Route::get('/payment/callback', [PaymentController::class, 'callback'])->name('payment.callback');
+
+// Ticket purchase (public - no authentication required to buy tickets)
+Route::post('/tickets/purchase', [TicketController::class, 'purchase']);
+
 // Protected routes (authentication required)
 Route::middleware('auth:sanctum')->group(function () {
     // Roles
     Route::apiResource('roles', RoleController::class);
     
     Route::apiResource('users', UserController::class);
+    Route::post('/organizers', [UserController::class, 'storeOrganizer']);
 
     // Events
     Route::apiResource('events', EventController::class);

@@ -20,7 +20,7 @@ class EventController extends Controller
     {
         $filters = $request->only(['q', 'date_from', 'date_to']);
         $events = $this->eventService->search($filters);
-        return response()->json(['data' => $events]);
+        return response()->json(['data' => $events->load(["organisateur", "ticketTypes", "counter"])]);
     }
 
     public function store(CreateEventRequest $request)
@@ -36,7 +36,19 @@ class EventController extends Controller
     public function show(string $id)
     {
         $event = $this->eventService->get($id);
-        return response()->json($event);
+        return response()->json($event->load(["organisateur", "ticketTypes", "tickets", "counter"]));
+    }
+
+    public function showBySlug(string $slug)
+    {
+        $organisateurId = auth()->id(); // Assuming authenticated user is the organisateur
+        $event = $this->eventService->getEventBySlugAndOrganisateurId($slug, $organisateurId);
+
+        if (!$event) {
+            return response()->json(['message' => 'Event not found.'], 404);
+        }
+
+        return response()->json($event->load(["organisateur", "ticketTypes", "tickets", "counter"]));
     }
 
     public function update(CreateEventRequest $request, string $id)

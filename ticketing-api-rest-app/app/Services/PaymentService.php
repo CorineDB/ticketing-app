@@ -6,6 +6,7 @@ use App\Repositories\Contracts\TicketRepositoryContract;
 use App\Repositories\Contracts\TicketTypeRepositoryContract;
 use App\Services\Contracts\NotificationServiceContract;
 use App\Services\Contracts\PaymentServiceContract;
+use FedaPay\Customer;
 use FedaPay\FedaPay;
 use FedaPay\Transaction;
 use FedaPay\Webhook;
@@ -31,6 +32,65 @@ class PaymentService implements PaymentServiceContract
         FedaPay::setEnvironment(config('services.fedapay.environment', 'sandbox'));
     }
 
+    /**
+     * Create a payment transaction for a specific ticket purchase
+     *
+     * @param string $ticketId The ticket ID
+     * @param array $customerData Customer information (firstname, lastname, email, phone_number)
+     * @param int $amount Total amount
+     * @param string $description Transaction description
+     * @return array Payment information including payment_url
+     */
+    public function createTransactionForTicket(string $ticketId, array $customerData, int $amount, string $description): array
+    {
+        try {
+            // Create or get FedaPay customer
+            $customer = Customer::create([
+                'firstname' => $customerData['firstname'],
+                'lastname' => $customerData['lastname'],
+                'email' => $customerData['email'],
+                'phone_number' => [
+                    'number' => $customerData['phone_number'],
+                    'country' => 'BJ', // Benin by default, you can make this configurable
+                ],
+            ]);
+
+            // Créer une transaction FedaPay
+            $transaction = Transaction::create([
+                'description' => $description,
+                'amount' => $amount,
+                'currency' => ['iso' => config('services.fedapay.currency', 'XOF')],
+                'callback_url' => route('payment.callback'),
+                'customer' => ['id' => $customer->id],
+                'merchant_reference' => 'ticket-' . $ticketId,
+                'custom_metadata' => [
+                    'ticket_id' => $ticketId,
+                ],
+            ]);
+
+            // Générer le token de paiement
+            $token = $transaction->generateToken();
+
+            return [
+                'transaction_id' => $transaction->id,
+                'token' => $token->token,
+                'payment_url' => $token->url,
+                'amount' => $amount,
+                'currency' => config('services.fedapay.currency', 'XOF'),
+            ];
+        } catch (\Exception $e) {
+            Log::error('FedaPay transaction creation failed', [
+                'ticket_id' => $ticketId,
+                'error' => $e->getMessage(),
+            ]);
+
+            throw new \Exception('Failed to create payment transaction: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * @deprecated This method is deprecated. Use createTransactionForTicket instead.
+     */
     public function createPaymentLinkForTicketType(string $ticketTypeId): array
     {
         $ticketType = $this->ticketTypeRepository->findOrFail($ticketTypeId);

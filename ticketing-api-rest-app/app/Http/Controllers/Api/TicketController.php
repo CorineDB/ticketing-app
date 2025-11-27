@@ -4,16 +4,23 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Tickets\CreateTicketRequest;
+use App\Http\Requests\Api\Tickets\TicketPurchaseRequest;
 use App\Services\Contracts\TicketServiceContract;
+use App\Services\Contracts\PaymentServiceContract;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class TicketController extends Controller
 {
     protected TicketServiceContract $ticketService;
+    protected PaymentServiceContract $paymentService;
 
-    public function __construct(TicketServiceContract $ticketService)
-    {
+    public function __construct(
+        TicketServiceContract $ticketService,
+        PaymentServiceContract $paymentService
+    ) {
         $this->ticketService = $ticketService;
+        $this->paymentService = $paymentService;
     }
 
     public function index(Request $request)
@@ -41,6 +48,78 @@ class TicketController extends Controller
         }
 
         return response()->json($tickets, 201);
+    }
+
+    /**
+     * Purchase tickets - Creates tickets and initiates payment
+     */
+    public function purchase(TicketPurchaseRequest $request)
+    {
+        $data = $request->validated();
+
+        try {
+            return DB::transaction(function () use ($data) {
+                $ticketTypeId = $data['ticket_type_id'];
+                $quantity = $data['quantity'];
+                $customer = $data['customer'];
+
+                // Get ticket type and check availability
+                $ticketType = $this->ticketService->getTicketType($ticketTypeId);
+
+                if (!$ticketType) {
+                    return response()->json(['error' => 'Type de ticket non trouvé'], 404);
+                }
+
+                // Check quota availability
+                if (!$this->ticketService->checkQuotaAvailability($ticketTypeId, $quantity)) {
+                    return response()->json([
+                        'error' => 'Quota insuffisant',
+                        'message' => 'Il n\'y a pas assez de tickets disponibles pour ce type.'
+                    ], 400);
+                }
+
+                // Calculate total amount
+                $totalAmount = $ticketType->price * $quantity;
+
+                // Create tickets in pending status
+                $tickets = [];
+                for ($i = 0; $i < $quantity; $i++) {
+                    $ticket = $this->ticketService->generateTicket([
+                        'event_id' => $ticketType->event_id,
+                        'ticket_type_id' => $ticketTypeId,
+                        'buyer_name' => $customer['firstname'] . ' ' . $customer['lastname'],
+                        'buyer_email' => $customer['email'],
+                        'buyer_phone' => $customer['phone_number'],
+                        'status' => 'pending', // Will be updated to 'paid' via webhook
+                    ]);
+                    $tickets[] = $ticket;
+                }
+
+                // Use the first ticket ID for the transaction reference
+                $mainTicketId = $tickets[0]->id;
+
+                // Create payment transaction
+                $paymentData = $this->paymentService->createTransactionForTicket(
+                    $mainTicketId,
+                    $customer,
+                    $totalAmount,
+                    "Achat de {$quantity} ticket(s) - {$ticketType->name}"
+                );
+
+                return response()->json([
+                    'tickets' => $tickets,
+                    'payment_url' => $paymentData['payment_url'],
+                    'transaction_id' => $paymentData['transaction_id'],
+                    'total_amount' => $totalAmount,
+                    'currency' => $paymentData['currency'],
+                ], 201);
+            });
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Échec de la création de la transaction',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function show(string $id, Request $request)
