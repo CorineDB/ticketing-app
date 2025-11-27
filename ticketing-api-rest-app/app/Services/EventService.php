@@ -104,6 +104,11 @@ class EventService extends BaseService implements EventServiceContract
         return $this->repository->findBySlugAndOrganisateurId($slug, $organisateurId);
     }
 
+    public function getEventBySlug(string $slug)
+    {
+        return $this->repository->findBySlug($slug);
+    }
+
     public function getEventStats(string $eventId)
     {
         $event = $this->repository->findOrFail($eventId);

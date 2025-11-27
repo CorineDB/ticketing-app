@@ -59,6 +59,9 @@ Route::get('/payment/callback', [PaymentController::class, 'callback'])->name('p
 // Ticket purchase (public - no authentication required to buy tickets)
 Route::post('/tickets/purchase', [TicketController::class, 'purchase']);
 
+// Event by slug (public - must be BEFORE apiResource to avoid conflict with {id})
+Route::get('/events/slug/{slug}', [EventController::class, 'showBySlug']);
+
 // Protected routes (authentication required)
 Route::middleware('auth:sanctum')->group(function () {
     // Roles

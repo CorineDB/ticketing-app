@@ -41,8 +41,8 @@ class EventController extends Controller
 
     public function showBySlug(string $slug)
     {
-        $organisateurId = auth()->id(); // Assuming authenticated user is the organisateur
-        $event = $this->eventService->getEventBySlugAndOrganisateurId($slug, $organisateurId);
+        // Public route - no authentication required
+        $event = $this->eventService->getEventBySlug($slug);
 
         if (!$event) {
             return response()->json(['message' => 'Event not found.'], 404);
