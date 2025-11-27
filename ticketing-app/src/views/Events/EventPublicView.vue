@@ -189,8 +189,9 @@ onMounted(async () => {
 })
 
 function selectTicketType(ticketType: TicketType) {
+  console.log('Navigating to checkout:', { eventId: event.value?.id, ticketTypeId: ticketType.id })
   if (event.value) {
-    router.push({ name: 'checkout', params: { eventId: event.value.id, ticketTypeId: ticketType.id } })
+    router.push({ name: 'checkout', params: { eventId: event.value.id.toString(), ticketTypeId: ticketType.id.toString() } })
   }
 }
 
