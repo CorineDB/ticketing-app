@@ -31,6 +31,7 @@ class EventService {
    */
   async getById(id: string): Promise<Event> {
     const response = await api.get<{ data: Event }>(`/events/${id}`)
+    console.log("Response Data:", response.data);
     return response.data
   }
 
@@ -142,7 +143,7 @@ class EventService {
     const params: Record<string, any> = {}
 
     if (filters.status) params.status = filters.status
-    if (filters.organization_id) params.organization_id = filters.organization_id
+    if (filters.organisateur_id) params.organisateur_id = filters.organisateur_id
     if (filters.start_date) params.start_date = filters.start_date
     if (filters.end_date) params.end_date = filters.end_date
     if (filters.city) params.city = filters.city

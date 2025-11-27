@@ -107,7 +107,7 @@
           </div>
 
           <NavLink
-            to="/dashboard/organizations"
+            to="/dashboard/organisateurs"
             :icon="BuildingIcon"
             label="All Organizations"
             @click="$emit('close')"

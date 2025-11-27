@@ -1,7 +1,7 @@
 <template>
   <Modal :show="show" @close="closeModal">
     <template #title>
-      <h3 class="text-lg font-medium text-gray-900">{{ organization ? 'Edit Organization' : 'Create Organization' }}</h3>
+      <h3 class="text-lg font-medium text-gray-900">{{ organisateur ? 'Edit Organization' : 'Create Organization' }}</h3>
     </template>
     <template #body>
       <form @submit.prevent="submitForm" class="space-y-4">
@@ -40,7 +40,7 @@
         class="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500 ml-3"
         @click="submitForm"
       >
-        {{ organization ? 'Save Changes' : 'Create' }}
+        {{ organisateur ? 'Save Changes' : 'Create' }}
       </button>
     </template>
   </Modal>
@@ -54,12 +54,12 @@ interface Organization {
   id?: string;
   name: string;
   description?: string;
-  // Add other organization properties here
+  // Add other organisateur properties here
 }
 
 const props = defineProps<{
   show: boolean;
-  organization?: Organization | null;
+  organisateur?: User | null;
 }>();
 
 const emit = defineEmits(['update:show', 'submit']);
@@ -69,11 +69,11 @@ const form = reactive<Organization>({
   description: '',
 });
 
-watch(() => props.organization, (newOrg) => {
+watch(() => props.organisateur, (newOrg) => {
   if (newOrg) {
     Object.assign(form, newOrg);
   } else {
-    // Reset form for new organization
+    // Reset form for new organisateur
     form.id = undefined;
     form.name = '';
     form.description = '';

@@ -8,7 +8,7 @@
       <img
         v-if="ticket.event?.banner"
         :src="ticket.event.banner"
-        :alt="ticket.event.name"
+        :alt="ticket.event.title"
         class="w-full h-full object-cover"
       />
       <div class="absolute top-2 right-2">
