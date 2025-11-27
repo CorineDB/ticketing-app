@@ -1,0 +1,1054 @@
+openapi: 3.0.3
+info:
+  title: Ticketing Platform API
+  version: 1.0.0
+  description: |
+    API pour gestion d'événements, génération et contrôle de tickets (QR).
+    Auth: OAuth2 (password / client_credentials). Scan workflow 2-steps (request -> confirm).
+servers:
+  - url: https://api.example.com
+    description: Production
+
+components:
+  securitySchemes:
+    oauth2:
+      type: oauth2
+      flows:
+        password:
+          tokenUrl: /oauth/token
+          scopes: {}
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    uuidParam:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    eventId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: UUID de l'événement
+    ticketId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: UUID du ticket
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          nullable: true
+      required: [code, message]
+    Role:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        slug:
+          type: string
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    User:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        email: { type: string, format: email }
+        type:
+          type: string
+          enum: [super-admin, organizer, agent-de-controle, comptable]
+          description: "superadmin|organizer|agent|caissier"
+        role_id: { type: string, format: uuid }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    Event:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        organisateur_id: { type: string, format: uuid, nullable: true }
+        title: { type: string }
+        description: { type: string, nullable: true }
+        image_url: { type: string, format: uri, nullable: true }
+        start_datetime: { type: string, format: date-time }
+        end_datetime: { type: string, format: date-time }
+        location: { type: string, nullable: true }
+        capacity:
+          type: integer
+          minimum: 0
+          default: 0
+        timezone:
+          type: string
+          default: "UTC"
+        dress_code: { type: string, nullable: true }
+        allow_reentry:
+          type: boolean
+          description: "Si false, pas de re-entry autorisée"
+          default: true
+        ticket_types:
+          type: array
+          items:
+            $ref: "#/components/schemas/TicketType"
+        created_by: { type: string, format: uuid, nullable: true }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+      required: [title, start_datetime, end_datetime, capacity, timezone]
+
+    TicketType:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        event_id: { type: string, format: uuid }
+        name: { type: string }
+        price: { type: number, format: double, default: 0.0 }
+        validity_from: { type: string, format: date-time, nullable: true }
+        validity_to: { type: string, format: date-time, nullable: true }
+        usage_limit: { type: integer, default: 1, minimum: 1 }
+        quota: { type: integer, nullable: true, minimum: 0 }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+      required: [event_id, name]
+
+    Ticket:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        event_id: { type: string, format: uuid }
+        ticket_type_id: { type: string, format: uuid, nullable: true }
+        code:
+          type: string
+          description: "Code lisible humain"
+        qr_path:
+          type: string
+          format: uri
+          nullable: true
+        qr_hmac:
+          type: string
+          description: "HMAC_SHA256(ticket_id|event_id)"
+        magic_link_token:
+          type: string
+          nullable: true
+          description: "Token pour accès sans compte"
+        status:
+          type: string          
+          enum: [issued, reserved, paid, in, out, invalid, refunded]
+          description: "issued|reserved|paid|inside|outside|invalid|refunded"
+          default: issued
+        buyer_name: { type: string, nullable: true }
+        buyer_email: { type: string, format: email, nullable: true }
+        buyer_phone: { type: string, nullable: true }
+        issued_at: { type: string, format: date-time }
+        paid_at: { type: string, format: date-time, nullable: true }
+        used_count: { type: integer, default: 0 }
+        last_used_at: { type: string, format: date-time, nullable: true }
+        gate_in: { type: string, format: uuid, nullable: true }
+        last_gate_out: { type: string, format: uuid, nullable: true }
+        metadata: { type: object, additionalProperties: true, default: {} }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+      required: [event_id, code, qr_hmac, status]
+
+    Gate:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        location: { type: string, nullable: true }
+        gate_type:
+          type: string
+          enum: [entrance, exit, vip, other]
+          description: "entrance|exit|vip|other"
+          default: entrance
+        status:
+          type: string
+          enum: [active, pause, inactive]
+          description: "active|pause|inactive"
+          default: active
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+      required: [name, gate_type, status]
+
+
+    TicketScanLog:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        ticket_id: { type: string, format: uuid }
+        agent_id: { type: string, format: uuid, nullable: true }
+        gate_id: { type: string, format: uuid, nullable: true }
+        scan_type: { type: string, enum: [entry, exit] }
+        scan_time: { type: string, format: date-time }
+        result: { type: string, enum: [ok, already_in, already_out, invalid, expired, capacity_full] }
+        details: { type: object, default: {} }
+        metadata: { type: object, default: {} }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+        
+    ScanRequest:
+      type: object
+      properties:
+        scan_session_token: { type: string }
+        expires_in:
+          type: integer
+          description: "durée de validité en secondes"
+      required: [scan_session_token, expires_in]
+
+    ScanConfirmRequest:
+      type: object
+      properties:
+        scan_session_token: { type: string }
+        scan_nonce: { type: string }
+        gate_id: { type: string, format: uuid }
+        agent_id: { type: string, format: uuid }
+        action:
+          type: string
+          description: "in|out"
+      required: [scan_session_token, scan_nonce, gate_id, agent_id, action]
+
+    ScanResult:
+      type: object
+      properties:
+        valid: { type: boolean }
+        code: { type: string }
+        message: { type: string }
+        ticket:
+          $ref: '#/components/schemas/Ticket'
+        scan_log_id:
+          type: string
+          format: uuid
+      required: [valid, code, message]
+
+    OAuthToken:
+      type: object
+      properties:
+        access_token: { type: string }
+        token_type: { type: string, default: Bearer }
+        expires_in: { type: integer }
+        refresh_token: { type: string, nullable: true }
+
+  responses:
+    Unauthorized:
+      description: Authentication required / invalid token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            unauthorized:
+              value:
+                code: UNAUTHORIZED
+                message: "Auth token missing or invalid"
+    Forbidden:
+      description: Forbidden (insufficient permissions)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            forbidden:
+              value:
+                code: FORBIDDEN
+                message: "You do not have permissions for this resource"
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            notfound:
+              value:
+                code: NOT_FOUND
+                message: "Resource not found"
+    BadRequest:
+      description: Requête invalide
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            notfound:
+              value:
+                code: NOT_FOUND
+                message: "Resource not found"
+    Conflict:
+      description: Conflit / violation de contrainte
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            notfound:
+              value:
+                code: NOT_FOUND
+                message: "Resource not found"
+    InternalError:
+      description: Erreur interne serveur
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            notfound:
+              value:
+                code: NOT_FOUND
+                message: "Resource not found"
+
+paths:
+
+  /oauth/token:
+    post:
+      summary: Obtenir un token OAuth2 (password)
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                grant_type:
+                  type: string
+                  enum: [password, client_credentials]
+                  default: password
+                username:
+                  type: string
+                password:
+                  type: string
+                client_id:
+                  type: string
+                client_secret:
+                  type: string
+              required: [grant_type]
+      responses:
+        '200':
+          description: Token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthToken'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+
+  # ------------------------
+  # Users
+  # ------------------------
+  /users:
+    get:
+      summary: Liste des utilisateurs
+      security: [{ oauth2: [] }]
+      responses:
+        "200": { description: OK, content: { "application/json": { schema: { type: array, items: { $ref: "#/components/schemas/User" } } } } }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+    post:
+      summary: Créer un utilisateur
+      security: [{ oauth2: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+      responses:
+        "201": { description: Utilisateur créé, content: { "application/json": { schema: { $ref: "#/components/schemas/User" } } } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "409": { $ref: "#/components/responses/Conflict" }
+
+  /users/{id}:
+    get:
+      summary: Détails utilisateur
+      parameters:
+        - $ref: "#/components/parameters/uuidParam"
+      security: [{ oauth2: [] }]
+      responses:
+        "200": { description: OK, content: { "application/json": { schema: { $ref: "#/components/schemas/User" } } } }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+    put:
+      summary: Mettre à jour utilisateur
+      parameters:
+        - $ref: "#/components/parameters/uuidParam"
+      security: [{ oauth2: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+      responses:
+        "200": { description: OK, content: { "application/json": { schema: { $ref: "#/components/schemas/User" } } } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+    delete:
+      summary: Supprimer utilisateur
+      parameters:
+        - $ref: "#/components/parameters/uuidParam"
+      security: [{ oauth2: [] }]
+      responses:
+        "204": { description: Utilisateur supprimé }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  # ------------------------
+  # Roles
+  # ------------------------
+  /roles:
+    get:
+      summary: Liste des rôles
+      security: [{ oauth2: [] }]
+      responses:
+        "200": { description: OK, content: { "application/json": { schema: { type: array, items: { $ref: "#/components/schemas/Role" } } } } }
+
+    post:
+      summary: Créer un rôle
+      security: [{ oauth2: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Role"
+      responses:
+        "201": { description: OK, content: { "application/json": { schema: { $ref: "#/components/schemas/Role" } } } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+
+  # ------------------------
+  # Events (incl. création ticket types)
+  # ------------------------
+  /events:
+    get:
+      summary: Lister les événements (public)
+      parameters:
+        - name: q
+          in: query
+          schema: { type: string }
+          description: Recherche texte
+        - name: date_from
+          in: query
+          schema: { type: string, format: date-time }
+        - name: date_to
+          in: query
+          schema: { type: string, format: date-time }
+        - name: page
+          in: query
+          schema: { type: integer, default: 1 }
+      responses:
+        '200':
+          description: Liste d'événements
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Event'
+                  meta:
+                    type: object
+      security: []
+
+    post:
+      summary: Créer un événement (organizer/superadmin)
+      security:
+        - oauth2: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title: { type: string }
+                description: { type: string }
+                start_datetime: { type: string, format: date-time }
+                end_datetime: { type: string, format: date-time }
+                location: { type: string }
+                capacity: { type: integer, default: 0 }
+                timezone: { type: string, default: "UTC" }
+                dress_code: { type: string }
+                allow_reentry: { type: boolean, default: true }
+              required: [title, start_datetime, end_datetime]
+      responses:
+        '201':
+          description: Event created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      summary: Créer un événement et ses types de tickets
+      security:
+        - oauth2: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Event"
+      responses:
+        "201":
+          description: Événement créé avec succès
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+        "400":
+          description: Requête invalide (champ manquant ou contrainte violée)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFound"
+        "401":
+          description: Non autorisé
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Unauthorized"
+        "409":
+          description: Conflit (titre d'événement déjà existant pour cet organisateur)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFound"
+        "500":
+          description: Erreur interne serveur
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFound"
+
+  /events/{id}:
+    get:
+      summary: Détails d'un événement (public)
+      parameters:
+        - $ref: '#/components/parameters/eventId'
+      responses:
+        '200':
+          description: Event details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+      security: []
+
+    put:
+      summary: Mettre à jour un événement
+      security:
+        - oauth2: []
+      parameters:
+        - $ref: '#/components/parameters/eventId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title: { type: string }
+                description: { type: string }
+                start_datetime: { type: string, format: date-time }
+                end_datetime: { type: string, format: date-time }
+                location: { type: string }
+                capacity: { type: integer }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+    delete:
+      summary: Supprimer un événement
+      security:
+        - oauth2: []
+      parameters:
+        - $ref: '#/components/parameters/eventId'
+      responses:
+        '204':
+          description: Deleted
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /events/{id}/ticket-types:
+    get:
+      summary: Lister les types de tickets pour un événement (public)
+      parameters:
+        - $ref: '#/components/parameters/eventId'
+      responses:
+        '200':
+          description: Ticket types
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/TicketType' }
+      security: []
+
+    post:
+      summary: Créer un type de ticket (organizer)
+      security:
+        - oauth2: []
+      parameters:
+        - $ref: '#/components/parameters/eventId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                price: { type: number }
+                validity_from: { type: string, format: date-time }
+                validity_to: { type: string, format: date-time }
+                usage_limit: { type: integer, default: 1 }
+                quota: { type: integer, nullable: true }
+              required: [name]
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketType'
+
+  /ticket-types/{id}:
+    get:
+      summary: Détails d'un type de ticket
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: TicketType
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketType'
+      security: []
+
+    put:
+      summary: Mettre à jour un type de ticket
+      security:
+        - oauth2: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                price: { type: number }
+                quota: { type: integer }
+                usage_limit: { type: integer }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketType'
+
+  /tickets:
+    get:
+      summary: Lister tickets (organizer / superadmin)
+      security:
+        - oauth2: []
+      parameters:
+        - name: event_id
+          in: query
+          schema: { type: string, format: uuid }
+        - name: status
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: Tickets
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { type: array, items: { $ref: '#/components/schemas/Ticket' } }
+
+    post:
+      summary: Générer un ticket (organizer) — single or bulk
+      security:
+        - oauth2: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                event_id: { type: string, format: uuid }
+                ticket_type_id: { type: string, format: uuid }
+                quantity:
+                  type: integer
+                  default: 1
+                buyer_name: { type: string }
+                buyer_email: { type: string }
+                payment_url: { type: string, format: uri, nullable: true }
+              required: [event_id]
+      responses:
+        '201':
+          description: Ticket(s) created
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Ticket' }
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /tickets/{id}:
+    get:
+      summary: Récupérer les informations d’un ticket (token magique possible)
+      parameters:
+        - $ref: '#/components/parameters/ticketId'
+        - name: token
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Détails du ticket
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+        "404":
+          description: Ticket non trouvé
+        "401":
+          description: Non autorisé si token invalide
+      security: []
+
+    put:
+      summary: Mettre à jour un ticket (mark paid, metadata)
+      security:
+        - oauth2: []
+      parameters:
+        - $ref: '#/components/parameters/ticketId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status: { type: string }
+                paid_at: { type: string, format: date-time }
+                metadata: { type: object, additionalProperties: true }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+
+    delete:
+      summary: Supprimer / annuler un ticket (organizer)
+      security:
+        - oauth2: []
+      parameters:
+        - $ref: '#/components/parameters/ticketId'
+      responses:
+        '204':
+          description: Deleted
+
+  /tickets/{id}/qr:
+    get:
+      summary: Télécharger l'image QR du ticket (public via magic link or auth)
+      parameters:
+        - $ref: '#/components/parameters/ticketId'
+        - name: token
+          in: query
+          required: false
+          schema: { type: string }
+      responses:
+        '200':
+          description: PNG QR image
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+      security: []
+
+  /tickets/{ticket_id}/scan:
+    post:
+      summary: Scanner un ticket
+      security:
+        - oauth2: []
+      parameters:
+        - name: ticket_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                agent_id: { type: string, format: uuid }
+                gate_id: { type: string, format: uuid }
+                scan_type: { type: string, enum: [entry, exit] }
+      responses:
+        "200":
+          description: Ticket scanné avec succès
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TicketScanLog"
+        "400":
+          description: Requête invalide
+        "401":
+          description: Non autorisé
+        "404":
+          description: Ticket non trouvé
+        "409":
+          description: Action impossible (ex: déjà inside, capacité atteinte)
+        "500":
+          description: Erreur interne serveur
+
+  /scan/request:
+    post:
+      summary: Demande de session de scan (scan/request) — PUBLIC la validation HMAC possible sans auth
+      description: |
+        Etape 1 du workflow: le QR encode ticket_id + sig (HMAC). Le contrôleur scanne le QR et envoie ce payload.
+        L'API vérifie la signature et renvoie un `scan_session_token` valable `expires_in` secondes.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ticket_id: { type: string, format: uuid }
+                sig: { type: string }
+              required: [ticket_id, sig]
+      responses:
+        '200':
+          description: Session token généré
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScanRequest'
+        '400':
+          description: Invalid QR or request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                bad_sig:
+                  value:
+                    code: QR_SIGNATURE_MISMATCH
+                    message: "Signature incorrecte / QR falsifié"
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /scan/confirm:
+    post:
+      summary: Confirmer scan (scan/confirm) — nécessite que le controller soit authentifié
+      security:
+        - oauth2: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScanConfirmRequest'
+      responses:
+        '200':
+          description: Résultat du scan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScanResult'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          description: Conflit (double scan / atomicity)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                conflict:
+                  value:
+                    code: CONFLICT_SCAN
+                    message: "Scan conflict: token already used or ticket state changed"
+        '422':
+          description: Business rule violated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                already_in:
+                  value:
+                    code: TICKET_ALREADY_INSIDE
+                    message: "Le participant est déjà à l'intérieur."
+
+  /gates:
+    get:
+      summary: Lister gates (auth required)
+      security:
+        - oauth2: []
+      responses:
+        '200':
+          description: Liste gates
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Gate' }
+
+    post:
+      summary: Créer une gate (auth)
+      security:
+        - oauth2: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                location: { type: string }
+                gate_type: { type: string, default: entrance }
+                status: { type: string, default: active }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Gate'
+
+  /gates/{id}:
+    get:
+      summary: Détails gate
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      security:
+        - oauth2: []
+      responses:
+        '200':
+          description: Gate
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Gate'
+
+  /stats/event/{id}:
+    get:
+      summary: Statistiques d'un événement (organizer / superadmin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      security:
+        - oauth2: []
+      responses:
+        '200':
+          description: Stats
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_tickets: { type: integer }
+                  total_paid: { type: integer }
+                  current_in: { type: integer }
+                  scans_last_hour: { type: integer }
+
+  /webhooks/payment:
+    post:
+      summary: Webhook paiement (externe)
+      description: Reçoit callbacks depuis le prestataire de paiement. Vérifier signature HMAC du prestataire.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Ok
+        '400':
+          description: Invalid payload
+
+tags:
+  - name: auth
+  - name: events
+  - name: tickets
+  - name: scan
+  - name: gates
+  - name: webhooks
+
+# Global security default (apply to operations not explicitly marked security: [])
+security:
+  - oauth2: []

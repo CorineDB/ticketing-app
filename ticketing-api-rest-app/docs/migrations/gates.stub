@@ -1,0 +1,19 @@
+return new class extends Migration {
+    public function up(): void
+    {
+        Schema::create('gates', function (Blueprint $table) {
+            $table->uuid('id')->primary()->default(DB::raw('uuid_generate_v4()'));
+            $table->string('name');
+            $table->string('location')->nullable();
+            $table->string('gate_type')->default('entrance'); // entrance, exit, vip, other
+            $table->string('status')->default('active'); // active, pause, inactive
+            $table->timestampsTz();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('gates');
+    }
+};
+

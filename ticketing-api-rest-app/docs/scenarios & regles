@@ -1,0 +1,38 @@
+
+Scénarios / Règles Métiers Clés
+
+Participant achète ticket → reçoit lien paiement → ticket QR généré → peut scanner à la gate.
+
+Agent scanne ticket → valide entrée → marque comme utilisé.
+
+Ticket expiré → scan refuse entrée.
+
+Organisateur peut ajouter/mettre à jour payment_url.
+
+Super Admin peut monitorer toutes les gates et tickets.
+
+Chaque scénario servira directement à écrire les tests unitaires et d’intégration.
+
+
+
+Ticket single-use : une entrée valide -> marque in; re-scan donne already_in. Sortie doit marquer out (si autorisé).
+
+Ticket journée : valide uniquement pendant date_event.start <= now <= date_event.end.
+
+Capacité : si current_in >= capacity alors validation capacity_full.
+
+Multiple scans côté porte hors-ligne : permettre QR signé avec nonces ; synchronisation ultérieure (considérer conflits).
+
+Remboursement : si remboursé, ticket → invalid; si remboursé après entrée, statut refunded_after_use (loguer).
+
+Un ticket ne peut être utilisé que selon le nombre usage_limit.
+
+Les tickets expirent selon validity_to.
+
+Agents ne peuvent modifier aucune donnée des événements ou tickets.
+
+Chaque scan déclenche notification si applicable (via queue).
+
+If capacity ok, increment current_in, update ticket status and used_count, insert ticket_scan_logs row.
+
+Idempotence : if a ticket already in and action is entry, respond 409 already_in with timestamp. Multiple quick re-scans must be handled gracefully.

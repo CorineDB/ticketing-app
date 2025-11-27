@@ -1,0 +1,92 @@
+arfait ! On va créer un tableau complet des scénarios métier pour la plateforme de tickets, avec les cas possibles, règles métiers associées, résultats attendus et solutions alternatives. Cela servira directement de référence pour le développement, QA, et tests automatisés.
+
+1. Création d’un événement
+Cas	Conditions / Entrées	Règles métier	Résultat attendu	Solution alternative / erreur
+Création valide	Organisateur authentifié, titre unique, start < end, capacity ≥ 0	Vérifie unicité titre par organisateur, dates correctes	Événement créé, id généré	Si titre dupliqué → erreur « titre déjà utilisé »
+Création invalide	Capacity < 0	Capacity ≥ 0	Refus	Afficher message : "Capacité invalide"
+Création invalide	start_datetime ≥ end_datetime	Start < End	Refus	Message : "Date de début doit être avant date de fin"
+2. Création / modification type de ticket
+Cas	Conditions	Règles métier	Résultat	Alternative / erreur
+Type valide	Nom unique pour événement, usage_limit ≥ 1	Unicité nom, usage_limit ≥ 1, quota ≥ 0	Type créé	Si nom dupliqué → message d’erreur
+Type invalide	usage_limit ≤ 0	usage_limit ≥ 1	Refus	Message : "Usage limit invalide"
+Quota illimité	quota = null	Autorisé	OK	Aucun
+3. Génération d’un ticket
+Cas	Conditions	Règles métier	Résultat	Alternative / erreur
+Ticket valide	Event actif, type existant, code unique	Code unique, HMAC généré, magic link token généré, status = issued	Ticket créé	Si code dupliqué → regénérer code
+Ticket gratuit	price = 0	Status peut aller directement à valid	OK	-
+Ticket payé en ligne	price > 0, paiement non encore effectué	Status = issued, magic_link disponible	Ticket créé	-
+4. Paiement d’un ticket
+Cas	Conditions	Règles métier	Résultat	Alternative / erreur
+Paiement via lien	URL externe OK	Status passe à paid, paid_at rempli	Ticket payé	Si paiement échoue → status = issued
+Paiement cash par caissier	Ticket généré manuellement	Status = paid, paiement enregistré	OK	Si doublon → refuser
+5. Scan ticket – entrée
+Cas	Conditions	Règles métier	Résultat	Alternative / erreur
+Scan valide entrée	Ticket payé/valid, gate actif, capacité pas dépassée	Vérifie status, incrémente current_in, status → in, log créé	Ticket validé, compteur incrémenté	Si gate inactif → refus, message "Gate inactive"
+Ticket déjà entré	status = in	Ne pas autoriser double entrée	Refus, log : already_in	Affichage : "Ticket déjà utilisé"
+Ticket invalide	status = invalid/refunded	Refus	Refus	Message : "Ticket invalide"
+Capacité dépassée	current_in ≥ event.capacity	Refus	Refus	Message : "Capacité maximale atteinte"
+6. Scan ticket – sortie
+Cas	Conditions	Règles métier	Résultat	Alternative / erreur
+Sortie valide	status = in, gate actif	Décrémente current_in, last_gate_out mis à jour, log créé	OK	-
+Ticket déjà sorti	status ≠ in	Refus	Log : already_out	Message : "Ticket déjà sorti"
+Gate inactif	gate.status ≠ active	Refus	Log : error	Message : "Gate inactive"
+7. Magic link accès ticket
+Cas	Conditions	Règles métier	Résultat	Alternative / erreur
+Lien valide	token correspond ticket	Accès au QR code, status visible	Participant voit son ticket	Token expiré ou invalide → refus
+Lien expiré	token invalide	Refus	Message : "Lien expiré"	-
+8. Règles liées au statut du ticket
+Status	Conditions de transition	Actions	Restrictions
+issued → reserved	Paiement initié	Générer token / QR	-
+reserved → paid	Paiement validé	paid_at = now	-
+paid → in	Scan entrée valide	current_in incrémenté	Ne peut pas être déjà in
+in → out	Scan sortie	current_in décrémenté	Ne peut pas être déjà out
+any → invalid	Expiré ou annulé	log créé	Ne peut plus être scanné
+any → refunded	Remboursement	status = refunded	Ne peut plus être utilisé
+9. Scénarios particuliers / edge cases
+
+Ticket expiré : validity_to dépassée → status = invalid, scan refusé.
+
+Capacité dépassée simultanée : utiliser transaction DB / lock Redis pour atomicité.
+
+Ticket scanné au mauvais gate : autoriser seulement les actions cohérentes (ex: entrée dans exit gate → refus).
+
+Multi-scan simultané : used_count doit être atomique.
+
+Ticket remboursé : magic link inutilisable, QR inutilisable.
+
+Agent tente scan hors gate assigné : refus, log avec détails.
+
+Ticket gratuit : peut passer directement au status valid si nécessaire.
+
+10. Solutions alternatives / recommandations
+Situation	Alternative / solution
+Code ticket dupliqué	Générer nouveau code automatique
+Lien magique expiré	Regénérer token et renvoyer au participant
+Gate inactive	Rediriger vers gate actif le plus proche
+Paiement échoué	Status reste issued, possibilité de réessayer
+Event annulé	Tous les tickets → invalid, notifications participants
+Capacité max atteinte	Refuser entrée, log result = capacity_full
+
+🔐 4. Rate limiting par ticket
+
+Pas plus de 1 scan_in par seconde → anti spam / anti duplication.
+
+🔐 5. Alertes organisateur en temps réel
+
+Exemples :
+
+Trop de tentatives IN sur un ticket “inside”.
+
+Tentative d’entrée à 2 portes opposées dans des temps impossibles.
+
+Nombre anormal de scans OUT alors que l’utilisateur n’est pas IN.
+
+➡️ L’alerte ne bloque pas, mais notifie les superviseurs.
+
+✅ Avec ce tableau, tu as tous les cas possibles, règles métier associées et solutions alternatives, directement exploitable pour :
+
+Développement backend / frontend
+
+Tests unitaires et d’intégration
+
+QA / validation fonctionnelle

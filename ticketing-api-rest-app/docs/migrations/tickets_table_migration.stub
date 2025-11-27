@@ -1,0 +1,39 @@
+return new class extends Migration {
+    public function up(): void
+    {
+        Schema::create('tickets', function (Blueprint $table) {
+            $table->uuid('id')->primary()->default(DB::raw('uuid_generate_v4()'));
+            $table->uuid('event_id');
+            $table->uuid('ticket_type_id')->nullable();
+            $table->string('code')->unique();
+            $table->string('qr_path')->nullable();
+            $table->string('qr_hmac')->nullable();
+            $table->string('magic_link_token')->nullable();
+            $table->string('status')->default('issued'); // issued, reserved, paid, in, out, invalid, refunded
+            $table->string('buyer_name')->nullable();
+            $table->string('buyer_email')->nullable();
+            $table->string('buyer_phone')->nullable();
+            $table->timestampTz('issued_at')->default(DB::raw('NOW()'));
+            $table->timestampTz('paid_at')->nullable();
+            $table->integer('used_count')->default(0);
+            $table->timestampTz('last_used_at')->nullable();
+            $table->uuid('gate_in')->nullable();
+            $table->uuid('last_gate_out')->nullable();
+            $table->jsonb('metadata')->default('{}');
+            $table->timestampsTz();
+
+            $table->foreign('event_id')->references('id')->on('events')->onDelete('cascade');
+            $table->foreign('ticket_type_id')->references('id')->on('ticket_types')->nullOnDelete();
+            $table->foreign('gate_in')->references('id')->on('gates');
+            $table->foreign('last_gate_out')->references('id')->on('gates');
+
+            $table->index('event_id');
+            $table->index('code');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('tickets');
+    }
+};
