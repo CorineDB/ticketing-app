@@ -34,7 +34,7 @@ export function useTickets() {
     }
   }
 
-  const fetchTicket = async (id: number) => {
+  const fetchTicket = async (id: string) => {
     loading.value = true
     error.value = null
     try {
@@ -76,7 +76,7 @@ export function useTickets() {
     }
   }
 
-  const updateTicket = async (id: number, data: UpdateTicketData) => {
+  const updateTicket = async (id: string, data: UpdateTicketData) => {
     loading.value = true
     error.value = null
     try {
@@ -98,7 +98,7 @@ export function useTickets() {
     }
   }
 
-  const cancelTicket = async (id: number, reason?: string) => {
+  const cancelTicket = async (id: string, reason?: string) => {
     loading.value = true
     error.value = null
     try {
@@ -120,7 +120,7 @@ export function useTickets() {
     }
   }
 
-  const refundTicket = async (id: number, reason?: string) => {
+  const refundTicket = async (id: string, reason?: string) => {
     loading.value = true
     error.value = null
     try {

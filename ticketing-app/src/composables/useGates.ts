@@ -35,7 +35,7 @@ export function useGates() {
     }
   }
 
-  const fetchGate = async (id: number) => {
+  const fetchGate = async (id: string) => {
     loading.value = true
     error.value = null
     try {
@@ -64,7 +64,7 @@ export function useGates() {
     }
   }
 
-  const updateGate = async (id: number, data: UpdateGateData) => {
+  const updateGate = async (id: string, data: UpdateGateData) => {
     loading.value = true
     error.value = null
     try {
@@ -86,7 +86,7 @@ export function useGates() {
     }
   }
 
-  const deleteGate = async (id: number) => {
+  const deleteGate = async (id: string) => {
     loading.value = true
     error.value = null
     try {
@@ -101,7 +101,7 @@ export function useGates() {
     }
   }
 
-  const updateGateStatus = async (id: number, status: 'active' | 'pause' | 'inactive') => {
+  const updateGateStatus = async (id: string, status: 'active' | 'pause' | 'inactive') => {
     loading.value = true
     error.value = null
     try {

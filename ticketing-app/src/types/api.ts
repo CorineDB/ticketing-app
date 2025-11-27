@@ -8,7 +8,7 @@
 export type UserType = 'super-admin' | 'organizer' | 'agent-de-controle' | 'comptable' | 'participant'
 
 export interface User {
-  id: number
+  id: string
   name: string
   email: string
   phone?: string
@@ -24,7 +24,7 @@ export interface User {
 }
 
 export interface Role {
-  id: number
+  id: string
   name: string
   slug: string
   description?: string
@@ -34,7 +34,7 @@ export interface Role {
 }
 
 export interface Permission {
-  id: number
+  id: string
   name: string
   slug: string
   description?: string
@@ -66,7 +66,7 @@ export interface AuthResponse {
 // ==================== ORGANIZATION TYPES ====================
 
 export interface Organization {
-  id: number
+  id: string
   name: string
   slug: string
   logo?: string
@@ -76,7 +76,7 @@ export interface Organization {
   address?: string
   website?: string
   status: 'active' | 'suspended' | 'inactive'
-  owner_id: number
+  owner_id: string
   owner?: User
   events_count?: number
   users_count?: number
@@ -107,8 +107,8 @@ export interface OrganizationFilters {
 export type EventStatus = 'draft' | 'published' | 'ongoing' | 'completed' | 'cancelled'
 
 export interface Event {
-  id: number
-  organization_id: number
+  id: string
+  organization_id: string
   organization?: Organization
   name: string
   slug: string
@@ -177,8 +177,8 @@ export interface EventFilters {
 // ==================== TICKET TYPE TYPES ====================
 
 export interface TicketType {
-  id: number
-  event_id: number
+  id: string
+  event_id: string
   event?: Event
   name: string
   description?: string
@@ -199,7 +199,7 @@ export interface TicketType {
 }
 
 export interface CreateTicketTypeData {
-  event_id: number
+  event_id: string
   name: string
   description?: string
   price: number
@@ -223,8 +223,8 @@ export type GateType = 'entrance' | 'exit' | 'vip' | 'other'
 export type GateStatus = 'active' | 'pause' | 'inactive'
 
 export interface Gate {
-  id: number
-  event_id: number
+  id: string
+  event_id: string
   event?: Event
   name: string
   gate_type: GateType
@@ -237,7 +237,7 @@ export interface Gate {
 }
 
 export interface CreateGateData {
-  event_id: number
+  event_id: string
   name: string
   gate_type: GateType
   location?: string
@@ -261,10 +261,10 @@ export type PaymentMethod = 'online' | 'cash' | 'mobile_money' | 'bank_transfer'
 export type PaymentProvider = 'paydunya' | 'cinetpay' | 'mtn_momo' | 'manual'
 
 export interface Ticket {
-  id: number
-  ticket_type_id: number
+  id: string
+  ticket_type_id: string
   ticket_type?: TicketType
-  event_id: number
+  event_id: string
   event?: Event
   order_id?: number
   order?: Order
@@ -297,7 +297,7 @@ export interface Ticket {
 }
 
 export interface CreateTicketData {
-  ticket_type_id: number
+  ticket_type_id: string
   holder_name: string
   holder_email: string
   holder_phone?: string
@@ -330,9 +330,9 @@ export interface TicketFilters {
 export type OrderStatus = 'pending' | 'completed' | 'failed' | 'cancelled' | 'refunded'
 
 export interface Order {
-  id: number
+  id: string
   order_number: string
-  event_id: number
+  event_id: string
   event?: Event
   customer_name: string
   customer_email: string
@@ -352,12 +352,12 @@ export interface Order {
 }
 
 export interface CreateOrderData {
-  event_id: number
+  event_id: string
   customer_name: string
   customer_email: string
   customer_phone?: string
   ticket_items: {
-    ticket_type_id: number
+    ticket_type_id: string
     quantity: number
   }[]
   payment_method: PaymentMethod
@@ -377,14 +377,14 @@ export type ScanType = 'entry' | 'exit'
 export type ScanResult = 'valid' | 'invalid' | 'already_used' | 'expired' | 'wrong_event' | 'capacity_full'
 
 export interface Scan {
-  id: number
-  ticket_id: number
+  id: string
+  ticket_id: string
   ticket?: Ticket
-  event_id: number
+  event_id: string
   event?: Event
   gate_id?: number // Gate where scan occurred
   gate?: Gate
-  scanner_id: number
+  scanner_id: string
   scanner?: User
   scan_type: ScanType
   result: ScanResult
@@ -402,8 +402,8 @@ export interface Scan {
  * Validates QR code HMAC and returns session token
  */
 export interface ScanRequestData {
-  ticket_id: number
-  event_id: number
+  ticket_id: string
+  event_id: string
   qr_hmac: string // HMAC signature from QR code
   gate_id?: number
   scan_type: ScanType
@@ -473,7 +473,7 @@ export interface ScanFilters {
 // ==================== DASHBOARD & ANALYTICS TYPES ====================
 
 export interface EventStatistics {
-  event_id: number
+  event_id: string
   total_tickets: number
   tickets_sold: number
   tickets_pending: number
@@ -538,7 +538,7 @@ export interface ScannerDashboard {
 
 export interface PaymentCallback {
   transaction_id: string
-  order_id: number
+  order_id: string
   status: 'success' | 'failed' | 'cancelled'
   amount: number
   currency: string
@@ -549,7 +549,7 @@ export interface PaymentCallback {
 export interface PaymentInitResponse {
   payment_url: string
   transaction_id: string
-  order_id: number
+  order_id: string
 }
 
 // ==================== EVENT COUNTER TYPES ====================
@@ -559,7 +559,7 @@ export interface PaymentInitResponse {
  * Uses Redis locks for atomicity
  */
 export interface EventCounter {
-  event_id: number
+  event_id: string
   current_in: number // Current people inside venue
   total_entries: number // Total entry scans
   total_exits: number // Total exit scans
@@ -685,7 +685,7 @@ export interface BaseFilters {
 // ==================== REPORT TYPES ====================
 
 export interface SalesReport {
-  event_id: number
+  event_id: string
   event_name: string
   start_date: string
   end_date: string
@@ -704,7 +704,7 @@ export interface SalesReport {
 }
 
 export interface AttendanceReport {
-  event_id: number
+  event_id: string
   event_name: string
   date: string
   total_capacity: number

@@ -20,7 +20,7 @@ class TicketService {
   /**
    * Get single ticket by ID
    */
-  async getById(id: number): Promise<Ticket> {
+  async getById(id: string): Promise<Ticket> {
     const response = await api.get<{ data: Ticket }>(`/tickets/${id}`)
     return response.data.data
   }
@@ -45,7 +45,7 @@ class TicketService {
   /**
    * Update ticket information
    */
-  async update(id: number, data: UpdateTicketData): Promise<Ticket> {
+  async update(id: string, data: UpdateTicketData): Promise<Ticket> {
     const response = await api.put<{ data: Ticket }>(`/tickets/${id}`, data)
     return response.data.data
   }
@@ -53,7 +53,7 @@ class TicketService {
   /**
    * Cancel a ticket
    */
-  async cancel(id: number, reason?: string): Promise<Ticket> {
+  async cancel(id: string, reason?: string): Promise<Ticket> {
     const response = await api.post<{ data: Ticket }>(`/tickets/${id}/cancel`, { reason })
     return response.data.data
   }
@@ -61,7 +61,7 @@ class TicketService {
   /**
    * Refund a ticket
    */
-  async refund(id: number, reason?: string): Promise<Ticket> {
+  async refund(id: string, reason?: string): Promise<Ticket> {
     const response = await api.post<{ data: Ticket }>(`/tickets/${id}/refund`, { reason })
     return response.data.data
   }
@@ -69,7 +69,7 @@ class TicketService {
   /**
    * Mark ticket as paid (for cash payments)
    */
-  async markAsPaid(id: number, paymentReference: string): Promise<Ticket> {
+  async markAsPaid(id: string, paymentReference: string): Promise<Ticket> {
     const response = await api.post<{ data: Ticket }>(`/tickets/${id}/mark-paid`, {
       payment_reference: paymentReference
     })
@@ -79,7 +79,7 @@ class TicketService {
   /**
    * Download ticket as PDF
    */
-  async downloadPDF(id: number): Promise<Blob> {
+  async downloadPDF(id: string): Promise<Blob> {
     const response = await api.get(`/tickets/${id}/download`, {
       responseType: 'blob'
     })
@@ -89,14 +89,14 @@ class TicketService {
   /**
    * Send ticket via email
    */
-  async sendEmail(id: number): Promise<void> {
+  async sendEmail(id: string): Promise<void> {
     await api.post(`/tickets/${id}/send-email`)
   }
 
   /**
    * Send ticket via SMS
    */
-  async sendSMS(id: number): Promise<void> {
+  async sendSMS(id: string): Promise<void> {
     await api.post(`/tickets/${id}/send-sms`)
   }
 

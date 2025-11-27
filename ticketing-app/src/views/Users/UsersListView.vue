@@ -329,7 +329,7 @@ async function handleUserSubmit(data: any) {
   await fetchUsers(filters.value)
 }
 
-async function handleRoleAssign(data: { role_id: number }) {
+async function handleRoleAssign(data: { role_id: string }) {
   if (selectedUser.value) {
     await updateUser(selectedUser.value.id, data)
     selectedUser.value = null

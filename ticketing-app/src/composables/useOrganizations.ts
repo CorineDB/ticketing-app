@@ -34,7 +34,7 @@ export function useOrganizations() {
     }
   }
 
-  const fetchOrganization = async (id: number) => {
+  const fetchOrganization = async (id: string) => {
     loading.value = true
     error.value = null
     try {
@@ -76,7 +76,7 @@ export function useOrganizations() {
     }
   }
 
-  const updateOrganization = async (id: number, data: UpdateOrganizationData) => {
+  const updateOrganization = async (id: string, data: UpdateOrganizationData) => {
     loading.value = true
     error.value = null
     try {
@@ -98,7 +98,7 @@ export function useOrganizations() {
     }
   }
 
-  const deleteOrganization = async (id: number) => {
+  const deleteOrganization = async (id: string) => {
     loading.value = true
     error.value = null
     try {
@@ -113,7 +113,7 @@ export function useOrganizations() {
     }
   }
 
-  const suspendOrganization = async (id: number, reason?: string) => {
+  const suspendOrganization = async (id: string, reason?: string) => {
     loading.value = true
     error.value = null
     try {
@@ -135,7 +135,7 @@ export function useOrganizations() {
     }
   }
 
-  const activateOrganization = async (id: number) => {
+  const activateOrganization = async (id: string) => {
     loading.value = true
     error.value = null
     try {

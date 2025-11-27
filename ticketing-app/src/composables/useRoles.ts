@@ -22,7 +22,7 @@ export function useRoles() {
     }
   }
 
-  const fetchRole = async (id: number) => {
+  const fetchRole = async (id: string) => {
     loading.value = true
     error.value = null
     try {
@@ -53,7 +53,7 @@ export function useRoles() {
     }
   }
 
-  const updateRole = async (id: number, data: Partial<Role>) => {
+  const updateRole = async (id: string, data: Partial<Role>) => {
     loading.value = true
     error.value = null
     try {
@@ -76,7 +76,7 @@ export function useRoles() {
     }
   }
 
-  const deleteRole = async (id: number) => {
+  const deleteRole = async (id: string) => {
     loading.value = true
     error.value = null
     try {

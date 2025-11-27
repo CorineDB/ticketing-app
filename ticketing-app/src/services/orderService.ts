@@ -20,7 +20,7 @@ class OrderService {
   /**
    * Get single order by ID
    */
-  async getById(id: number): Promise<Order> {
+  async getById(id: string): Promise<Order> {
     const response = await api.get<{ data: Order }>(`/orders/${id}`)
     return response.data.data
   }
@@ -65,7 +65,7 @@ class OrderService {
   /**
    * Cancel an order
    */
-  async cancel(id: number, reason?: string): Promise<Order> {
+  async cancel(id: string, reason?: string): Promise<Order> {
     const response = await api.post<{ data: Order }>(`/orders/${id}/cancel`, { reason })
     return response.data.data
   }
@@ -73,7 +73,7 @@ class OrderService {
   /**
    * Refund an order
    */
-  async refund(id: number, reason?: string): Promise<Order> {
+  async refund(id: string, reason?: string): Promise<Order> {
     const response = await api.post<{ data: Order }>(`/orders/${id}/refund`, { reason })
     return response.data.data
   }
@@ -81,7 +81,7 @@ class OrderService {
   /**
    * Download order receipt
    */
-  async downloadReceipt(id: number): Promise<Blob> {
+  async downloadReceipt(id: string): Promise<Blob> {
     const response = await api.get(`/orders/${id}/receipt`, {
       responseType: 'blob'
     })
@@ -91,7 +91,7 @@ class OrderService {
   /**
    * Resend order confirmation email
    */
-  async resendConfirmation(id: number): Promise<void> {
+  async resendConfirmation(id: string): Promise<void> {
     await api.post(`/orders/${id}/resend-confirmation`)
   }
 

@@ -33,7 +33,7 @@ class UserService {
   /**
    * Get single user by ID
    */
-  async getById(id: number): Promise<User> {
+  async getById(id: string): Promise<User> {
     const response = await api.get<{ data: User }>(`/users/${id}`)
     return response.data.data
   }
@@ -49,7 +49,7 @@ class UserService {
   /**
    * Update an existing user
    */
-  async update(id: number, data: UpdateUserData): Promise<User> {
+  async update(id: string, data: UpdateUserData): Promise<User> {
     const response = await api.put<{ data: User }>(`/users/${id}`, data)
     return response.data.data
   }
@@ -57,7 +57,7 @@ class UserService {
   /**
    * Delete a user
    */
-  async delete(id: number): Promise<void> {
+  async delete(id: string): Promise<void> {
     await api.delete(`/users/${id}`)
   }
 
