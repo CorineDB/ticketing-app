@@ -6,8 +6,25 @@ use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\ScanController;
 use App\Http\Controllers\Api\TicketController;
 use App\Http\Controllers\Api\TicketTypeController;
+use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\WebhookController;
 use Illuminate\Support\Facades\Route;
+
+// Auth routes
+Route::prefix('auths')->group(function () {
+    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/forget-password', [AuthController::class, 'forgetPassword']);
+    Route::post('/reset-password', [AuthController::class, 'resetPassword']);
+    Route::post('/otp/request', [AuthController::class, 'requestOtp']);
+    Route::post('/otp/verify', [AuthController::class, 'verifyOtp']);
+
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('/logout', [AuthController::class, 'logout']);
+        Route::get('/me', [AuthController::class, 'me']);
+        Route::post('/change-password', [AuthController::class, 'changePassword']);
+    });
+});
 
 // Public routes (no authentication required)
 Route::prefix('public')->group(function () {
@@ -38,6 +55,8 @@ Route::post('/webhooks/fedapay', [WebhookController::class, 'fedapayWebhook']);
 Route::middleware('auth:sanctum')->group(function () {
     // Roles
     Route::apiResource('roles', RoleController::class);
+    
+    Route::apiResource('users', UserController::class);
 
     // Events
     Route::apiResource('events', EventController::class);

@@ -1,0 +1,578 @@
+openapi: 3.1.0
+info:
+  title: Event Ticketing Platform API
+  version: 1.0.0
+  description: API complète pour gestion d'événements, tickets, scans et contrôle d'accès
+
+servers:
+  - url: https://api.ticketing.local
+
+components:
+  securitySchemes:
+    oauth2:
+      type: oauth2
+      flows:
+        password:
+          tokenUrl: /oauth/token
+          scopes: {}
+
+  parameters:
+    uuidParam:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  responses:
+    Unauthorized:
+      description: Non autorisé
+    BadRequest:
+      description: Requête invalide
+    NotFound:
+      description: Ressource non trouvée
+    Conflict:
+      description: Conflit / violation de contrainte
+    InternalError:
+      description: Erreur interne serveur
+
+  schemas:
+    Role:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        slug: { type: string }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    User:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        email: { type: string, format: email }
+        type:
+          type: string
+          enum: [superadmin, organizer, agent-de-controle, comptable]
+        role_id: { type: string, format: uuid }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    Gate:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        location: { type: string }
+        gate_type: { type: string, enum: [entrance, exit, vip, other] }
+        status: { type: string, enum: [active, pause, inactive] }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    TicketType:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        event_id: { type: string, format: uuid }
+        name: { type: string }
+        price: { type: number, default: 0.0 }
+        usage_limit: { type: integer, default: 1 }
+        quota: { type: integer, nullable: true }
+        validity_from: { type: string, format: date-time, nullable: true }
+        validity_to: { type: string, format: date-time, nullable: true }
+        created_at: { type: string, format: date-time }
+
+    Ticket:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        event_id: { type: string, format: uuid }
+        ticket_type_id: { type: string, format: uuid, nullable: true }
+        code: { type: string }
+        qr_path: { type: string, nullable: true }
+        qr_hmac: { type: string }
+        magic_link_token: { type: string }
+        status:
+          type: string
+          default: issued
+          enum: [issued, reserved, paid, in, out, invalid, refunded]
+        buyer_name: { type: string }
+        buyer_email: { type: string }
+        buyer_phone: { type: string }
+        issued_at: { type: string, format: date-time }
+        paid_at: { type: string, format: date-time, nullable: true }
+        used_count: { type: integer, default: 0 }
+        last_used_at: { type: string, format: date-time, nullable: true }
+        gate_in: { type: string, format: uuid, nullable: true }
+        last_gate_out: { type: string, format: uuid, nullable: true }
+        metadata: { type: object, additionalProperties: true, default: {} }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    TicketScanLog:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        ticket_id: { type: string, format: uuid }
+        agent_id: { type: string, format: uuid, nullable: true }
+        gate_id: { type: string, format: uuid, nullable: true }
+        scan_type: { type: string, enum: [entry, exit] }
+        scan_time: { type: string, format: date-time }
+        result: { type: string, enum: [ok, already_in, already_out, invalid, expired, capacity_full] }
+        details: { type: object, default: {} }
+        metadata: { type: object, default: {} }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    Event:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        organisateur_id: { type: string, format: uuid }
+        title: { type: string }
+        description: { type: string, nullable: true }
+        image_url: { type: string, nullable: true }
+        start_datetime: { type: string, format: date-time }
+        end_datetime: { type: string, format: date-time }
+        location: { type: string }
+        capacity: { type: integer, default: 0 }
+        timezone: { type: string, default: UTC }
+        dress_code: { type: string, nullable: true }
+        ticket_types:
+          type: array
+          items:
+            $ref: "#/components/schemas/TicketType"
+        created_by: { type: string, format: uuid }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+security:
+  - oauth2: []
+
+paths:
+
+  # ------------------------
+  # Users
+  # ------------------------
+  /users:
+    get:
+      summary: Liste des utilisateurs
+      security: [{ oauth2: [] }]
+      responses:
+        "200": { description: OK, content: { "application/json": { schema: { type: array, items: { $ref: "#/components/schemas/User" } } } } }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+    post:
+      summary: Créer un utilisateur
+      security: [{ oauth2: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+      responses:
+        "201": { description: Utilisateur créé, content: { "application/json": { schema: { $ref: "#/components/schemas/User" } } } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "409": { $ref: "#/components/responses/Conflict" }
+
+  /users/{id}:
+    get:
+      summary: Détails utilisateur
+      parameters:
+        - $ref: "#/components/parameters/uuidParam"
+      security: [{ oauth2: [] }]
+      responses:
+        "200": { description: OK, content: { "application/json": { schema: { $ref: "#/components/schemas/User" } } } }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+    put:
+      summary: Mettre à jour utilisateur
+      parameters:
+        - $ref: "#/components/parameters/uuidParam"
+      security: [{ oauth2: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+      responses:
+        "200": { description: OK, content: { "application/json": { schema: { $ref: "#/components/schemas/User" } } } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+    delete:
+      summary: Supprimer utilisateur
+      parameters:
+        - $ref: "#/components/parameters/uuidParam"
+      security: [{ oauth2: [] }]
+      responses:
+        "204": { description: Utilisateur supprimé }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  # ------------------------
+  # Roles
+  # ------------------------
+  /roles:
+    get:
+      summary: Liste des rôles
+      security: [{ oauth2: [] }]
+      responses:
+        "200": { description: OK, content: { "application/json": { schema: { type: array, items: { $ref: "#/components/schemas/Role" } } } } }
+
+    post:
+      summary: Créer un rôle
+      security: [{ oauth2: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Role"
+      responses:
+        "201": { description: OK, content: { "application/json": { schema: { $ref: "#/components/schemas/Role" } } } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+
+  # ------------------------
+  # Events (incl. création ticket types)
+  # ------------------------
+  /events:
+    get:
+      summary: Liste des événements
+      security: [{ oauth2: [] }]
+      responses:
+        "200": { description: OK, content: { "application/json": { schema: { type: array, items: { $ref: "#/components/schemas/Event" } } } } }
+
+    post:
+      summary: Créer un événement avec ticket types
+      security: [{ oauth2: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Event"
+      responses:
+        "201": { description: Événement créé, content: { "application/json": { schema: { $ref: "#/components/schemas/Event" } } } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "409": { $ref: "#/components/responses/Conflict" }
+
+  /events/{id}:
+    get:
+      summary: Détails d’un événement
+      parameters:
+        - $ref: "#/components/parameters/uuidParam"
+      security: [{ oauth2: [] }]
+      responses:
+        "200": { description: OK, content: { "application/json": { schema: { $ref: "#/components/schemas/Event" } } } }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+    put:
+      summary: Modifier un événement
+      parameters:
+        - $ref: "#/components/parameters/uuidParam"
+      security: [{ oauth2: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Event"
+      responses:
+        "200": { description: OK, content: { "application/json": { schema: { $ref: "#/components/schemas/Event" } } } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+    delete:
+      summary: Supprimer un événement
+      parameters:
+        - $ref: "#/components/parameters/uuidParam"
+      security: [{ oauth2: [] }]
+      responses:
+        "204": { description: Événement supprimé }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  # ------------------------
+  # Ticket Types
+  # ------------------------
+  /events/{id}/ticket_types:
+    get:
+      summary: Liste des types de tickets pour un événement
+      parameters:
+        - $ref: "#/components/parameters/uuidParam"
+      security: [{ oauth2: [] }]
+      responses:
+        "200": { description: OK, content: { "application/json": { schema: { type: array, items: { $ref: "#/components/schemas/TicketType" } } } } }
+
+    post:
+      summary: Créer un type de ticket pour un événement existant
+      parameters:
+        - $ref: "#/components/parameters/uuidParam"
+      security: [{ oauth2: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TicketType"
+      responses:
+        "201": { description: OK, content: { "application/json": { schema: { $ref: "#/components/schemas/TicketType" } } } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "409": { $ref: "#/components/responses/Conflict" }
+
+  /ticket_types/{id}:
+    put:
+      summary: Modifier un type de ticket
+      parameters:
+        - $ref: "#/components/parameters/uuidParam"
+      security: [{ oauth2: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TicketType"
+      responses:
+        "200": { description: OK, content: { "application/json": { schema: { $ref: "#/components/schemas/TicketType" } } } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+    delete:
+      summary: Supprimer un type de ticket
+      parameters:
+        - $ref: "#/components/parameters/uuidParam"
+      security: [{ oauth2: [] }]
+      responses:
+        "204": { description: Type de ticket supprimé }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+# ------------------------
+# Tickets
+# ------------------------
+  /tickets:
+    get:
+      summary: Liste des tickets (filtrable)
+      security: [{ oauth2: [] }]
+      responses:
+        "200": { description: OK, content: { "application/json": { schema: { type: array, items: { $ref: "#/components/schemas/Ticket" } } } } }
+
+    post:
+      summary: Créer un ticket manuellement
+      security: [{ oauth2: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Ticket"
+      responses:
+        "201": { description: Ticket créé, content: { "application/json": { schema: { $ref: "#/components/schemas/Ticket" } } } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /tickets/{ticket_id}:
+    get:
+      summary: Détails d’un ticket
+      parameters:
+        - name: ticket_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: token
+          in: query
+          required: false
+          schema: { type: string }
+      responses:
+        "200": { description: OK, content: { "application/json": { schema: { $ref: "#/components/schemas/Ticket" } } } }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /tickets/{ticket_id}/scan:
+    post:
+      summary: Scanner un ticket
+      security: [{ oauth2: [] }]
+      parameters:
+        - name: ticket_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                agent_id: { type: string, format: uuid }
+                gate_id: { type: string, format: uuid }
+                scan_type: { type: string, enum: [entry, exit] }
+      responses:
+        "200": { description: Ticket scanné, content: { "application/json": { schema: { $ref: "#/components/schemas/TicketScanLog" } } } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+
+# ------------------------
+# Gates
+# ------------------------
+  /gates:
+    get:
+      summary: Liste des portes
+      security: [{ oauth2: [] }]
+      responses:
+        "200": { description: OK, content: { "application/json": { schema: { type: array, items: { $ref: "#/components/schemas/Gate" } } } } }
+
+    post:
+      summary: Créer une porte
+      security: [{ oauth2: [] }]
+      requestBody:
+        required: true
+        content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Gate"
+      responses:
+        "201": { description: Porte créée, content: { "application/json": { schema: { $ref: "#/components/schemas/Gate" } } } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "409": { $ref: "#/components/responses/Conflict" }
+
+  /gates/{id}:
+    get:
+      summary: Détails d’une porte
+      parameters:
+        - $ref: "#/components/parameters/uuidParam"
+      security: [{ oauth2: [] }]
+      responses:
+        "200": { description: OK, content: { "application/json": { schema: { $ref: "#/components/schemas/Gate" } } } }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+    put:
+      summary: Modifier une porte
+      parameters:
+        - $ref: "#/components/parameters/uuidParam"
+      security: [{ oauth2: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Gate"
+      responses:
+        "200": { description: OK, content: { "application/json": { schema: { $ref: "#/components/schemas/Gate" } } } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+    delete:
+      summary: Supprimer une porte
+      parameters:
+        - $ref: "#/components/parameters/uuidParam"
+      security: [{ oauth2: [] }]
+      responses:
+        "204": { description: Porte supprimée }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  # ------------------------
+  # Ticket Scan Logs / Audit
+  # ------------------------
+  /ticket_scan_logs:
+    get:
+      summary: Liste des scans (audit)
+      security: [{ oauth2: [] }]
+      responses:
+        "200": { description: OK, content: { "application/json": { schema: { type: array, items: { $ref: "#/components/schemas/TicketScanLog" } } } } }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /ticket_scan_logs/{id}:
+    get:
+      summary: Détail d’un scan
+      parameters:
+        - $ref: "#/components/parameters/uuidParam"
+      security: [{ oauth2: [] }]
+      responses:
+        "200": { description: OK, content: { "application/json": { schema: { $ref: "#/components/schemas/TicketScanLog" } } } }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  # ------------------------
+  # Endpoints publics pour participants (ticket viewing & magic link)
+  # ------------------------
+  /tickets/public/{ticket_id}:
+    get:
+      summary: Consulter un ticket via lien magique
+      parameters:
+        - name: ticket_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: token
+          in: query
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: Ticket consulté, content: { "application/json": { schema: { $ref: "#/components/schemas/Ticket" } } } }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "403": { description: Token invalide ou expiré }
+
+  /events/public:
+    get:
+      summary: Liste des événements publics
+      responses:
+        "200": { description: OK, content: { "application/json": { schema: { type: array, items: { $ref: "#/components/schemas/Event" } } } } }
+
+  /events/public/{id}:
+    get:
+      summary: Détail événement public
+      parameters:
+        - $ref: "#/components/parameters/uuidParam"
+      responses:
+        "200": { description: OK, content: { "application/json": { schema: { $ref: "#/components/schemas/Event" } } } }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /events/public/{id}/ticket_types:
+    get:
+      summary: Types de tickets disponibles pour un événement public
+      parameters:
+        - $ref: "#/components/parameters/uuidParam"
+      responses:
+        "200": { description: OK, content: { "application/json": { schema: { type: array, items: { $ref: "#/components/schemas/TicketType" } } } } }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+# ------------------------
+# Global error handling
+# ------------------------
+  /errors:
+    get:
+      summary: Liste des erreurs API
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    code: { type: string }
+                    message: { type: string }
+

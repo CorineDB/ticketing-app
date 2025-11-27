@@ -1,0 +1,23 @@
+return new class extends Migration {
+    public function up(): void
+    {
+        Schema::create('users', function (Blueprint $table) {
+            $table->uuid('id')->primary()->default(DB::raw('uuid_generate_v4()'));
+            $table->string('name');
+            $table->string('email')->unique();
+            $table->string('password_hash')->nullable();
+            $table->string('type')->default('organizer'); // 'superadmin','organizer','agent','caissier'
+            $table->uuid('role_id');
+            $table->timestampsTz();
+
+            $table->foreign('role_id')->references('id')->on('roles')->onDelete('cascade');
+            $table->index('email');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('users');
+    }
+};
+
