@@ -72,6 +72,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/organizer', [DashboardController::class, 'organizer']);
         Route::get('/super-admin', [DashboardController::class, 'superAdmin']);
         Route::get('/scanner', [DashboardController::class, 'scanner']);
+        Route::get('/participant', [DashboardController::class, 'participant']);
+        Route::get('/cashier', [DashboardController::class, 'cashier']);
     });
 
     // Roles
