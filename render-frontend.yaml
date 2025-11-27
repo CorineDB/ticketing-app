@@ -1,0 +1,28 @@
+services:
+  # Frontend Vue.js - Static Site (100% Gratuit Illimité)
+  - type: web
+    name: ticketing-frontend
+    env: static
+    buildCommand: cd ticketing-app && npm ci --include=dev && npm run build
+    staticPublishPath: ticketing-app/dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        sync: false
+      - key: VITE_CINETPAY_API_KEY
+        sync: false
+      - key: VITE_CINETPAY_SITE_ID
+        sync: false
+      - key: VITE_PAYDUNYA_API_KEY
+        sync: false
+      - key: VITE_MTN_MOMO_API_KEY
+        sync: false
+      - key: VITE_ENABLE_MULTI_ORG
+        value: true
+      - key: VITE_ENABLE_CASH_PAYMENTS
+        value: true
+      - key: VITE_BETA_FEATURES
+        value: false
