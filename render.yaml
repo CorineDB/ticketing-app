@@ -1,0 +1,190 @@
+services:
+  # PostgreSQL Database
+  - type: pserv
+    name: ticketing-db
+    env: docker
+    plan: starter
+    region: oregon
+
+  # Backend API (Laravel)
+  - type: web
+    name: ticketing-api
+    env: docker
+    region: oregon
+    plan: starter
+    buildCommand: "./deploy.sh"
+    startCommand: "php artisan serve --host=0.0.0.0 --port=$PORT"
+    healthCheckPath: /api/health
+    envVars:
+      - key: APP_NAME
+        value: Ticketing API
+      - key: APP_ENV
+        value: production
+      - key: APP_KEY
+        generateValue: true
+      - key: APP_DEBUG
+        value: false
+      - key: APP_URL
+        fromService:
+          type: web
+          name: ticketing-api
+          property: url
+      - key: LOG_CHANNEL
+        value: errorlog
+      - key: LOG_LEVEL
+        value: error
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_HOST
+        fromDatabase:
+          name: ticketing-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: ticketing-db
+          property: port
+      - key: DB_DATABASE
+        fromDatabase:
+          name: ticketing-db
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: ticketing-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: ticketing-db
+          property: password
+      - key: SESSION_DRIVER
+        value: database
+      - key: CACHE_STORE
+        value: database
+      - key: QUEUE_CONNECTION
+        value: database
+      - key: MAIL_MAILER
+        value: smtp
+      - key: MAIL_HOST
+        sync: false
+      - key: MAIL_PORT
+        value: 587
+      - key: MAIL_USERNAME
+        sync: false
+      - key: MAIL_PASSWORD
+        sync: false
+      - key: MAIL_FROM_ADDRESS
+        value: noreply@ticketing-app.com
+      - key: FEDAPAY_PUBLIC_KEY
+        sync: false
+      - key: FEDAPAY_SECRET_KEY
+        sync: false
+      - key: FEDAPAY_WEBHOOK_SECRET
+        sync: false
+      - key: FEDAPAY_ENVIRONMENT
+        value: sandbox
+      - key: FEDAPAY_CURRENCY
+        value: XOF
+    rootDir: ticketing-api-rest-app
+
+  # Queue Worker (Background Jobs)
+  - type: worker
+    name: ticketing-queue
+    env: docker
+    region: oregon
+    plan: starter
+    buildCommand: "./deploy.sh"
+    startCommand: "php artisan queue:work --tries=3 --timeout=90"
+    envVars:
+      - key: APP_NAME
+        value: Ticketing Queue Worker
+      - key: APP_ENV
+        value: production
+      - key: APP_KEY
+        generateValue: true
+      - key: APP_DEBUG
+        value: false
+      - key: APP_URL
+        fromService:
+          type: web
+          name: ticketing-api
+          property: url
+      - key: LOG_CHANNEL
+        value: errorlog
+      - key: LOG_LEVEL
+        value: error
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_HOST
+        fromDatabase:
+          name: ticketing-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: ticketing-db
+          property: port
+      - key: DB_DATABASE
+        fromDatabase:
+          name: ticketing-db
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: ticketing-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: ticketing-db
+          property: password
+      - key: QUEUE_CONNECTION
+        value: database
+      - key: FEDAPAY_PUBLIC_KEY
+        sync: false
+      - key: FEDAPAY_SECRET_KEY
+        sync: false
+      - key: FEDAPAY_WEBHOOK_SECRET
+        sync: false
+      - key: FEDAPAY_ENVIRONMENT
+        value: sandbox
+      - key: FEDAPAY_CURRENCY
+        value: XOF
+    rootDir: ticketing-api-rest-app
+
+  # Frontend (Vue 3 Static Site)
+  - type: web
+    name: ticketing-frontend
+    env: static
+    region: oregon
+    buildCommand: "cd ticketing-app && npm install && npm run build"
+    staticPublishPath: ticketing-app/dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: ticketing-api
+          property: url
+          envVarKey: VITE_API_URL
+      - key: VITE_PAYDUNYA_API_KEY
+        sync: false
+      - key: VITE_CINETPAY_API_KEY
+        sync: false
+      - key: VITE_CINETPAY_SITE_ID
+        sync: false
+      - key: VITE_MTN_MOMO_API_KEY
+        sync: false
+      - key: VITE_ENABLE_MULTI_ORG
+        value: true
+      - key: VITE_ENABLE_CASH_PAYMENTS
+        value: true
+      - key: VITE_BETA_FEATURES
+        value: false
+      - key: NODE_ENV
+        value: production
+
+databases:
+  - name: ticketing-db
+    databaseName: ticketing
+    user: ticketing
+    plan: starter
+    region: oregon
