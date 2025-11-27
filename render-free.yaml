@@ -1,0 +1,186 @@
+services:
+  # Backend API (Laravel) - FREE TIER
+  - type: web
+    name: ticketing-api-free
+    runtime: docker
+    region: oregon
+    plan: free  # Plan gratuit
+    healthCheckPath: /api/health
+    dockerfilePath: ./ticketing-api-rest-app/Dockerfile
+    dockerContext: ./ticketing-api-rest-app
+    envVars:
+      - key: APP_NAME
+        value: Plateforme de gestion des tickets
+      - key: APP_ENV
+        value: production
+      - key: APP_KEY
+        generateValue: true
+      - key: APP_DEBUG
+        value: false
+      - key: APP_URL
+        sync: false
+      - key: CLIENT_APP_URL
+        sync: false
+      - key: APP_LOCALE
+        value: en
+      - key: APP_FALLBACK_LOCALE
+        value: en
+      - key: APP_FAKER_LOCALE
+        value: en_US
+      - key: BCRYPT_ROUNDS
+        value: 12
+      - key: LOG_CHANNEL
+        value: errorlog
+      - key: LOG_LEVEL
+        value: error
+      - key: LOG_STACK
+        value: single
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_HOST
+        fromDatabase:
+          name: ticketing-db-free
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: ticketing-db-free
+          property: port
+      - key: DB_DATABASE
+        fromDatabase:
+          name: ticketing-db-free
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: ticketing-db-free
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: ticketing-db-free
+          property: password
+      - key: SESSION_DRIVER
+        value: database
+      - key: SESSION_LIFETIME
+        value: 120
+      - key: SESSION_ENCRYPT
+        value: false
+      - key: SESSION_PATH
+        value: /
+      - key: BROADCAST_CONNECTION
+        value: log
+      - key: FILESYSTEM_DISK
+        value: local
+      - key: CACHE_STORE
+        value: database
+      - key: QUEUE_CONNECTION
+        value: database
+      - key: MAIL_MAILER
+        value: smtp
+      - key: MAIL_HOST
+        sync: false
+      - key: MAIL_PORT
+        value: 587
+      - key: MAIL_USERNAME
+        sync: false
+      - key: MAIL_PASSWORD
+        sync: false
+      - key: MAIL_ENCRYPTION
+        value: tls
+      - key: MAIL_FROM_ADDRESS
+        sync: false
+      - key: MAIL_FROM_NAME
+        value: Plateforme de gestion des tickets
+      - key: TOKEN_ENCRYPTION_KEY
+        generateValue: true
+      - key: TOKEN_ENCRYPTION_METHOD
+        value: AES-256-CBC
+      - key: OTP_EXPIRATION_MINUTES
+        value: 5
+      - key: OTP_MAX_ATTEMPTS
+        value: 3
+      - key: SMS_PROVIDER
+        value: custom_api
+      - key: SMS_PROVIDER_URL
+        sync: false
+      - key: SMS_PROVIDER_API_ACCOUNT_ID
+        sync: false
+      - key: SMS_PROVIDER_API_ACCOUNT_PASSWORD
+        sync: false
+      - key: SMS_PROVIDER_API_KEY
+        sync: false
+      - key: SMS_ALERT_THRESHOLD
+        value: 1000
+      - key: ALERT_EMAIL
+        sync: false
+      - key: ALERT_SMS
+        sync: false
+      - key: SUBSCRIPTION_PRICE_PER_YEAR
+        value: 50000
+      - key: SUBSCRIPTION_CURRENCY
+        value: XOF
+      - key: PASSPORT_GRANT_ACCESS_CLIENT_ID
+        sync: false
+      - key: PASSPORT_GRANT_ACCESS_CLIENT_SECRET
+        sync: false
+      - key: PASSPORT_PERSONAL_ACCESS_CLIENT_ID
+        sync: false
+      - key: PASSPORT_PERSONAL_ACCESS_CLIENT_SECRET
+        sync: false
+      - key: CINETPAY_API_KEY
+        sync: false
+      - key: CINETPAY_SITE_ID
+        sync: false
+      - key: CINETPAY_SECRET_KEY
+        sync: false
+      - key: CINETPAY_API_URL
+        value: https://api-checkout.cinetpay.com/v2/payment
+      - key: CINETPAY_MODE
+        value: production
+      - key: CINETPAY_API_CHECK
+        value: https://api-checkout.cinetpay.com/v2/payment/check
+      - key: CINETPAY_DEMO_URL
+        value: https://cinetpay.com/demo
+      - key: FEDAPAY_PUBLIC_KEY
+        sync: false
+      - key: FEDAPAY_SECRET_KEY
+        sync: false
+      - key: FEDAPAY_WEBHOOK_SECRET
+        sync: false
+      - key: FEDAPAY_ENVIRONMENT
+        value: live
+      - key: FEDAPAY_CURRENCY
+        value: XOF
+
+  # Frontend (Vue 3 Static Site) - TOUJOURS GRATUIT
+  - type: web
+    name: ticketing-frontend-free
+    env: static
+    buildCommand: "cd ticketing-app && npm install && npm run build"
+    staticPublishPath: ticketing-app/dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        sync: false
+      - key: VITE_CINETPAY_API_KEY
+        sync: false
+      - key: VITE_CINETPAY_SITE_ID
+        sync: false
+      - key: VITE_PAYDUNYA_API_KEY
+        sync: false
+      - key: VITE_MTN_MOMO_API_KEY
+        sync: false
+      - key: VITE_ENABLE_MULTI_ORG
+        value: true
+      - key: VITE_ENABLE_CASH_PAYMENTS
+        value: true
+      - key: VITE_BETA_FEATURES
+        value: false
+      - key: NODE_ENV
+        value: production
+
+databases:
+  - name: ticketing-db-free
+    plan: free  # Plan gratuit PostgreSQL
+    region: oregon
