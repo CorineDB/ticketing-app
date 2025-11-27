@@ -79,7 +79,7 @@
                 </div>
 
                 <RouterLink
-                  to="/profile"
+                  :to="{ name: 'profile' }"
                   class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                   @click="showUserMenu = false"
                 >
@@ -180,11 +180,11 @@ const userInitials = computed(() => {
 const userRole = computed(() => {
   if (!user.value) return ''
   const roleMap: Record<string, string> = {
-    SUPER_ADMIN: 'Super Admin',
-    ORGANIZER: 'Organizer',
-    SCANNER: 'Scanner',
-    CASHIER: 'Cashier',
-    PARTICIPANT: 'Participant'
+    'super-admin': 'Super Admin',
+    organizer: 'Organizer',
+    'agent-de-controle': 'Scanner',
+    comptable: 'Cashier',
+    participant: 'Participant'
   }
   return roleMap[user.value.type] || user.value.type
 })

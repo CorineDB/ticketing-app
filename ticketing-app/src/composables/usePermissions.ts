@@ -16,11 +16,6 @@ export function usePermissions() {
     // Super admin has all permissions
     if (authStore.isSuperAdmin) return true
 
-    // Check if user has the permission directly
-    if (authStore.user.permissions) {
-      return authStore.user.permissions.some((p) => p.slug === permissionSlug)
-    }
-
     // Check if user's role has the permission
     if (authStore.user.role?.permissions) {
       return authStore.user.role.permissions.some((p) => p.slug === permissionSlug)

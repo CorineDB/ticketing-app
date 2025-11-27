@@ -13,11 +13,11 @@ export const useAuthStore = defineStore('auth', () => {
 
   // Getters
   const isAuthenticated = computed(() => !!user.value)/* 
-  const isSuperAdmin = computed(() => user.value?.type === 'SUPER_ADMIN')
-  const isOrganizer = computed(() => user.value?.type === 'ORGANIZER')
-  const isScanner = computed(() => user.value?.type === 'SCANNER')
-  const isCashier = computed(() => user.value?.type === 'CASHIER')
-  const isParticipant = computed(() => user.value?.type === 'PARTICIPANT') */
+  const isSuperAdmin = computed(() => user.value?.type === 'super-admin')
+  const isOrganizer = computed(() => user.value?.type === 'organizer')
+  const isScanner = computed(() => user.value?.type === 'agent-de-controle')
+  const isCashier = computed(() => user.value?.type === 'comptable')
+  const isParticipant = computed(() => user.value?.type === 'participant') */
   const isSuperAdmin = computed(() => user.value?.role.slug === 'super-admin')
   const isOrganizer = computed(() => user.value?.role.slug === 'organizer')
   const isScanner = computed(() => user.value?.role.slug === 'agent-de-controle')

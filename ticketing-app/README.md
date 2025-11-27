@@ -1815,7 +1815,7 @@ users
 - email (unique)
 - phone (nullable)
 - password (hashed)
-- type (SUPER_ADMIN, ORGANIZER, SCANNER, CASHIER, PARTICIPANT)
+- type (super-admin, organizer, 'agent-de-controle', comptable, participant)
 - organization_id (FK, nullable)
 - avatar (nullable)
 - created_at

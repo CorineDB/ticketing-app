@@ -9,7 +9,7 @@
         </p>
       </div>
       <RouterLink
-        to="/events/new"
+        :to="{ name: 'event-create' }"
         class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
       >
         <PlusIcon class="w-5 h-5" />
@@ -53,7 +53,7 @@
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
       <div class="flex items-center justify-between mb-6">
         <h2 class="text-xl font-semibold text-gray-900">Upcoming Events</h2>
-        <RouterLink to="/events" class="text-sm text-blue-600 hover:text-blue-700">
+        <RouterLink :to="{ name: 'events' }" class="text-sm text-blue-600 hover:text-blue-700">
           View all
         </RouterLink>
       </div>
@@ -77,7 +77,7 @@
         <h3 class="text-lg font-medium text-gray-900 mb-1">No upcoming events</h3>
         <p class="text-gray-600 mb-4">Create your first event to get started</p>
         <RouterLink
-          to="/events/new"
+          :to="{ name: 'event-create' }"
           class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
         >
           <PlusIcon class="w-5 h-5" />
