@@ -45,9 +45,13 @@ class TicketService extends BaseService implements TicketServiceContract
             $ticket = $this->repository->create($data);
 
             $this->generateQRCodeForTicket($ticket);
-
-            // Send ticket confirmation email
-            $this->notificationService->sendTicketConfirmation($ticket->id);
+            if ($data['status'] === 'paid') {
+                $this->repository->update($ticket, [
+                    'paid_at' => now(),
+                ]);
+                // Send ticket confirmation email
+                $this->notificationService->sendTicketConfirmation($ticket->id);
+            }
 
             return $ticket->fresh();
         });
