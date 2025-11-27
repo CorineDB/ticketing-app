@@ -33,6 +33,11 @@ class TicketType extends Model
         'quota' => 'integer',
     ];
 
+    protected $appends = [
+        'quantity_available',
+        'quantity_sold',
+    ];
+
     public function event(): BelongsTo
     {
         return $this->belongsTo(Event::class);
@@ -41,5 +46,32 @@ class TicketType extends Model
     public function tickets(): HasMany
     {
         return $this->hasMany(Ticket::class);
+    }
+
+    /**
+     * Get the number of tickets sold for this ticket type
+     * Counts tickets with status: issued, reserved, paid, in, out
+     */
+    public function getQuantitySoldAttribute(): int
+    {
+        return $this->tickets()
+            ->whereIn('status', ['issued', 'reserved', 'paid', 'in', 'out'])
+            ->count();
+    }
+
+    /**
+     * Get the number of tickets still available for this ticket type
+     */
+    public function getQuantityAvailableAttribute(): int
+    {
+        return max(0, $this->quota - $this->quantity_sold);
+    }
+
+    /**
+     * Check if tickets are still available
+     */
+    public function hasAvailableTickets(): bool
+    {
+        return $this->quantity_available > 0;
     }
 }
