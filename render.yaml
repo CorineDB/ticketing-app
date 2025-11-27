@@ -154,7 +154,7 @@ services:
   - type: web
     name: ticketing-frontend-free
     env: static
-    buildCommand: "cd ticketing-app && npm install && npm run build"
+    buildCommand: "cd ticketing-app && npm ci && npm run build"
     staticPublishPath: ticketing-app/dist
     routes:
       - type: rewrite
