@@ -1,12 +1,4 @@
 services:
-  # PostgreSQL Database
-  - type: pserv
-    name: ticketing-db
-    databaseName: ticketing
-    user: ticketing
-    plan: starter
-    region: oregon
-
   # Backend API (Laravel)
   - type: web
     name: ticketing-api
@@ -302,7 +294,5 @@ services:
 
 databases:
   - name: ticketing-db
-    databaseName: ticketing
-    user: ticketing
     plan: starter
     region: oregon
