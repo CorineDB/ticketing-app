@@ -161,7 +161,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useRoute, RouterLink } from 'vue-router'
+import { useRoute, useRouter, RouterLink } from 'vue-router'
 import eventService from '@/services/eventService'
 import { formatDate, formatCurrency } from '@/utils/formatters'
 import type { Event, TicketType } from '@/types/api'
@@ -177,6 +177,7 @@ import {
 } from 'lucide-vue-next'
 
 const route = useRoute()
+const router = useRouter()
 const event = ref<Event | null>(null)
 const loading = ref(true)
 
@@ -192,9 +193,9 @@ onMounted(async () => {
 })
 
 function selectTicketType(ticketType: TicketType) {
-  // Navigate to checkout with selected ticket type
-  // This would be implemented with the checkout flow
-  console.log('Selected ticket type:', ticketType)
+  if (event.value) {
+    router.push({ name: 'checkout', params: { eventId: event.value.id, ticketTypeId: ticketType.id } })
+  }
 }
 
 function scrollToTickets() {
