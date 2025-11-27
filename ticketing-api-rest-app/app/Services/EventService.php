@@ -8,6 +8,7 @@ use App\Services\Contracts\EventServiceContract;
 use App\Services\Contracts\TicketTypeServiceContract;
 use App\Services\Core\Eloquent\BaseService;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 
@@ -47,6 +48,13 @@ class EventService extends BaseService implements EventServiceContract
             }
 
             $event = $this->repository->create($data);
+
+            Log::info('Event created', [
+                'event_id' => $event->id,
+                'organisateur_id' => $data['organisateur_id'],
+                'data_image_url' => $data['image_url'],
+                'event_image_url' => $event->image_url,
+            ]);
 
             $this->counterRepository->createOrGetCounter($event->id);
 
