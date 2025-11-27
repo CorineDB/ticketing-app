@@ -32,7 +32,7 @@ class EventService {
   async getById(id: string): Promise<Event> {
     const response = await api.get<{ data: Event }>(`/events/${id}`)
     console.log("Response Data:", response.data);
-    return response.data.data
+    return response.data
   }
 
   /**
@@ -49,7 +49,7 @@ class EventService {
    */
   async getBySlug(slug: string): Promise<Event> {
     const response = await api.get<{ data: Event }>(`/events/slug/${slug}`)
-    return response.data.data
+    return response.data
   }
 
 
