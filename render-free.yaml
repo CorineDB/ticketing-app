@@ -154,7 +154,7 @@ services:
   - type: web
     name: ticketing-frontend-free
     env: static
-    buildCommand: "cd ticketing-app && npm ci && npm run build"
+    buildCommand: "cd ticketing-app && npm ci --include=dev && npm run build"
     staticPublishPath: ticketing-app/dist
     routes:
       - type: rewrite
@@ -177,8 +177,6 @@ services:
         value: true
       - key: VITE_BETA_FEATURES
         value: false
-      - key: NODE_ENV
-        value: production
 
 databases:
   - name: ticketing-db-free
