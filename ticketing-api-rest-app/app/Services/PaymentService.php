@@ -35,13 +35,13 @@ class PaymentService implements PaymentServiceContract
     /**
      * Create a payment transaction for a specific ticket purchase
      *
-     * @param string $ticketId The ticket ID
+     * @param array $ticketIds Array of ticket IDs for this purchase
      * @param array $customerData Customer information (firstname, lastname, email, phone_number)
      * @param int $amount Total amount
      * @param string $description Transaction description
      * @return array Payment information including payment_url
      */
-    public function createTransactionForTicket(string $ticketId, array $customerData, int $amount, string $description): array
+    public function createTransactionForTicket(array $ticketIds, array $customerData, int $amount, string $description): array
     {
         try {
             // Create or get FedaPay customer
@@ -62,9 +62,10 @@ class PaymentService implements PaymentServiceContract
                 'currency' => ['iso' => config('services.fedapay.currency', 'XOF')],
                 'callback_url' => route('payment.callback'),
                 'customer' => ['id' => $customer->id],
-                'merchant_reference' => 'ticket-' . $ticketId,
+                'merchant_reference' => 'tickets-' . implode('-', $ticketIds),
                 'custom_metadata' => [
-                    'ticket_id' => $ticketId,
+                    'ticket_ids' => $ticketIds, // Array of all ticket IDs
+                    'ticket_count' => count($ticketIds),
                 ],
             ]);
 
@@ -80,7 +81,7 @@ class PaymentService implements PaymentServiceContract
             ];
         } catch (\Exception $e) {
             Log::error('FedaPay transaction creation failed', [
-                'ticket_id' => $ticketId,
+                'ticket_ids' => $ticketIds,
                 'error' => $e->getMessage(),
             ]);
 
@@ -212,43 +213,59 @@ class PaymentService implements PaymentServiceContract
     protected function handleTransactionApproved(array $entity): void
     {
         $metadata = $entity['custom_metadata'] ?? [];
-        $ticketId = $metadata['ticket_id'] ?? null;
+        $ticketIds = $metadata['ticket_ids'] ?? null;
 
-        if (!$ticketId) {
-            Log::warning('Transaction approved but no ticket_id in metadata', ['entity' => $entity]);
+        // Support for old single ticket_id format (backward compatibility)
+        if (!$ticketIds && isset($metadata['ticket_id'])) {
+            $ticketIds = [$metadata['ticket_id']];
+        }
+
+        if (!$ticketIds || !is_array($ticketIds)) {
+            Log::warning('Transaction approved but no ticket_ids in metadata', ['entity' => $entity]);
             return;
         }
 
         try {
-            $ticket = $this->ticketRepository->find($ticketId);
+            $updatedCount = 0;
 
-            if ($ticket) {
-                $this->ticketRepository->update($ticket, [
-                    'status' => 'paid',
-                    'paid_at' => now(),
-                    'metadata' => array_merge($ticket->metadata ?? [], [
-                        'fedapay_transaction_id' => $entity['id'],
-                        'fedapay_reference' => $entity['reference'] ?? null,
-                        'payment_approved_at' => now()->toISOString(),
-                    ]),
-                ]);
+            foreach ($ticketIds as $ticketId) {
+                $ticket = $this->ticketRepository->find($ticketId);
 
-                Log::info('Ticket marked as paid', [
-                    'ticket_id' => $ticketId,
-                    'transaction_id' => $entity['id'],
-                ]);
+                if ($ticket) {
+                    $this->ticketRepository->update($ticket, [
+                        'status' => 'paid',
+                        'paid_at' => now(),
+                        'metadata' => array_merge($ticket->metadata ?? [], [
+                            'fedapay_transaction_id' => $entity['id'],
+                            'fedapay_reference' => $entity['reference'] ?? null,
+                            'payment_approved_at' => now()->toISOString(),
+                        ]),
+                    ]);
 
-                // Envoyer notification de paiement confirmé
-                $this->notificationService->sendPaymentConfirmation($ticketId, [
-                    'transaction_id' => $entity['id'],
-                    'reference' => $entity['reference'] ?? null,
-                    'amount' => $entity['amount'] ?? 0,
-                    'currency' => $entity['currency']['iso'] ?? 'XOF',
-                ]);
+                    $updatedCount++;
+
+                    // Envoyer notification de paiement confirmé pour le premier ticket seulement
+                    if ($updatedCount === 1) {
+                        $this->notificationService->sendPaymentConfirmation($ticketId, [
+                            'transaction_id' => $entity['id'],
+                            'reference' => $entity['reference'] ?? null,
+                            'amount' => $entity['amount'] ?? 0,
+                            'currency' => $entity['currency']['iso'] ?? 'XOF',
+                            'ticket_count' => count($ticketIds),
+                        ]);
+                    }
+                }
             }
+
+            Log::info('Tickets marked as paid', [
+                'ticket_ids' => $ticketIds,
+                'updated_count' => $updatedCount,
+                'transaction_id' => $entity['id'],
+            ]);
+
         } catch (\Exception $e) {
-            Log::error('Failed to update ticket after payment approval', [
-                'ticket_id' => $ticketId,
+            Log::error('Failed to update tickets after payment approval', [
+                'ticket_ids' => $ticketIds,
                 'error' => $e->getMessage(),
             ]);
         }

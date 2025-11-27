@@ -83,24 +83,23 @@ class TicketController extends Controller
 
                 // Create tickets in pending status
                 $tickets = [];
+                $ticketIds = [];
                 for ($i = 0; $i < $quantity; $i++) {
                     $ticket = $this->ticketService->generateTicket([
                         'event_id' => $ticketType->event_id,
                         'ticket_type_id' => $ticketTypeId,
                         'buyer_name' => $customer['firstname'] . ' ' . $customer['lastname'],
                         'buyer_email' => $customer['email'],
-                        'buyer_phone' => $customer['phone_number'],
-                        'status' => 'pending', // Will be updated to 'paid' via webhook
+                        'buyer_phone' => $customer['phone_number'] ?? null,
+                        'status' => 'issued', // Will be updated to 'paid' via webhook
                     ]);
                     $tickets[] = $ticket;
+                    $ticketIds[] = $ticket->id;
                 }
 
-                // Use the first ticket ID for the transaction reference
-                $mainTicketId = $tickets[0]->id;
-
-                // Create payment transaction
+                // Create payment transaction with ALL ticket IDs
                 $paymentData = $this->paymentService->createTransactionForTicket(
-                    $mainTicketId,
+                    $ticketIds,
                     $customer,
                     $totalAmount,
                     "Achat de {$quantity} ticket(s) - {$ticketType->name}"

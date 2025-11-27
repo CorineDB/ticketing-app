@@ -13,4 +13,5 @@ interface TicketRepositoryContract extends BaseRepositoryInterface
     public function findByMagicLinkToken(string $token);
 
     public function generateUniqueCode(string $eventId): string;
+    public function countByTicketTypeAndStatuses(string $ticketTypeId, array $statuses): int;
 }

@@ -19,7 +19,7 @@ class TicketPurchaseRequest extends FormRequest
             'customer.firstname' => 'required|string|max:255',
             'customer.lastname' => 'required|string|max:255',
             'customer.email' => 'required|email|max:255',
-            'customer.phone_number' => 'required|string|max:20',
+            'customer.phone_number' => 'nullable|string|max:20',
         ];
     }
 
