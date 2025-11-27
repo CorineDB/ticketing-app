@@ -60,31 +60,39 @@ Avec $5 de crédit:
 - Frontend (statique): Gratuit sur Vercel/Netlify
 - **Total: ~$4/mois = DANS LE CRÉDIT GRATUIT** ✅
 
-## 🚀 Option 2: Render.com (Plan Gratuit avec Limitations)
+## 🚀 Option 2: Render.com (Plan Gratuit) ⚠️ **NON RECOMMANDÉ**
 
 **Fichier de configuration**: Utilisez `render-free.yaml`
 
-### Ce qui est GRATUIT sur Render
-- ✅ Backend API (750h/mois = suffisant)
-- ✅ Frontend statique (illimité)
-- ✅ PostgreSQL (90 jours gratuits seulement)
+### ❌ LIMITATIONS CRITIQUES de Render Gratuit
 
-### Ce qui est PAYANT
-- ❌ Queue Worker ($7/mois minimum)
-- ❌ PostgreSQL après 90 jours ($7/mois)
+**Base de données PostgreSQL**:
+- ⏰ **Expire après 30 jours** (+ 14 jours de grâce = 44 jours max)
+- 💾 Limite de **1 GB seulement**
+- 🗑️ **Suppression automatique** si non upgradé
+- 🚫 **Une seule base de données gratuite** par compte
+- ❌ Pas de backup
 
-### Solution pour Render Gratuit
+**Web Services**:
+- ✅ 750h/mois (suffisant pour 1 service 24/7)
+- 😴 Mise en veille après 15 min d'inactivité
+- ⏱️ Réveil très lent: **jusqu'à 1 minute**
+- 🚫 **SMTP bloqué** (ports 25, 465, 587) = **Impossible d'envoyer des emails**
+- ❌ Pas de queue worker gratuit
+- ❌ Pas de scaling, disque persistant, SSH
 
-**Sans Queue Worker (version simplifiée)**:
-- Utiliser `render-free.yaml` (fourni)
-- Ne pas déployer de queue worker séparé
-- Traiter les emails/notifications de manière synchrone
-- Base de données gratuite pendant 90 jours
+**Frontend**:
+- ✅ Gratuit illimité
 
-**Après 90 jours**, migrer vers:
-- Option A: Neon.tech (PostgreSQL gratuit permanent)
-- Option B: Railway.app
-- Option C: Payer $7/mois pour PostgreSQL Render
+### ⚠️ POURQUOI RENDER GRATUIT N'EST PAS VIABLE
+
+1. **Base de données supprimée après 30 jours** - Vous perdrez toutes vos données !
+2. **Impossible d'envoyer des emails** - Les notifications par email ne fonctionneront pas
+3. **Pas de queue worker** - Les jobs en arrière-plan ne peuvent pas s'exécuter
+4. **Réveil trop lent** - Mauvaise expérience utilisateur (1 minute d'attente)
+5. **Limite 1 GB** - Trop petit pour une application de ticketing
+
+### ❌ NE PAS UTILISER Render gratuit pour cette application
 
 ### Déploiement Render Gratuit
 
