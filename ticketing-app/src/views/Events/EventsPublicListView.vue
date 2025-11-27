@@ -17,7 +17,7 @@
         <RouterLink
           v-for="event in events"
           :key="event.id"
-          :to="{ name: 'event-public', params: { slug: event.slug } }"
+          :to="{ name: 'event-public', params: { slug: event.slug || event.id } }"
           class="bg-white rounded-xl shadow-sm border hover:shadow-lg transition-shadow overflow-hidden"
         >
           <div class="h-48 bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
@@ -59,7 +59,8 @@ import { CalendarIcon, MapPinIcon } from 'lucide-vue-next'
 
 const { events, loading, fetchEvents } = useEvents()
 
-onMounted(() => {
-  fetchEvents()
+onMounted(async () => {
+  await fetchEvents()
+  console.log('Events loaded:', events.value)
 })
 </script>

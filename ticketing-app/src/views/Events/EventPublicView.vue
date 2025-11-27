@@ -180,8 +180,15 @@ const loading = ref(true)
 
 onMounted(async () => {
   try {
-    const slug = route.params.slug as string
-    event.value = await eventService.getPublicBySlug(slug)
+    const param = route.params.slug as string
+    // Détecter si c'est un UUID ou un slug
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(param)
+
+    if (isUUID) {
+      event.value = await eventService.getPublicById(param)
+    } else {
+      event.value = await eventService.getPublicBySlug(param)
+    }
   } catch (error) {
     console.error('Failed to fetch event:', error)
   } finally {
