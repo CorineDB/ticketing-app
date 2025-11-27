@@ -1,219 +1,175 @@
-import { ref, readonly } from 'vue'
+import { ref } from 'vue'
 import ticketService from '@/services/ticketService'
-import type { Ticket, CreateTicketData, UpdateTicketData, TicketFilters } from '@/types/api'
-import { useNotificationStore } from '@/stores/notifications'
+import type { Ticket, CreateTicketData, UpdateTicketData, TicketFilters, PaginatedResponse } from '@/types/api'
 
 export function useTickets() {
-  const notifications = useNotificationStore()
-
   const tickets = ref<Ticket[]>([])
-  const currentTicket = ref<Ticket | null>(null)
+  const ticket = ref<Ticket | null>(null)
   const loading = ref(false)
   const error = ref<string | null>(null)
-  const totalPages = ref(1)
-  const currentPage = ref(1)
+  const pagination = ref({
+    total: 0,
+    per_page: 10,
+    current_page: 1,
+    last_page: 1
+  })
 
-  async function fetchTickets(filters?: TicketFilters) {
+  const fetchTickets = async (filters?: TicketFilters) => {
     loading.value = true
     error.value = null
-
     try {
-      const response = await ticketService.getAll(filters)
+      const response: PaginatedResponse<Ticket> = await ticketService.getAll(filters)
       tickets.value = response.data
-      totalPages.value = response.meta.last_page
-      currentPage.value = response.meta.current_page
+      pagination.value = {
+        total: response.total,
+        per_page: response.per_page,
+        current_page: response.current_page,
+        last_page: response.last_page
+      }
     } catch (e: any) {
       error.value = e.response?.data?.message || 'Failed to fetch tickets'
-      notifications.error('Error', error.value)
+      console.error('Error fetching tickets:', e)
     } finally {
       loading.value = false
     }
   }
 
-  async function fetchTicket(id: number) {
+  const fetchTicket = async (id: number) => {
     loading.value = true
     error.value = null
-
     try {
-      currentTicket.value = await ticketService.getById(id)
-      return currentTicket.value
+      ticket.value = await ticketService.getById(id)
     } catch (e: any) {
       error.value = e.response?.data?.message || 'Failed to fetch ticket'
-      notifications.error('Error', error.value)
-      return null
+      console.error('Error fetching ticket:', e)
     } finally {
       loading.value = false
     }
   }
 
-  async function fetchTicketByCode(code: string, token?: string) {
+  const fetchTicketByCode = async (code: string, token?: string) => {
     loading.value = true
     error.value = null
-
     try {
-      currentTicket.value = await ticketService.getByCode(code, token)
-      return currentTicket.value
+      ticket.value = await ticketService.getByCode(code, token)
     } catch (e: any) {
-      error.value = e.response?.data?.message || 'Ticket not found'
-      notifications.error('Error', error.value)
-      return null
+      error.value = e.response?.data?.message || 'Failed to fetch ticket'
+      console.error('Error fetching ticket:', e)
     } finally {
       loading.value = false
     }
   }
 
-  async function createTicket(data: CreateTicketData) {
+  const createTicket = async (data: CreateTicketData) => {
     loading.value = true
     error.value = null
-
     try {
       const newTicket = await ticketService.create(data)
       tickets.value.unshift(newTicket)
-      notifications.success('Success', 'Ticket created successfully')
       return newTicket
     } catch (e: any) {
       error.value = e.response?.data?.message || 'Failed to create ticket'
-      notifications.error('Error', error.value)
-      return null
+      console.error('Error creating ticket:', e)
+      throw e
     } finally {
       loading.value = false
     }
   }
 
-  async function updateTicket(id: number, data: UpdateTicketData) {
+  const updateTicket = async (id: number, data: UpdateTicketData) => {
     loading.value = true
     error.value = null
-
     try {
       const updatedTicket = await ticketService.update(id, data)
-      const index = tickets.value.findIndex((t) => t.id === id)
-      if (index > -1) {
+      const index = tickets.value.findIndex(t => t.id === id)
+      if (index !== -1) {
         tickets.value[index] = updatedTicket
       }
-      if (currentTicket.value?.id === id) {
-        currentTicket.value = updatedTicket
+      if (ticket.value?.id === id) {
+        ticket.value = updatedTicket
       }
-      notifications.success('Success', 'Ticket updated successfully')
       return updatedTicket
     } catch (e: any) {
       error.value = e.response?.data?.message || 'Failed to update ticket'
-      notifications.error('Error', error.value)
-      return null
+      console.error('Error updating ticket:', e)
+      throw e
     } finally {
       loading.value = false
     }
   }
 
-  async function cancelTicket(id: number, reason?: string) {
+  const cancelTicket = async (id: number, reason?: string) => {
     loading.value = true
     error.value = null
-
     try {
-      const cancelledTicket = await ticketService.cancel(id, reason)
-      const index = tickets.value.findIndex((t) => t.id === id)
-      if (index > -1) {
-        tickets.value[index] = cancelledTicket
+      const cancelled = await ticketService.cancel(id, reason)
+      const index = tickets.value.findIndex(t => t.id === id)
+      if (index !== -1) {
+        tickets.value[index] = cancelled
       }
-      notifications.success('Success', 'Ticket cancelled')
-      return cancelledTicket
+      if (ticket.value?.id === id) {
+        ticket.value = cancelled
+      }
+      return cancelled
     } catch (e: any) {
       error.value = e.response?.data?.message || 'Failed to cancel ticket'
-      notifications.error('Error', error.value)
-      return null
+      console.error('Error cancelling ticket:', e)
+      throw e
     } finally {
       loading.value = false
     }
   }
 
-  async function markAsPaid(id: number, paymentReference: string) {
+  const refundTicket = async (id: number, reason?: string) => {
     loading.value = true
     error.value = null
-
     try {
-      const paidTicket = await ticketService.markAsPaid(id, paymentReference)
-      const index = tickets.value.findIndex((t) => t.id === id)
-      if (index > -1) {
-        tickets.value[index] = paidTicket
+      const refunded = await ticketService.refund(id, reason)
+      const index = tickets.value.findIndex(t => t.id === id)
+      if (index !== -1) {
+        tickets.value[index] = refunded
       }
-      notifications.success('Success', 'Ticket marked as paid')
-      return paidTicket
+      if (ticket.value?.id === id) {
+        ticket.value = refunded
+      }
+      return refunded
     } catch (e: any) {
-      error.value = e.response?.data?.message || 'Failed to mark ticket as paid'
-      notifications.error('Error', error.value)
-      return null
+      error.value = e.response?.data?.message || 'Failed to refund ticket'
+      console.error('Error refunding ticket:', e)
+      throw e
     } finally {
       loading.value = false
     }
   }
 
-  async function downloadTicket(id: number) {
+  const validateTicket = async (code: string) => {
     loading.value = true
     error.value = null
-
     try {
-      const blob = await ticketService.downloadPDF(id)
-      const url = window.URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = url
-      link.download = `ticket-${id}.pdf`
-      link.click()
-      window.URL.revokeObjectURL(url)
-      notifications.success('Success', 'Ticket downloaded')
+      const result = await ticketService.validate(code)
+      return result
     } catch (e: any) {
-      error.value = e.response?.data?.message || 'Failed to download ticket'
-      notifications.error('Error', error.value)
-    } finally {
-      loading.value = false
-    }
-  }
-
-  async function sendTicketEmail(id: number) {
-    loading.value = true
-    error.value = null
-
-    try {
-      await ticketService.sendEmail(id)
-      notifications.success('Success', 'Ticket sent via email')
-    } catch (e: any) {
-      error.value = e.response?.data?.message || 'Failed to send email'
-      notifications.error('Error', error.value)
-    } finally {
-      loading.value = false
-    }
-  }
-
-  async function sendTicketSMS(id: number) {
-    loading.value = true
-    error.value = null
-
-    try {
-      await ticketService.sendSMS(id)
-      notifications.success('Success', 'Ticket sent via SMS')
-    } catch (e: any) {
-      error.value = e.response?.data?.message || 'Failed to send SMS'
-      notifications.error('Error', error.value)
+      error.value = e.response?.data?.message || 'Failed to validate ticket'
+      console.error('Error validating ticket:', e)
+      throw e
     } finally {
       loading.value = false
     }
   }
 
   return {
-    tickets: readonly(tickets),
-    currentTicket: readonly(currentTicket),
-    loading: readonly(loading),
-    error: readonly(error),
-    totalPages: readonly(totalPages),
-    currentPage: readonly(currentPage),
-
+    tickets,
+    ticket,
+    loading,
+    error,
+    pagination,
     fetchTickets,
     fetchTicket,
     fetchTicketByCode,
     createTicket,
     updateTicket,
     cancelTicket,
-    markAsPaid,
-    downloadTicket,
-    sendTicketEmail,
-    sendTicketSMS
+    refundTicket,
+    validateTicket
   }
 }

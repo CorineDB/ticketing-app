@@ -1,209 +1,243 @@
-import { ref, readonly } from 'vue'
+import { ref } from 'vue'
 import eventService from '@/services/eventService'
-import type { Event, CreateEventData, UpdateEventData, EventFilters } from '@/types/api'
-import { useNotificationStore } from '@/stores/notifications'
+import type { Event, CreateEventData, UpdateEventData, EventFilters, PaginatedResponse, EventStatistics } from '@/types/api'
 
 export function useEvents() {
-  const notifications = useNotificationStore()
-
   const events = ref<Event[]>([])
-  const currentEvent = ref<Event | null>(null)
+  const event = ref<Event | null>(null)
+  const statistics = ref<EventStatistics | null>(null)
   const loading = ref(false)
   const error = ref<string | null>(null)
-  const totalPages = ref(1)
-  const currentPage = ref(1)
+  const pagination = ref({
+    total: 0,
+    per_page: 10,
+    current_page: 1,
+    last_page: 1
+  })
 
-  async function fetchEvents(filters?: EventFilters) {
+  const fetchEvents = async (filters?: EventFilters) => {
     loading.value = true
     error.value = null
-
     try {
-      const response = await eventService.getAll(filters)
-      console.log(response);
+      const response: PaginatedResponse<Event> = await eventService.getAll(filters)
       events.value = response.data
-      totalPages.value = response.meta?.last_page
-      currentPage.value = response.meta?.current_page
+      pagination.value = {
+        total: response.total,
+        per_page: response.per_page,
+        current_page: response.current_page,
+        last_page: response.last_page
+      }
     } catch (e: any) {
       error.value = e.response?.data?.message || 'Failed to fetch events'
-      notifications.error('Error', error.value)
+      console.error('Error fetching events:', e)
     } finally {
       loading.value = false
     }
   }
 
-  async function fetchEvent(id: number) {
+  const fetchEvent = async (id: number) => {
     loading.value = true
     error.value = null
-
     try {
-      currentEvent.value = await eventService.getById(id)
-      return currentEvent.value
+      event.value = await eventService.getById(id)
     } catch (e: any) {
       error.value = e.response?.data?.message || 'Failed to fetch event'
-      notifications.error('Error', error.value)
-      return null
+      console.error('Error fetching event:', e)
     } finally {
       loading.value = false
     }
   }
 
-  async function fetchEventBySlug(slug: string) {
+  const fetchEventBySlug = async (slug: string) => {
     loading.value = true
     error.value = null
-
     try {
-      currentEvent.value = await eventService.getBySlug(slug)
-      return currentEvent.value
+      event.value = await eventService.getBySlug(slug)
     } catch (e: any) {
-      error.value = e.response?.data?.message || 'Event not found'
-      notifications.error('Error', error.value)
-      return null
+      error.value = e.response?.data?.message || 'Failed to fetch event'
+      console.error('Error fetching event:', e)
     } finally {
       loading.value = false
     }
   }
 
-  async function createEvent(data: CreateEventData) {
+  const fetchPublicEvent = async (id: string) => {
     loading.value = true
     error.value = null
+    try {
+      event.value = await eventService.getPublicById(id)
+    } catch (e: any) {
+      error.value = e.response?.data?.message || 'Failed to fetch event'
+      console.error('Error fetching event:', e)
+    } finally {
+      loading.value = false
+    }
+  }
 
+  const createEvent = async (data: CreateEventData) => {
+    loading.value = true
+    error.value = null
     try {
       const newEvent = await eventService.create(data)
       events.value.unshift(newEvent)
-      notifications.success('Success', 'Event created successfully')
       return newEvent
     } catch (e: any) {
       error.value = e.response?.data?.message || 'Failed to create event'
-      notifications.error('Error', error.value)
-      return null
+      console.error('Error creating event:', e)
+      throw e
     } finally {
       loading.value = false
     }
   }
 
-  async function updateEvent(id: number, data: UpdateEventData) {
+  const updateEvent = async (id: number, data: UpdateEventData) => {
     loading.value = true
     error.value = null
-
     try {
       const updatedEvent = await eventService.update(id, data)
-      const index = events.value.findIndex((e) => e.id === id)
-      if (index > -1) {
+      const index = events.value.findIndex(e => e.id === id)
+      if (index !== -1) {
         events.value[index] = updatedEvent
       }
-      if (currentEvent.value?.id === id) {
-        currentEvent.value = updatedEvent
+      if (event.value?.id === id) {
+        event.value = updatedEvent
       }
-      notifications.success('Success', 'Event updated successfully')
       return updatedEvent
     } catch (e: any) {
       error.value = e.response?.data?.message || 'Failed to update event'
-      notifications.error('Error', error.value)
-      return null
+      console.error('Error updating event:', e)
+      throw e
     } finally {
       loading.value = false
     }
   }
 
-  async function deleteEvent(id: number) {
+  const deleteEvent = async (id: number) => {
     loading.value = true
     error.value = null
-
     try {
       await eventService.delete(id)
-      events.value = events.value.filter((e) => e.id !== id)
-      notifications.success('Success', 'Event deleted successfully')
-      return true
+      events.value = events.value.filter(e => e.id !== id)
     } catch (e: any) {
       error.value = e.response?.data?.message || 'Failed to delete event'
-      notifications.error('Error', error.value)
-      return false
+      console.error('Error deleting event:', e)
+      throw e
     } finally {
       loading.value = false
     }
   }
 
-  async function publishEvent(id: number) {
+  const publishEvent = async (id: number) => {
     loading.value = true
     error.value = null
-
     try {
-      const publishedEvent = await eventService.publish(id)
-      const index = events.value.findIndex((e) => e.id === id)
-      if (index > -1) {
-        events.value[index] = publishedEvent
+      const published = await eventService.publish(id)
+      const index = events.value.findIndex(e => e.id === id)
+      if (index !== -1) {
+        events.value[index] = published
       }
-      if (currentEvent.value?.id === id) {
-        currentEvent.value = publishedEvent
+      if (event.value?.id === id) {
+        event.value = published
       }
-      notifications.success('Success', 'Event published successfully')
-      return publishedEvent
+      return published
     } catch (e: any) {
       error.value = e.response?.data?.message || 'Failed to publish event'
-      notifications.error('Error', error.value)
-      return null
+      console.error('Error publishing event:', e)
+      throw e
     } finally {
       loading.value = false
     }
   }
 
-  async function unpublishEvent(id: number) {
+  const unpublishEvent = async (id: number) => {
     loading.value = true
     error.value = null
-
     try {
-      const unpublishedEvent = await eventService.unpublish(id)
-      const index = events.value.findIndex((e) => e.id === id)
-      if (index > -1) {
-        events.value[index] = unpublishedEvent
+      const unpublished = await eventService.unpublish(id)
+      const index = events.value.findIndex(e => e.id === id)
+      if (index !== -1) {
+        events.value[index] = unpublished
       }
-      if (currentEvent.value?.id === id) {
-        currentEvent.value = unpublishedEvent
+      if (event.value?.id === id) {
+        event.value = unpublished
       }
-      notifications.success('Success', 'Event unpublished')
-      return unpublishedEvent
+      return unpublished
     } catch (e: any) {
       error.value = e.response?.data?.message || 'Failed to unpublish event'
-      notifications.error('Error', error.value)
-      return null
+      console.error('Error unpublishing event:', e)
+      throw e
     } finally {
       loading.value = false
     }
   }
 
-  async function fetchMyEvents(filters?: EventFilters) {
+  const fetchStatistics = async (id: number) => {
     loading.value = true
     error.value = null
-
     try {
-      const response = await eventService.getMyEvents(filters)
+      statistics.value = await eventService.getStatistics(id)
+    } catch (e: any) {
+      error.value = e.response?.data?.message || 'Failed to fetch statistics'
+      console.error('Error fetching statistics:', e)
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const fetchMyEvents = async (filters?: EventFilters) => {
+    loading.value = true
+    error.value = null
+    try {
+      const response: PaginatedResponse<Event> = await eventService.getMyEvents(filters)
       events.value = response.data
-      totalPages.value = response.meta.last_page
-      currentPage.value = response.meta.current_page
+      pagination.value = {
+        total: response.total,
+        per_page: response.per_page,
+        current_page: response.current_page,
+        last_page: response.last_page
+      }
     } catch (e: any) {
       error.value = e.response?.data?.message || 'Failed to fetch my events'
-      notifications.error('Error', error.value)
+      console.error('Error fetching my events:', e)
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const duplicateEvent = async (id: number) => {
+    loading.value = true
+    error.value = null
+    try {
+      const duplicated = await eventService.duplicate(id)
+      events.value.unshift(duplicated)
+      return duplicated
+    } catch (e: any) {
+      error.value = e.response?.data?.message || 'Failed to duplicate event'
+      console.error('Error duplicating event:', e)
+      throw e
     } finally {
       loading.value = false
     }
   }
 
   return {
-    events: readonly(events),
-    currentEvent: readonly(currentEvent),
-    loading: readonly(loading),
-    error: readonly(error),
-    totalPages: readonly(totalPages),
-    currentPage: readonly(currentPage),
-
+    events,
+    event,
+    statistics,
+    loading,
+    error,
+    pagination,
     fetchEvents,
     fetchEvent,
     fetchEventBySlug,
+    fetchPublicEvent,
     createEvent,
     updateEvent,
     deleteEvent,
     publishEvent,
     unpublishEvent,
-    fetchMyEvents
+    fetchStatistics,
+    fetchMyEvents,
+    duplicateEvent
   }
 }
