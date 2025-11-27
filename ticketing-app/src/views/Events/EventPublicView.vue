@@ -54,8 +54,6 @@
             </div>
           </div>
 
-          {{ event }}
-
           <!-- Available Tickets -->
           <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <h2 class="text-2xl font-semibold text-gray-900 mb-6">Ticket Types</h2>
