@@ -4,23 +4,23 @@ namespace App\Services;
 
 use App\Repositories\Contracts\EventCounterRepositoryContract;
 use App\Repositories\Contracts\EventRepositoryContract;
-use App\Repositories\Contracts\TicketTypeRepositoryContract;
 use App\Services\Contracts\EventServiceContract;
+use App\Services\Contracts\TicketTypeServiceContract;
 use App\Services\Core\Eloquent\BaseService;
 use Illuminate\Support\Facades\DB;
 
 class EventService extends BaseService implements EventServiceContract
 {
-    protected TicketTypeRepositoryContract $ticketTypeRepository;
+    protected TicketTypeServiceContract $ticketTypeService;
     protected EventCounterRepositoryContract $counterRepository;
 
     public function __construct(
         EventRepositoryContract $repository,
-        TicketTypeRepositoryContract $ticketTypeRepository,
+        TicketTypeServiceContract $ticketTypeService,
         EventCounterRepositoryContract $counterRepository
     ) {
         parent::__construct($repository);
-        $this->ticketTypeRepository = $ticketTypeRepository;
+        $this->ticketTypeService = $ticketTypeService;
         $this->counterRepository = $counterRepository;
     }
 
@@ -36,7 +36,7 @@ class EventService extends BaseService implements EventServiceContract
 
             foreach ($ticketTypes as $ticketType) {
                 $ticketType['event_id'] = $event->id;
-                $this->ticketTypeRepository->create($ticketType);
+                $this->ticketTypeService->create($ticketType);
             }
 
             return $event->load('ticketTypes');
@@ -55,11 +55,11 @@ class EventService extends BaseService implements EventServiceContract
             if ($ticketTypes !== null) {
                 foreach ($ticketTypes as $ticketTypeData) {
                     if (isset($ticketTypeData['id'])) {
-                        $ticketType = $this->ticketTypeRepository->findOrFail($ticketTypeData['id']);
-                        $this->ticketTypeRepository->update($ticketType, $ticketTypeData);
+                        $ticketType = $this->ticketTypeService->find($ticketTypeData['id']);
+                        $this->ticketTypeService->update($ticketType->id, $ticketTypeData);
                     } else {
                         $ticketTypeData['event_id'] = $event->id;
-                        $this->ticketTypeRepository->create($ticketTypeData);
+                        $this->ticketTypeService->create($ticketTypeData);
                     }
                 }
             }
