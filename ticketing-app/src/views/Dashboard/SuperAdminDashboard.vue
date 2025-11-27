@@ -105,7 +105,7 @@
       <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div class="flex items-center justify-between mb-4">
           <h3 class="text-lg font-semibold text-gray-900">Top Organizations</h3>
-          <RouterLink to="/organizations" class="text-sm text-blue-600 hover:text-blue-700">
+          <RouterLink :to="{ name: 'organizations' }" class="text-sm text-blue-600 hover:text-blue-700">
             View all
           </RouterLink>
         </div>
@@ -145,7 +145,7 @@
       <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div class="flex items-center justify-between mb-4">
           <h3 class="text-lg font-semibold text-gray-900">Recent Events</h3>
-          <RouterLink to="/events" class="text-sm text-blue-600 hover:text-blue-700">
+          <RouterLink :to="{ name: 'events' }" class="text-sm text-blue-600 hover:text-blue-700">
             View all
           </RouterLink>
         </div>

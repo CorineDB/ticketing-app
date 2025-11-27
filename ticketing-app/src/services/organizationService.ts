@@ -3,6 +3,7 @@ import type {
   Organization,
   CreateOrganizationData,
   UpdateOrganizationData,
+  OrganizationFilters,
   PaginatedResponse
 } from '@/types/api'
 
@@ -10,8 +11,9 @@ class OrganizationService {
   /**
    * Get all organizations
    */
-  async getAll(): Promise<PaginatedResponse<Organization>> {
-    const response = await api.get<PaginatedResponse<Organization>>('/organizations')
+  async getAll(filters?: OrganizationFilters): Promise<PaginatedResponse<Organization>> {
+    const params = this.buildQueryParams(filters)
+    const response = await api.get<PaginatedResponse<Organization>>('/organizations', { params })
     return response.data
   }
 
@@ -102,6 +104,20 @@ class OrganizationService {
    */
   async removeMember(id: number, userId: number): Promise<void> {
     await api.delete(`/organizations/${id}/members/${userId}`)
+  }
+
+  /**
+   * Build query parameters from filters
+   */
+  private buildQueryParams(filters?: OrganizationFilters): Record<string, any> {
+    if (!filters) return {}
+
+    const params: Record<string, any> = {}
+
+    if (filters.search) params.search = filters.search
+    if (filters.status) params.status = filters.status
+
+    return params
   }
 
   /**

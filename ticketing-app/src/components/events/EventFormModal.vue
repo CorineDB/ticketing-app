@@ -46,10 +46,10 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="md:col-span-2">
           <label class="block text-sm font-medium text-gray-700 mb-2">
-            Event Name <span class="text-red-500">*</span>
+            Event Title <span class="text-red-500">*</span>
           </label>
           <input
-            v-model="formData.name"
+            v-model="formData.title"
             type="text"
             required
             placeholder="Summer Music Festival 2025"
@@ -122,49 +122,12 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="md:col-span-2">
           <label class="block text-sm font-medium text-gray-700 mb-2">
-            Venue <span class="text-red-500">*</span>
+            Location
           </label>
           <input
-            v-model="formData.venue"
+            v-model="formData.location"
             type="text"
-            required
-            placeholder="Convention Center"
-            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          />
-        </div>
-
-        <div class="md:col-span-2">
-          <label class="block text-sm font-medium text-gray-700 mb-2">
-            Address
-          </label>
-          <input
-            v-model="formData.address"
-            type="text"
-            placeholder="123 Main Street"
-            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          />
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">
-            City
-          </label>
-          <input
-            v-model="formData.city"
-            type="text"
-            placeholder="New York"
-            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          />
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">
-            Country
-          </label>
-          <input
-            v-model="formData.country"
-            type="text"
-            placeholder="USA"
+            placeholder="Convention Center or Address"
             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
@@ -245,6 +208,118 @@
       </div>
     </div>
 
+    <!-- Step 4: Ticket Types -->
+    <div v-show="currentStep === 4" class="space-y-4">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-sm font-medium text-gray-700">Ticket Types (Optional)</h3>
+        <button
+          type="button"
+          @click="addTicketType"
+          class="px-3 py-1 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+        >
+          + Add Ticket Type
+        </button>
+      </div>
+
+      <div v-if="formData.ticket_types.length === 0" class="text-center py-8 text-gray-500">
+        <p>No ticket types yet. Add one to get started.</p>
+      </div>
+
+      <div
+        v-for="(ticket, index) in formData.ticket_types"
+        :key="index"
+        class="border border-gray-200 rounded-lg p-4 space-y-3"
+      >
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-sm font-medium text-gray-700">Ticket Type {{ index + 1 }}</span>
+          <button
+            type="button"
+            @click="removeTicketType(index)"
+            class="text-red-600 hover:text-red-700 text-sm"
+          >
+            Remove
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-1">
+              Name <span class="text-red-500">*</span>
+            </label>
+            <input
+              v-model="ticket.name"
+              type="text"
+              placeholder="e.g., VIP, General Admission"
+              required
+              class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-1">
+              Price
+            </label>
+            <input
+              v-model.number="ticket.price"
+              type="number"
+              min="0"
+              step="0.01"
+              placeholder="0.00"
+              class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-1">
+              Quota
+            </label>
+            <input
+              v-model.number="ticket.quota"
+              type="number"
+              min="0"
+              placeholder="Available tickets"
+              class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-1">
+              Usage Limit
+            </label>
+            <input
+              v-model.number="ticket.usage_limit"
+              type="number"
+              min="1"
+              placeholder="Max scans per ticket"
+              class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-1">
+              Valid From
+            </label>
+            <input
+              v-model="ticket.validity_from"
+              type="date"
+              class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-1">
+              Valid To
+            </label>
+            <input
+              v-model="ticket.validity_to"
+              type="date"
+              class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Navigation Buttons -->
     <div class="flex justify-between mt-6 pt-6 border-t border-gray-200">
       <button
@@ -296,34 +371,40 @@ const isOpen = computed({
 
 const isEdit = computed(() => !!props.event)
 const currentStep = ref(1)
-const totalSteps = 3
-const stepTitles = ['General Info', 'Location & Capacity', 'Banner']
+const totalSteps = 4
+const stepTitles = ['General Info', 'Location & Capacity', 'Banner', 'Ticket Types']
 const loading = ref(false)
 const fileInput = ref<HTMLInputElement>()
 const bannerPreview = ref('')
 
-const formData = ref<Partial<CreateEventData>>({
-  name: '',
+const formData = ref({
+  title: '',
   description: '',
-  venue: '',
-  address: '',
-  city: '',
-  country: '',
+  location: '',
   start_date: '',
   end_date: '',
   start_time: '',
   end_time: '',
   capacity: 100,
   dress_code: '',
-  allow_reentry: false
+  allow_reentry: false,
+  image_file: null as File | null,
+  ticket_types: [] as Array<{
+    name: string
+    price: number
+    quota: number
+    validity_from?: string
+    validity_to?: string
+    usage_limit?: number
+  }>
 })
 
 const isStepValid = computed(() => {
   if (currentStep.value === 1) {
-    return formData.value.name && formData.value.start_date && formData.value.start_time
+    return formData.value.title && formData.value.start_date && formData.value.start_time
   }
   if (currentStep.value === 2) {
-    return formData.value.venue && formData.value.capacity && formData.value.capacity > 0
+    return formData.value.capacity && formData.value.capacity > 0
   }
   return true
 })
@@ -331,19 +412,25 @@ const isStepValid = computed(() => {
 watch(() => props.event, (event) => {
   if (event) {
     formData.value = {
-      name: event.name,
+      title: event.name,
       description: event.description,
-      venue: event.venue,
-      address: event.address,
-      city: event.city,
-      country: event.country,
+      location: event.venue,
       start_date: event.start_date,
       end_date: event.end_date,
       start_time: event.start_time,
       end_time: event.end_time,
       capacity: event.capacity,
       dress_code: event.dress_code,
-      allow_reentry: event.allow_reentry
+      allow_reentry: event.allow_reentry,
+      image_file: null,
+      ticket_types: event.ticket_types?.map(tt => ({
+        name: tt.name,
+        price: tt.price || 0,
+        quota: tt.quota || 0,
+        usage_limit: tt.usage_limit || 1,
+        validity_from: tt.validity_from || '',
+        validity_to: tt.validity_to || ''
+      })) || []
     }
     if (event.banner) {
       bannerPreview.value = event.banner
@@ -372,26 +459,73 @@ function handleFileUpload(event: Event) {
       bannerPreview.value = e.target?.result as string
     }
     reader.readAsDataURL(file)
-    formData.value.banner = file
+    formData.value.image_file = file
   }
 }
 
 function removeBanner() {
   bannerPreview.value = ''
-  formData.value.banner = undefined
+  formData.value.image_file = null
   if (fileInput.value) {
     fileInput.value.value = ''
   }
 }
 
+function addTicketType() {
+  formData.value.ticket_types.push({
+    name: '',
+    price: 0,
+    quota: 0,
+    usage_limit: 1,
+    validity_from: '',
+    validity_to: ''
+  })
+}
+
+function removeTicketType(index: number) {
+  formData.value.ticket_types.splice(index, 1)
+}
+
 function handleSubmit() {
-  emit('submit', formData.value as CreateEventData)
-  handleClose()
+  loading.value = true
+
+  // Build start datetime
+  const startDatetime = `${formData.value.start_date} ${formData.value.start_time}:00`
+
+  // Build end datetime - null if not provided
+  const endDatetime = (formData.value.end_date && formData.value.end_time)
+    ? `${formData.value.end_date} ${formData.value.end_time}:00`
+    : null
+
+  // Construct payload matching backend CreateEventRequest
+  const payload: any = {
+    title: formData.value.title,
+    description: formData.value.description,
+    location: formData.value.location,
+    start_datetime: startDatetime,
+    end_datetime: endDatetime,
+    capacity: formData.value.capacity,
+    allow_reentry: formData.value.allow_reentry,
+    dress_code: formData.value.dress_code
+  }
+
+  if (formData.value.image_file) {
+    payload.image_url = formData.value.image_file
+  }
+
+  // Add ticket types if any
+  if (formData.value.ticket_types.length > 0) {
+    payload.ticket_types = formData.value.ticket_types
+  }
+
+  emit('submit', payload)
+  // Don't close here - let parent close on success
 }
 
 function handleClose() {
   isOpen.value = false
   currentStep.value = 1
+  loading.value = false
   if (!isEdit.value) {
     resetForm()
   }
@@ -399,19 +533,18 @@ function handleClose() {
 
 function resetForm() {
   formData.value = {
-    name: '',
+    title: '',
     description: '',
-    venue: '',
-    address: '',
-    city: '',
-    country: '',
+    location: '',
     start_date: '',
     end_date: '',
     start_time: '',
     end_time: '',
     capacity: 100,
     dress_code: '',
-    allow_reentry: false
+    allow_reentry: false,
+    image_file: null,
+    ticket_types: []
   }
   bannerPreview.value = ''
 }

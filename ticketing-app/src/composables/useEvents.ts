@@ -19,9 +19,10 @@ export function useEvents() {
 
     try {
       const response = await eventService.getAll(filters)
+      console.log(response);
       events.value = response.data
-      totalPages.value = response.meta.last_page
-      currentPage.value = response.meta.current_page
+      totalPages.value = response.meta?.last_page
+      currentPage.value = response.meta?.current_page
     } catch (e: any) {
       error.value = e.response?.data?.message || 'Failed to fetch events'
       notifications.error('Error', error.value)

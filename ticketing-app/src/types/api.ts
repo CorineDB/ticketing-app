@@ -5,7 +5,7 @@
 
 // ==================== AUTH & USER TYPES ====================
 
-export type UserType = 'SUPER_ADMIN' | 'ORGANIZER' | 'SCANNER' | 'CASHIER' | 'PARTICIPANT'
+export type UserType = 'super-admin' | 'organizer' | 'agent-de-controle' | 'comptable' | 'participant'
 
 export interface User {
   id: number
@@ -80,6 +80,7 @@ export interface Organization {
   owner?: User
   events_count?: number
   users_count?: number
+  total_revenue?: number
   created_at: string
   updated_at: string
 }
@@ -95,6 +96,11 @@ export interface CreateOrganizationData {
 }
 
 export interface UpdateOrganizationData extends Partial<CreateOrganizationData> {}
+
+export interface OrganizationFilters {
+  search?: string
+  status?: 'active' | 'suspended' | 'inactive'
+}
 
 // ==================== EVENT TYPES ====================
 
@@ -134,21 +140,24 @@ export interface Event {
 }
 
 export interface CreateEventData {
-  name: string
+  title: string
   description?: string
-  banner?: File
-  venue: string
-  address?: string
-  city?: string
-  country?: string
-  start_date: string
-  end_date: string
-  start_time: string
-  end_time?: string
+  image_url?: string | File
+  location?: string
+  start_datetime: string
+  end_datetime: string
   capacity: number
-  allow_reentry?: boolean
+  timezone?: string
   dress_code?: string
-  organization_id?: number
+  allow_reentry?: boolean
+  ticket_types?: Array<{
+    name: string
+    price?: number
+    validity_from?: string
+    validity_to?: string
+    usage_limit?: number
+    quota?: number
+  }>
 }
 
 export interface UpdateEventData extends Partial<CreateEventData> {

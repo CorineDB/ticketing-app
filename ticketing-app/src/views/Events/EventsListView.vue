@@ -275,13 +275,19 @@ function confirmDelete(event: Event) {
 }
 
 async function handleEventSubmit(data: any) {
+  let result
   if (selectedEvent.value) {
-    await updateEvent(selectedEvent.value.id, data)
+    result = await updateEvent(selectedEvent.value.id, data)
   } else {
-    await createEvent(data)
+    result = await createEvent(data)
   }
-  selectedEvent.value = null
-  loadEvents()
+
+  // Only close modal if operation succeeded
+  if (result) {
+    showEventModal.value = false
+    selectedEvent.value = null
+    await loadEvents()
+  }
 }
 
 async function handleDelete() {

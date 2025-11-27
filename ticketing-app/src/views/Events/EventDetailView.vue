@@ -335,7 +335,7 @@
       <h3 class="text-lg font-semibold text-gray-900 mb-2">Event not found</h3>
       <p class="text-gray-600 mb-6">The event you're looking for doesn't exist</p>
       <RouterLink
-        to="/events"
+        :to="{ name: 'events' }"
         class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 inline-flex items-center gap-2"
       >
         <ArrowLeftIcon class="w-5 h-5" />

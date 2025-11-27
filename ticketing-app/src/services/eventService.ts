@@ -27,12 +27,23 @@ class EventService {
   }
 
   /**
+   * Get public event by ID
+   */
+  async getPublicById(id: string): Promise<Event> {
+    const response = await api.get<{ data: Event }>(`/public/events/${id}`)
+    return response.data.data
+  }
+
+
+  /**
    * Get event by slug (public access)
    */
   async getBySlug(slug: string): Promise<Event> {
-    const response = await api.get<{ data: Event }>(`/events/slug/${slug}`)
+    const response = await api.get<{ data: Event }>(`/events/${slug}`)
     return response.data.data
   }
+
+
 
   /**
    * Create a new event
@@ -133,6 +144,21 @@ class EventService {
       if (value !== undefined && value !== null) {
         if (value instanceof File) {
           formData.append(key, value)
+        } else if (Array.isArray(value)) {
+          // Handle arrays (like ticket_types)
+          value.forEach((item, index) => {
+            if (typeof item === 'object') {
+              // Handle array of objects
+              Object.entries(item).forEach(([subKey, subValue]) => {
+                // Only append if value is not empty string, undefined, or null
+                if (subValue !== undefined && subValue !== null && subValue !== '') {
+                  formData.append(`${key}[${index}][${subKey}]`, String(subValue))
+                }
+              })
+            } else {
+              formData.append(`${key}[${index}]`, String(item))
+            }
+          })
         } else {
           formData.append(key, String(value))
         }

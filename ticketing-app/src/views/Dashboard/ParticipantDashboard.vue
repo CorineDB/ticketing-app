@@ -18,7 +18,7 @@
           </p>
         </div>
         <RouterLink
-          to="/events"
+          :to="{ name: 'events' }"
           class="px-6 py-3 bg-white text-blue-600 rounded-lg font-medium hover:bg-blue-50 flex items-center gap-2"
         >
           <SearchIcon class="w-5 h-5" />
@@ -52,7 +52,7 @@
         <h3 class="text-lg font-medium text-gray-900 mb-1">No tickets yet</h3>
         <p class="text-gray-600 mb-4">Start by browsing available events</p>
         <RouterLink
-          to="/events"
+          :to="{ name: 'events' }"
           class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
         >
           <SearchIcon class="w-5 h-5" />

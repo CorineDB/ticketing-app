@@ -167,9 +167,9 @@ export const PERMISSION_GROUPS = {
  * The actual permissions are managed on the backend
  */
 export const DEFAULT_PERMISSIONS_BY_TYPE = {
-  SUPER_ADMIN: Object.values(PERMISSIONS), // All permissions
+  super-admin: Object.values(PERMISSIONS), // All permissions
 
-  ORGANIZER: [
+  organizer: [
     PERMISSIONS.VIEW_EVENTS,
     PERMISSIONS.CREATE_EVENTS,
     PERMISSIONS.UPDATE_EVENTS,
@@ -189,20 +189,20 @@ export const DEFAULT_PERMISSIONS_BY_TYPE = {
     PERMISSIONS.MANAGE_USERS
   ],
 
-  SCANNER: [
+  'agent-de-controle': [
     PERMISSIONS.PERFORM_SCAN,
     PERMISSIONS.VIEW_SCAN_LOGS,
     PERMISSIONS.VIEW_GATES
   ],
 
-  CASHIER: [
+  comptable: [
     PERMISSIONS.VIEW_TICKETS,
     PERMISSIONS.CREATE_TICKETS,
     PERMISSIONS.MARK_TICKETS_PAID,
     PERMISSIONS.VIEW_EVENTS
   ],
 
-  PARTICIPANT: [
+  participant: [
     PERMISSIONS.VIEW_EVENTS
   ]
 }
