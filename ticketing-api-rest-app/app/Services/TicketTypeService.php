@@ -6,6 +6,7 @@ use App\Repositories\Contracts\TicketTypeRepositoryContract;
 use App\Services\Contracts\PaymentServiceContract;
 use App\Services\Contracts\TicketTypeServiceContract;
 use App\Services\Core\Eloquent\BaseService;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -21,7 +22,7 @@ class TicketTypeService extends BaseService implements TicketTypeServiceContract
         $this->paymentService = $paymentService;
     }
 
-    public function create(array $data)
+    public function create(array $data): Model
     {
         return DB::transaction(function () use ($data) {
             $ticketType = $this->repository->create($data);
