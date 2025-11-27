@@ -66,8 +66,10 @@ const error = ref('')
 const form = ref({ firstname: '', lastname: '', email: '', phone_number: '' })
 
 onMounted(async () => {
-  const id = parseInt(route.params.ticketTypeId as string)
+  const id = route.params.ticketTypeId as string
+  console.log('Loading ticket type:', id)
   if (id) await fetchTicketType(id)
+  console.log('Loaded ticket type:', ticketType.value)
 })
 
 const handleSubmit = async () => {
