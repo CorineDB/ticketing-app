@@ -78,13 +78,13 @@
                     {{ formatCurrency(ticketType.price) }}
                   </div>
                   <button
-                    v-if="event.status === 'published' && ticketType.quantity_available > 0"
+                    v-if="ticketType.quantity_available > 0"
                     @click="selectTicketType(ticketType)"
                     class="mt-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                   >
-                    Select
+                    Buy Ticket
                   </button>
-                  <span v-else class="text-sm text-gray-500">Unavailable</span>
+                  <span v-else class="text-sm text-gray-500">Sold Out</span>
                 </div>
               </div>
             </div>
@@ -133,15 +133,11 @@
 
             <div class="mt-6 pt-6 border-t border-gray-200">
               <button
-                v-if="event.status === 'published'"
                 @click="scrollToTickets"
                 class="w-full py-3 px-4 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700"
               >
                 Get Tickets
               </button>
-              <div v-else class="text-center text-gray-500">
-                Tickets not available
-              </div>
             </div>
           </div>
         </div>
