@@ -39,7 +39,7 @@ class GateService {
   /**
    * Get a single gate by ID
    */
-  async getById(id: number): Promise<Gate> {
+  async getById(id: string): Promise<Gate> {
     const response = await api.get<ApiResponse<Gate>>(`${this.BASE_URL}/${id}`)
     return response.data.data!
   }
@@ -55,7 +55,7 @@ class GateService {
   /**
    * Update an existing gate
    */
-  async update(id: number, data: UpdateGateData): Promise<Gate> {
+  async update(id: string, data: UpdateGateData): Promise<Gate> {
     const response = await api.put<ApiResponse<Gate>>(`${this.BASE_URL}/${id}`, data)
     return response.data.data!
   }
@@ -63,14 +63,14 @@ class GateService {
   /**
    * Delete a gate
    */
-  async delete(id: number): Promise<void> {
+  async delete(id: string): Promise<void> {
     await api.delete(`${this.BASE_URL}/${id}`)
   }
 
   /**
    * Update gate status (active, pause, inactive)
    */
-  async updateStatus(id: number, status: 'active' | 'pause' | 'inactive'): Promise<Gate> {
+  async updateStatus(id: string, status: 'active' | 'pause' | 'inactive'): Promise<Gate> {
     const response = await api.patch<ApiResponse<Gate>>(`${this.BASE_URL}/${id}/status`, {
       status
     })

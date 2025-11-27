@@ -1,6 +1,6 @@
 <template>
   <RouterLink
-    :to="`/events/${event.id}`"
+    :to="`/events/${event.slug}`"
     class="block bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow group"
   >
     <!-- Event Banner -->

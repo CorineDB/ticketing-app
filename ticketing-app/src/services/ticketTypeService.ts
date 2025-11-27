@@ -17,7 +17,7 @@ class TicketTypeService {
   /**
    * Get single ticket type by ID
    */
-  async getById(id: number): Promise<TicketType> {
+  async getById(id: string): Promise<TicketType> {
     const response = await api.get<{ data: TicketType }>(`/ticket-types/${id}`)
     return response.data.data
   }
@@ -33,7 +33,7 @@ class TicketTypeService {
   /**
    * Update an existing ticket type
    */
-  async update(id: number, data: UpdateTicketTypeData): Promise<TicketType> {
+  async update(id: string, data: UpdateTicketTypeData): Promise<TicketType> {
     const response = await api.put<{ data: TicketType }>(`/ticket-types/${id}`, data)
     return response.data.data
   }
@@ -41,14 +41,14 @@ class TicketTypeService {
   /**
    * Delete a ticket type
    */
-  async delete(id: number): Promise<void> {
+  async delete(id: string): Promise<void> {
     await api.delete(`/ticket-types/${id}`)
   }
 
   /**
    * Activate a ticket type
    */
-  async activate(id: number): Promise<TicketType> {
+  async activate(id: string): Promise<TicketType> {
     const response = await api.post<{ data: TicketType }>(`/ticket-types/${id}/activate`)
     return response.data.data
   }
@@ -56,7 +56,7 @@ class TicketTypeService {
   /**
    * Deactivate a ticket type
    */
-  async deactivate(id: number): Promise<TicketType> {
+  async deactivate(id: string): Promise<TicketType> {
     const response = await api.post<{ data: TicketType }>(`/ticket-types/${id}/deactivate`)
     return response.data.data
   }

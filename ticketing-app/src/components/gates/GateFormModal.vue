@@ -129,7 +129,7 @@ const formData = ref<{
   gate_type: GateType | ''
   location: string
   status: GateStatus
-  scanner_id: number | null
+  scanner_id: string | null
 }>({
   name: '',
   gate_type: '',

@@ -21,7 +21,7 @@ export function useTicketTypes() {
     }
   }
 
-  const fetchTicketType = async (id: number) => {
+  const fetchTicketType = async (id: string) => {
     loading.value = true
     error.value = null
     try {
@@ -50,7 +50,7 @@ export function useTicketTypes() {
     }
   }
 
-  const updateTicketType = async (id: number, data: UpdateTicketTypeData) => {
+  const updateTicketType = async (id: string, data: UpdateTicketTypeData) => {
     loading.value = true
     error.value = null
     try {
@@ -72,7 +72,7 @@ export function useTicketTypes() {
     }
   }
 
-  const deleteTicketType = async (id: number) => {
+  const deleteTicketType = async (id: string) => {
     loading.value = true
     error.value = null
     try {
@@ -87,7 +87,7 @@ export function useTicketTypes() {
     }
   }
 
-  const activateTicketType = async (id: number) => {
+  const activateTicketType = async (id: string) => {
     loading.value = true
     error.value = null
     try {
@@ -109,7 +109,7 @@ export function useTicketTypes() {
     }
   }
 
-  const deactivateTicketType = async (id: number) => {
+  const deactivateTicketType = async (id: string) => {
     loading.value = true
     error.value = null
     try {

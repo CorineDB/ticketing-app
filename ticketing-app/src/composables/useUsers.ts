@@ -34,7 +34,7 @@ export function useUsers() {
     }
   }
 
-  const fetchUser = async (id: number) => {
+  const fetchUser = async (id: string) => {
     loading.value = true
     error.value = null
     try {
@@ -63,7 +63,7 @@ export function useUsers() {
     }
   }
 
-  const updateUser = async (id: number, data: any) => {
+  const updateUser = async (id: string, data: any) => {
     loading.value = true
     error.value = null
     try {
@@ -85,7 +85,7 @@ export function useUsers() {
     }
   }
 
-  const deleteUser = async (id: number) => {
+  const deleteUser = async (id: string) => {
     loading.value = true
     error.value = null
     try {

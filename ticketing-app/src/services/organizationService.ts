@@ -20,7 +20,7 @@ class OrganizationService {
   /**
    * Get single organization by ID
    */
-  async getById(id: number): Promise<Organization> {
+  async getById(id: string): Promise<Organization> {
     const response = await api.get<{ data: Organization }>(`/organizations/${id}`)
     return response.data.data
   }
@@ -47,7 +47,7 @@ class OrganizationService {
   /**
    * Update an existing organization
    */
-  async update(id: number, data: UpdateOrganizationData): Promise<Organization> {
+  async update(id: string, data: UpdateOrganizationData): Promise<Organization> {
     const formData = this.toFormData(data)
     formData.append('_method', 'PUT')
     const response = await api.post<{ data: Organization }>(`/organizations/${id}`, formData, {
@@ -59,14 +59,14 @@ class OrganizationService {
   /**
    * Delete an organization
    */
-  async delete(id: number): Promise<void> {
+  async delete(id: string): Promise<void> {
     await api.delete(`/organizations/${id}`)
   }
 
   /**
    * Suspend an organization
    */
-  async suspend(id: number, reason?: string): Promise<Organization> {
+  async suspend(id: string, reason?: string): Promise<Organization> {
     const response = await api.post<{ data: Organization }>(`/organizations/${id}/suspend`, {
       reason
     })
@@ -76,7 +76,7 @@ class OrganizationService {
   /**
    * Activate an organization
    */
-  async activate(id: number): Promise<Organization> {
+  async activate(id: string): Promise<Organization> {
     const response = await api.post<{ data: Organization }>(`/organizations/${id}/activate`)
     return response.data.data
   }
@@ -84,7 +84,7 @@ class OrganizationService {
   /**
    * Get organization members
    */
-  async getMembers(id: number): Promise<any[]> {
+  async getMembers(id: string): Promise<any[]> {
     const response = await api.get(`/organizations/${id}/members`)
     return response.data.data
   }
@@ -92,7 +92,7 @@ class OrganizationService {
   /**
    * Add member to organization
    */
-  async addMember(id: number, userId: number, role: string): Promise<void> {
+  async addMember(id: string, userId: number, role: string): Promise<void> {
     await api.post(`/organizations/${id}/members`, {
       user_id: userId,
       role
@@ -102,7 +102,7 @@ class OrganizationService {
   /**
    * Remove member from organization
    */
-  async removeMember(id: number, userId: number): Promise<void> {
+  async removeMember(id: string, userId: number): Promise<void> {
     await api.delete(`/organizations/${id}/members/${userId}`)
   }
 

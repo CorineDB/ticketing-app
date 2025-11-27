@@ -35,7 +35,7 @@ export function useEvents() {
     }
   }
 
-  const fetchEvent = async (id: number) => {
+  const fetchEvent = async (id: string) => {
     loading.value = true
     error.value = null
     try {
@@ -90,7 +90,7 @@ export function useEvents() {
     }
   }
 
-  const updateEvent = async (id: number, data: UpdateEventData) => {
+  const updateEvent = async (id: string, data: UpdateEventData) => {
     loading.value = true
     error.value = null
     try {
@@ -112,7 +112,7 @@ export function useEvents() {
     }
   }
 
-  const deleteEvent = async (id: number) => {
+  const deleteEvent = async (id: string) => {
     loading.value = true
     error.value = null
     try {
@@ -127,7 +127,7 @@ export function useEvents() {
     }
   }
 
-  const publishEvent = async (id: number) => {
+  const publishEvent = async (id: string) => {
     loading.value = true
     error.value = null
     try {
@@ -149,7 +149,7 @@ export function useEvents() {
     }
   }
 
-  const unpublishEvent = async (id: number) => {
+  const unpublishEvent = async (id: string) => {
     loading.value = true
     error.value = null
     try {
@@ -171,7 +171,7 @@ export function useEvents() {
     }
   }
 
-  const fetchStatistics = async (id: number) => {
+  const fetchStatistics = async (id: string) => {
     loading.value = true
     error.value = null
     try {
@@ -204,7 +204,7 @@ export function useEvents() {
     }
   }
 
-  const duplicateEvent = async (id: number) => {
+  const duplicateEvent = async (id: string) => {
     loading.value = true
     error.value = null
     try {

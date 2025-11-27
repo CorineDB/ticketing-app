@@ -21,7 +21,7 @@ class EventService {
   /**
    * Get single event by ID
    */
-  async getById(id: number): Promise<Event> {
+  async getById(id: string): Promise<Event> {
     const response = await api.get<{ data: Event }>(`/events/${id}`)
     return response.data.data
   }
@@ -39,7 +39,7 @@ class EventService {
    * Get event by slug (public access)
    */
   async getBySlug(slug: string): Promise<Event> {
-    const response = await api.get<{ data: Event }>(`/events/${slug}`)
+    const response = await api.get<{ data: Event }>(`/events/slug/${slug}`)
     return response.data.data
   }
 
@@ -59,7 +59,7 @@ class EventService {
   /**
    * Update an existing event
    */
-  async update(id: number, data: UpdateEventData): Promise<Event> {
+  async update(id: string, data: UpdateEventData): Promise<Event> {
     const formData = this.toFormData(data)
     formData.append('_method', 'PUT')
     const response = await api.post<{ data: Event }>(`/events/${id}`, formData, {
@@ -71,14 +71,14 @@ class EventService {
   /**
    * Delete an event
    */
-  async delete(id: number): Promise<void> {
+  async delete(id: string): Promise<void> {
     await api.delete(`/events/${id}`)
   }
 
   /**
    * Publish an event
    */
-  async publish(id: number): Promise<Event> {
+  async publish(id: string): Promise<Event> {
     const response = await api.post<{ data: Event }>(`/events/${id}/publish`)
     return response.data.data
   }
@@ -86,7 +86,7 @@ class EventService {
   /**
    * Unpublish an event
    */
-  async unpublish(id: number): Promise<Event> {
+  async unpublish(id: string): Promise<Event> {
     const response = await api.post<{ data: Event }>(`/events/${id}/unpublish`)
     return response.data.data
   }
@@ -94,7 +94,7 @@ class EventService {
   /**
    * Get event statistics
    */
-  async getStatistics(id: number): Promise<EventStatistics> {
+  async getStatistics(id: string): Promise<EventStatistics> {
     const response = await api.get<{ data: EventStatistics }>(`/events/${id}/statistics`)
     return response.data.data
   }
@@ -111,7 +111,7 @@ class EventService {
   /**
    * Duplicate an event
    */
-  async duplicate(id: number): Promise<Event> {
+  async duplicate(id: string): Promise<Event> {
     const response = await api.post<{ data: Event }>(`/events/${id}/duplicate`)
     return response.data.data
   }
