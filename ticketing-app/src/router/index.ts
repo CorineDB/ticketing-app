@@ -14,6 +14,7 @@ const EventsListView = () => import('@/views/Events/EventsListView.vue')
 const EventDetailView = () => import('@/views/Events/EventDetailView.vue')
 const EventFormView = () => import('@/views/Events/EventFormView.vue')
 const EventPublicView = () => import('@/views/Events/EventPublicView.vue')
+const EventsPublicListView = () => import('@/views/Events/EventsPublicListView.vue')
 
 const TicketsListView = () => import('@/views/Tickets/TicketsListView.vue')
 const TicketDetailView = () => import('@/views/Tickets/TicketDetailView.vue')
@@ -34,6 +35,18 @@ const ReportsView = () => import('@/views/Reports/ReportsView.vue')
 
 const routes: RouteRecordRaw[] = [
   // Public routes
+  {
+    path: '/',
+    name: 'home',
+    component: EventsPublicListView,
+    meta: { public: true }
+  },
+  {
+    path: '/events',
+    name: 'events-public',
+    component: EventsPublicListView,
+    meta: { public: true }
+  },
   {
     path: '/login',
     name: 'login',
@@ -78,10 +91,6 @@ const routes: RouteRecordRaw[] = [
   },
 
   // Authenticated routes - All prefixed with /dashboard
-  {
-    path: '/',
-    redirect: '/dashboard'
-  },
   {
     path: '/dashboard',
     name: 'dashboard',
