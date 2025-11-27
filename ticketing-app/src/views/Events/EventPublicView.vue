@@ -60,7 +60,7 @@
 
             <div v-if="event.ticket_types && event.ticket_types.length > 0" class="space-y-4">
               <div
-                v-for="ticketType in event.ticket_types.filter(t => t.is_active)"
+                v-for="ticketType in event.ticket_types"
                 :key="ticketType.id"
                 class="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-blue-500 transition-colors"
               >
@@ -79,8 +79,9 @@
                   </div>
                   <button
                     v-if="ticketType.quantity_available > 0"
-                    @click="selectTicketType(ticketType)"
-                    class="mt-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                    @click.prevent="selectTicketType(ticketType)"
+                    type="button"
+                    class="mt-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer"
                   >
                     Buy Ticket
                   </button>
