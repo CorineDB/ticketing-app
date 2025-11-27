@@ -2,19 +2,20 @@ services:
   # PostgreSQL Database
   - type: pserv
     name: ticketing-db
-    env: docker
+    databaseName: ticketing
+    user: ticketing
     plan: starter
     region: oregon
 
   # Backend API (Laravel)
   - type: web
     name: ticketing-api
-    env: docker
+    runtime: docker
     region: oregon
     plan: starter
-    buildCommand: "./deploy.sh"
-    startCommand: "php artisan serve --host=0.0.0.0 --port=$PORT"
     healthCheckPath: /api/health
+    dockerfilePath: ./ticketing-api-rest-app/Dockerfile
+    dockerContext: ./ticketing-api-rest-app
     envVars:
       - key: APP_NAME
         value: Plateforme de gestion des tickets
@@ -25,15 +26,9 @@ services:
       - key: APP_DEBUG
         value: false
       - key: APP_URL
-        fromService:
-          type: web
-          name: ticketing-api
-          property: url
+        sync: false
       - key: CLIENT_APP_URL
-        fromService:
-          type: web
-          name: ticketing-frontend
-          property: url
+        sync: false
       - key: APP_LOCALE
         value: en
       - key: APP_FALLBACK_LOCALE
@@ -162,16 +157,15 @@ services:
         value: live
       - key: FEDAPAY_CURRENCY
         value: XOF
-    rootDir: ticketing-api-rest-app
 
   # Queue Worker (Background Jobs)
   - type: worker
     name: ticketing-queue
-    env: docker
+    runtime: docker
     region: oregon
     plan: starter
-    buildCommand: "./deploy.sh"
-    startCommand: "php artisan queue:work --tries=3 --timeout=90"
+    dockerfilePath: ./ticketing-api-rest-app/Dockerfile.worker
+    dockerContext: ./ticketing-api-rest-app
     envVars:
       - key: APP_NAME
         value: Plateforme de gestion des tickets - Queue Worker
@@ -182,15 +176,9 @@ services:
       - key: APP_DEBUG
         value: false
       - key: APP_URL
-        fromService:
-          type: web
-          name: ticketing-api
-          property: url
+        sync: false
       - key: CLIENT_APP_URL
-        fromService:
-          type: web
-          name: ticketing-frontend
-          property: url
+        sync: false
       - key: APP_LOCALE
         value: en
       - key: APP_FALLBACK_LOCALE
@@ -281,13 +269,11 @@ services:
         value: live
       - key: FEDAPAY_CURRENCY
         value: XOF
-    rootDir: ticketing-api-rest-app
 
   # Frontend (Vue 3 Static Site)
   - type: web
     name: ticketing-frontend
     env: static
-    region: oregon
     buildCommand: "cd ticketing-app && npm install && npm run build"
     staticPublishPath: ticketing-app/dist
     routes:
@@ -296,11 +282,7 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_API_URL
-        fromService:
-          type: web
-          name: ticketing-api
-          property: url
-          envVarKey: VITE_API_URL
+        sync: false
       - key: VITE_CINETPAY_API_KEY
         sync: false
       - key: VITE_CINETPAY_SITE_ID

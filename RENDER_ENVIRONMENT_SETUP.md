@@ -21,6 +21,13 @@ This guide provides the exact values you need to configure in Render.com after d
 
 After deployment, you need to manually set these environment variables:
 
+#### Application URLs
+```
+APP_URL=https://your-api-name.onrender.com
+CLIENT_APP_URL=https://your-frontend-name.onrender.com
+```
+> **Note:** Replace with your actual Render service URLs after deployment
+
 #### Mail Configuration (SMTP)
 ```
 MAIL_HOST=smtp.titan.email
@@ -77,6 +84,13 @@ The Queue Worker needs the same environment variables as the Backend API. Set al
 
 ### 3. Frontend Service (`ticketing-frontend`)
 
+#### API URL Configuration
+```
+VITE_API_URL=https://your-api-name.onrender.com/api
+```
+> **Important:** Make sure to include `/api` at the end of the URL
+> **Note:** Replace with your actual backend API URL after deployment
+
 #### CinetPay (for frontend payment integration)
 ```
 VITE_CINETPAY_API_KEY=your-cinetpay-api-key
@@ -96,13 +110,11 @@ The following variables are automatically set by Render (you don't need to set t
 
 ### Backend API & Queue Worker
 - ✅ `APP_KEY` - Auto-generated encryption key
-- ✅ `APP_URL` - Auto-set from service URL
-- ✅ `CLIENT_APP_URL` - Auto-set from frontend URL
 - ✅ `TOKEN_ENCRYPTION_KEY` - Auto-generated
 - ✅ `DB_CONNECTION`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` - Auto-set from database
 
 ### Frontend
-- ✅ `VITE_API_URL` - Auto-set from backend API URL
+- ⚠️ All frontend environment variables must be set manually (Render doesn't auto-populate static site env vars)
 
 ## Step-by-Step Setup Process
 
@@ -115,28 +127,40 @@ The following variables are automatically set by Render (you don't need to set t
 5. Click "Apply"
 6. Wait for initial deployment (it will fail because environment variables are missing)
 
-### Step 2: Configure Backend API Environment Variables
+### Step 2: Note Your Service URLs
+
+After the initial deployment (which may fail due to missing env vars), note your service URLs:
+
+1. Go to "ticketing-api" service → Copy the URL (e.g., `https://ticketing-api-xxxx.onrender.com`)
+2. Go to "ticketing-frontend" service → Copy the URL (e.g., `https://ticketing-frontend-xxxx.onrender.com`)
+
+### Step 3: Configure Backend API Environment Variables
 
 1. Go to "ticketing-api" service
 2. Click "Environment" tab
-3. Add all the environment variables listed in section 1 above
+3. Add all the environment variables listed in section 1 above:
+   - Set `APP_URL` to your backend API URL
+   - Set `CLIENT_APP_URL` to your frontend URL
+   - Set all other variables from your `.env` file
 4. Click "Save Changes" (this triggers a redeploy)
 
-### Step 3: Configure Queue Worker Environment Variables
+### Step 4: Configure Queue Worker Environment Variables
 
 1. Go to "ticketing-queue" service
 2. Click "Environment" tab
-3. Add the same environment variables as the Backend API
+3. Add the same environment variables as the Backend API (including APP_URL and CLIENT_APP_URL)
 4. Click "Save Changes"
 
-### Step 4: Configure Frontend Environment Variables
+### Step 5: Configure Frontend Environment Variables
 
 1. Go to "ticketing-frontend" service
 2. Click "Environment" tab
-3. Add the frontend environment variables (VITE_* variables)
+3. Add the frontend environment variables:
+   - Set `VITE_API_URL` to your backend API URL + `/api` (e.g., `https://ticketing-api-xxxx.onrender.com/api`)
+   - Set payment gateway variables (VITE_CINETPAY_*, etc.)
 4. Click "Save Changes"
 
-### Step 5: Verify Deployment
+### Step 6: Verify Deployment
 
 1. Wait for all services to finish deploying (check the "Events" tab)
 2. Check Backend API health:
@@ -154,7 +178,7 @@ The following variables are automatically set by Render (you don't need to set t
 
 3. Visit your frontend URL to test the application
 
-### Step 6: Configure Webhooks
+### Step 7: Configure Webhooks
 
 #### FedaPay Webhook Setup
 1. Log in to your FedaPay dashboard
@@ -166,7 +190,7 @@ The following variables are automatically set by Render (you don't need to set t
 1. Log in to your CinetPay dashboard
 2. Configure callback URL to point to your Render backend
 
-### Step 7: Test Payment Integration
+### Step 8: Test Payment Integration
 
 1. Visit your frontend application
 2. Create a test event
@@ -226,6 +250,8 @@ The following variables are automatically set by Render (you don't need to set t
 Use this checklist to ensure all variables are set:
 
 ### Backend API (ticketing-api) ✓
+- [ ] APP_URL
+- [ ] CLIENT_APP_URL
 - [ ] MAIL_HOST
 - [ ] MAIL_USERNAME
 - [ ] MAIL_PASSWORD
@@ -251,6 +277,7 @@ Use this checklist to ensure all variables are set:
 - [ ] Same as Backend API (copy all variables)
 
 ### Frontend (ticketing-frontend) ✓
+- [ ] VITE_API_URL
 - [ ] VITE_CINETPAY_API_KEY
 - [ ] VITE_CINETPAY_SITE_ID
 - [ ] VITE_PAYDUNYA_API_KEY (optional)
