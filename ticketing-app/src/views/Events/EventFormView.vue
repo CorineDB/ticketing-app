@@ -237,7 +237,7 @@ const showTicketTypeModal = ref(false)
 onMounted(() => {
   if (route.params.id) {
     isEditing.value = true
-    const eventId = parseInt(Array.isArray(route.params.id) ? route.params.id[0] : route.params.id)
+    const eventId = (Array.isArray(route.params.id) ? route.params.id[0] : route.params.id)
     fetchEvent(eventId)
   }
 })
