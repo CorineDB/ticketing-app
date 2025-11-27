@@ -16,7 +16,7 @@ class CreateEventRequest extends FormRequest
         return [
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'image_url' => 'nullable|url',
+            'image_url' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'start_datetime' => 'required|date',
             'end_datetime' => 'required|date|after:start_datetime',
             'location' => 'nullable|string|max:255',

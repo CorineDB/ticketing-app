@@ -11,4 +11,6 @@ interface EventRepositoryContract extends BaseRepositoryInterface
     public function findUpcomingEvents();
 
     public function searchEvents(array $filters);
+
+    public function findBySlugAndOrganisateurId(string $slug, string $organisateurId);
 }

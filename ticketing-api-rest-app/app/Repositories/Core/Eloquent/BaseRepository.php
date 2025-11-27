@@ -2,7 +2,7 @@
 
 namespace App\Repositories\Core\Eloquent;
 
-use App\Repositories\Contracts\BaseRepositoryInterface;
+use App\Repositories\Core\Contracts\BaseRepositoryInterface;
 use Illuminate\Database\Eloquent\Model;
 
 abstract class BaseRepository implements BaseRepositoryInterface

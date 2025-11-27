@@ -17,8 +17,12 @@ class UserController extends Controller
 
     public function index()
     {
-        $users = $this->userService->list();
-        return response()->json(['data' => $users]);
+        if (!auth()->check() || !auth()->user()->isSuperAdmin()) {
+            return response()->json(['message' => 'Unauthorized.'], 403);
+        }
+
+        $organizers = $this->userService->getOrganizers();
+        return response()->json(['data' => $organizers]);
     }
 
     public function store(Request $request)

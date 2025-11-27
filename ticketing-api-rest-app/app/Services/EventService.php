@@ -8,6 +8,8 @@ use App\Services\Contracts\EventServiceContract;
 use App\Services\Contracts\TicketTypeServiceContract;
 use App\Services\Core\Eloquent\BaseService;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 class EventService extends BaseService implements EventServiceContract
 {
@@ -29,6 +31,20 @@ class EventService extends BaseService implements EventServiceContract
         return DB::transaction(function () use ($data) {
             $ticketTypes = $data['ticket_types'] ?? [];
             unset($data['ticket_types']);
+
+            $slug = Str::slug($data['title']);
+            $originalSlug = $slug;
+            $count = 1;
+
+            while ($this->repository->findBySlugAndOrganisateurId($slug, $data['organisateur_id'])) {
+                $slug = $originalSlug . '-' . $count++;
+            }
+            $data['slug'] = $slug;
+
+            if (isset($data['image_url'])) {
+                $imagePath = $data['image_url']->store('events', 'public'); // Store in 'storage/app/public/events'
+                $data['image_url'] = Storage::url($imagePath); // Get public URL
+            }
 
             $event = $this->repository->create($data);
 
@@ -81,6 +97,11 @@ class EventService extends BaseService implements EventServiceContract
     public function search(array $filters)
     {
         return $this->repository->searchEvents($filters);
+    }
+
+    public function getEventBySlugAndOrganisateurId(string $slug, string $organisateurId)
+    {
+        return $this->repository->findBySlugAndOrganisateurId($slug, $organisateurId);
     }
 
     public function getEventStats(string $eventId)

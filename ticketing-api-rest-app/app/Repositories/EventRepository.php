@@ -47,4 +47,11 @@ class EventRepository extends BaseRepository implements EventRepositoryContract
 
         return $query->orderBy('start_datetime', 'asc')->get();
     }
+
+    public function findBySlugAndOrganisateurId(string $slug, string $organisateurId)
+    {
+        return $this->model->where('slug', $slug)
+                           ->where('organisateur_id', $organisateurId)
+                           ->first();
+    }
 }

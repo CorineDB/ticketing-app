@@ -26,6 +26,7 @@ class Event extends Model
         'dress_code',
         'allow_reentry',
         'created_by',
+        'slug',
     ];
 
     protected $casts = [
