@@ -27,12 +27,12 @@ class EventService {
   }
 
   /**
-   * Get single event by ID
+   * Get single event by ID (authenticated)
    */
   async getById(id: string): Promise<Event> {
     const response = await api.get<{ data: Event }>(`/events/${id}`)
     console.log("Response Data:", response.data);
-    return response.data
+    return response.data.data
   }
 
   /**
@@ -45,11 +45,11 @@ class EventService {
 
 
   /**
-   * Get event by slug (public access)
+   * Get event by slug (authenticated)
    */
   async getBySlug(slug: string): Promise<Event> {
     const response = await api.get<{ data: Event }>(`/events/slug/${slug}`)
-    return response.data
+    return response.data.data
   }
 
 
