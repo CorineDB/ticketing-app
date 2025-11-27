@@ -72,7 +72,7 @@
                     {{ ticketType.description }}
                   </p>
                   <div class="mt-2 text-sm text-gray-500">
-                    {{ ticketType.quantity_available }} available
+                    {{ ticketType.quantity_available || 0 }} available
                   </div>
                 </div>
                 <div class="text-right ml-4">
@@ -80,12 +80,14 @@
                     {{ formatCurrency(ticketType.price) }}
                   </div>
                   <button
-                    @click="selectTicketType(ticketType)"
-                    class="mt-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                    v-if="!ticketType.quantity_available || ticketType.quantity_available > 0"
+                    @click.prevent="selectTicketType(ticketType)"
+                    type="button"
+                    class="mt-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer"
                   >
                     Buy Ticket
-                  </button><!-- 
-                  <span v-else class="text-sm text-gray-500">Sold Out</span> -->
+                  </button>
+                  <span v-else class="text-sm text-red-600 font-medium">Sold Out</span>
                 </div>
               </div>
             </div>
