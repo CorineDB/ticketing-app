@@ -25,7 +25,7 @@ export const useAuthStore = defineStore('auth', () => {
   const isParticipant = computed(() => user.value?.role.slug === 'participant')
 
   // Actions
-  async function login(credentials: LoginService): Promise<boolean> {
+  async function login(credentials: LoginCredentials): Promise<boolean> {
     loading.value = true;
     error.value = null;
 
