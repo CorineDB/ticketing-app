@@ -1,176 +1,94 @@
 <template>
   <PublicLayout>
-    <div class="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
-      <div class="max-w-xl w-full bg-white p-8 rounded-xl shadow-lg">
-        <h1 class="text-3xl font-bold text-gray-900 mb-6 text-center">Checkout</h1>
+    <div class="max-w-3xl mx-auto px-4 py-12">
+      <h1 class="text-3xl font-bold mb-8">Complete Your Purchase</h1>
 
-        <div v-if="loading" class="text-center text-gray-500">Loading checkout details...</div>
-        <div v-else-if="error" class="text-center text-red-500">Error: {{ error }}</div>
-        <div v-else-if="event && ticketType">
-          <!-- Order Summary -->
-          <div class="mb-8 border-b pb-6">
-            <h2 class="text-2xl font-semibold mb-4">Order Summary</h2>
-            <div class="space-y-2">
-              <div class="flex justify-between">
-                <span class="text-gray-600">Event:</span>
-                <span class="font-medium">{{ event.name }}</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-gray-600">Ticket Type:</span>
-                <span class="font-medium">{{ ticketType.name }}</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-gray-600">Price per ticket:</span>
-                <span class="font-medium">{{ formatCurrency(ticketType.price) }}</span>
-              </div>
-              <div class="flex justify-between items-center pt-4">
-                <label for="quantity" class="text-gray-600">Quantity:</label>
-                <input
-                  id="quantity"
-                  type="number"
-                  v-model.number="quantity"
-                  min="1"
-                  :max="ticketType.available_quantity"
-                  class="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
+      <div v-if="loading" class="animate-pulse space-y-4">
+        <div class="h-24 bg-gray-200 rounded"></div>
+        <div class="h-48 bg-gray-200 rounded"></div>
+      </div>
+
+      <div v-else-if="ticketType" class="space-y-8">
+        <!-- Ticket Summary -->
+        <div class="bg-white rounded-xl shadow-sm border p-6">
+          <h2 class="text-xl font-semibold mb-4">Order Summary</h2>
+          <div class="space-y-2">
+            <div class="flex justify-between"><span>Ticket:</span><span class="font-medium">{{ ticketType.name }}</span></div>
+            <div class="flex justify-between"><span>Price:</span><span>{{ formatCurrency(ticketType.price) }}</span></div>
+            <div class="flex justify-between"><span>Quantity:</span>
+              <select v-model.number="quantity" class="border rounded px-2 py-1">
+                <option v-for="n in Math.min(10, ticketType.quantity_available)" :key="n" :value="n">{{ n }}</option>
+              </select>
             </div>
-            <div class="flex justify-between items-center text-xl font-bold pt-6 mt-6 border-t">
-              <span>Total:</span>
-              <span>{{ formatCurrency(totalAmount) }}</span>
-            </div>
-          </div>
-
-          <!-- Payment Form / Button -->
-          <div>
-            <h2 class="text-2xl font-semibold mb-4">Payment Information</h2>
-            <p class="text-gray-600 mb-6">
-              You will be redirected to a secure payment gateway to complete your purchase.
-            </p>
-
-            <button
-              @click="proceedToPayment"
-              :disabled="paymentProcessing"
-              class="w-full py-3 px-4 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              <LoaderIcon v-if="paymentProcessing" class="w-5 h-5 animate-spin" />
-              <span>{{ paymentProcessing ? 'Redirecting...' : 'Proceed to Payment' }}</span>
-            </button>
-
-            <div v-if="paymentError" class="p-4 bg-red-50 border border-red-200 rounded-lg mt-4">
-              <div class="flex gap-3">
-                <AlertCircleIcon class="w-5 h-5 text-red-600 flex-shrink-0" />
-                <p class="text-sm text-red-700">{{ paymentError }}</p>
-              </div>
-            </div>
+            <div class="flex justify-between text-xl font-bold pt-4 border-t"><span>Total:</span><span>{{ formatCurrency(ticketType.price * quantity) }}</span></div>
           </div>
         </div>
-        <div v-else class="text-center text-gray-500">Event or Ticket Type not found.</div>
+
+        <!-- Customer Form -->
+        <form @submit.prevent="handleSubmit" class="bg-white rounded-xl shadow-sm border p-6 space-y-4">
+          <h2 class="text-xl font-semibold mb-4">Your Information</h2>
+          
+          <div class="grid grid-cols-2 gap-4">
+            <div><label class="block text-sm font-medium mb-1">First Name *</label><input v-model="form.firstname" required class="w-full border rounded px-3 py-2" /></div>
+            <div><label class="block text-sm font-medium mb-1">Last Name *</label><input v-model="form.lastname" required class="w-full border rounded px-3 py-2" /></div>
+          </div>
+          
+          <div><label class="block text-sm font-medium mb-1">Email *</label><input v-model="form.email" type="email" required class="w-full border rounded px-3 py-2" /></div>
+          <div><label class="block text-sm font-medium mb-1">Phone *</label><input v-model="form.phone_number" required class="w-full border rounded px-3 py-2" /></div>
+
+          <div v-if="error" class="p-4 bg-red-50 text-red-700 rounded">{{ error }}</div>
+
+          <button type="submit" :disabled="processing" class="w-full py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50">
+            {{ processing ? 'Processing...' : 'Proceed to Payment' }}
+          </button>
+        </form>
       </div>
     </div>
   </PublicLayout>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useTicketTypes } from '@/composables/useTicketTypes'
+import paymentService from '@/services/paymentService'
+import { formatCurrency } from '@/utils/formatters'
 import PublicLayout from '@/components/layout/PublicLayout.vue'
-import { LoaderIcon, AlertCircleIcon } from 'lucide-vue-next'
-import eventService from '@/services/eventService' // Assuming direct service call for simplicity
-import ticketTypeService from '@/services/ticketTypeService' // Assuming direct service call for simplicity
-import orderService from '@/services/orderService' // Assuming direct service call for simplicity
-import { formatCurrency } from '@/utils/currency' // Assuming a currency formatter utility
+import type { TicketType } from '@/types/api'
 
 const route = useRoute()
-
-const event = ref<any>(null)
-const ticketType = ref<any>(null)
-const loading = ref(true)
-const error = ref<string | null>(null)
+const router = useRouter()
+const { fetchTicketType, ticketType, loading } = useTicketTypes()
 
 const quantity = ref(1)
-const paymentProcessing = ref(false)
-const paymentError = ref<string | null>(null)
-
-const eventId = ref<string | null>(null)
-const ticketTypeId = ref<string | null>(null)
+const processing = ref(false)
+const error = ref('')
+const form = ref({ firstname: '', lastname: '', email: '', phone_number: '' })
 
 onMounted(async () => {
-  eventId.value = Array.isArray(route.params.eventId) ? route.params.eventId[0] : route.params.eventId
-  ticketTypeId.value = Array.isArray(route.params.ticketTypeId) ? route.params.ticketTypeId[0] : route.params.ticketTypeId
-
-  if (!eventId.value || !ticketTypeId.value) {
-    error.value = 'Missing event ID or ticket type ID.'
-    loading.value = false
-    return
-  }
-
-  try {
-    const eventResponse = await eventService.getById(eventId.value)
-    event.value = eventResponse.data
-
-    const ticketTypeResponse = await ticketTypeService.getById(ticketTypeId.value)
-    ticketType.value = ticketTypeResponse.data
-
-    // Adjust quantity if it exceeds available
-    if (ticketType.value && quantity.value > ticketType.value.available_quantity) {
-      quantity.value = ticketType.value.available_quantity
-    }
-  } catch (err: any) {
-    error.value = err.response?.data?.message || 'Failed to load event or ticket type details.'
-  } finally {
-    loading.value = false
-  }
+  const id = parseInt(route.params.ticketTypeId as string)
+  if (id) await fetchTicketType(id)
 })
 
-const totalAmount = computed(() => {
-  if (ticketType.value) {
-    return quantity.value * ticketType.value.price
-  }
-  return 0
-})
-
-const proceedToPayment = async () => {
-  paymentProcessing.value = true
-  paymentError.value = null
-
-  if (!event.value || !ticketType.value) {
-    paymentError.value = 'Event or ticket type data is missing.'
-    paymentProcessing.value = false
-    return
-  }
-
+const handleSubmit = async () => {
+  if (!ticketType.value) return
+  processing.value = true
+  error.value = ''
+  
   try {
-    const orderData = {
-      eventId: event.value.id,
-      ticketTypeId: ticketType.value.id,
+    const result = await paymentService.purchaseTicket({
+      ticket_type_id: ticketType.value.id.toString(),
       quantity: quantity.value,
-      amount: totalAmount.value
-      // Add any other necessary order details
-    }
-    const orderResponse = await orderService.createOrder(orderData)
-    const orderId = orderResponse.data.id
-
-    // Initiate payment
-    const paymentResponse = await orderService.initializePayment(orderId, {
-      successCallbackUrl: `${window.location.origin}/payment/callback?status=success&orderId=${orderId}`,
-      cancelCallbackUrl: `${window.location.origin}/payment/callback?status=cancelled&orderId=${orderId}`
+      customer: form.value
     })
-
-    // Redirect to payment gateway
-    if (paymentResponse.data?.redirectUrl) {
-      window.location.href = paymentResponse.data.redirectUrl
-    } else {
-      paymentError.value = 'Payment redirection failed. Please try again.'
+    
+    if (result.payment_url) {
+      window.location.href = result.payment_url
     }
-  } catch (err: any) {
-    paymentError.value = err.response?.data?.message || 'Failed to initiate payment. Please try again.'
+  } catch (e: any) {
+    error.value = e.response?.data?.message || 'Payment initiation failed'
   } finally {
-    paymentProcessing.value = false
+    processing.value = false
   }
 }
 </script>
-
-<style scoped>
-/* Scoped styles for this component */
-</style>
