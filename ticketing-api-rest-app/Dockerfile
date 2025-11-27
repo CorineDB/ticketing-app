@@ -40,7 +40,9 @@ RUN chown -R www-data:www-data /var/www/html \
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
 # Install npm dependencies and build assets
-RUN npm ci && npm run build
+# RUN npm ci && npm run build
+# Install npm dependencies and build assets
+RUN npm install && npm run build
 
 # Create SQLite database file if it doesn't exist (fallback)
 RUN touch /var/www/html/database/database.sqlite || true
