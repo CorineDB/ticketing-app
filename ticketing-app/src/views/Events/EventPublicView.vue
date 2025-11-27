@@ -69,23 +69,18 @@
                   <p v-if="ticketType.description" class="text-sm text-gray-600 mt-1">
                     {{ ticketType.description }}
                   </p>
-                  <div class="mt-2 text-sm text-gray-500">
-                    {{ ticketType.quantity_available }} available
-                  </div>
                 </div>
                 <div class="text-right ml-4">
                   <div class="text-2xl font-bold text-gray-900">
                     {{ formatCurrency(ticketType.price) }}
                   </div>
                   <button
-                    v-if="ticketType.quantity_available > 0"
                     @click.prevent="selectTicketType(ticketType)"
                     type="button"
                     class="mt-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer"
                   >
                     Buy Ticket
                   </button>
-                  <span v-else class="text-sm text-gray-500">Sold Out</span>
                 </div>
               </div>
             </div>
