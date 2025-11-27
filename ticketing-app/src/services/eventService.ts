@@ -17,13 +17,21 @@ class EventService {
     const response = await api.get<PaginatedResponse<Event>>('/events', { params })
     return response.data
   }
+  /**
+   * Get public events with optional filters
+   */
+  async getAllPublicEvents(filters?: EventFilters): Promise<PaginatedResponse<Event>> {
+    const params = this.buildQueryParams(filters)
+    const response = await api.get<PaginatedResponse<Event>>('/public/events', { params })
+    return response.data
+  }
 
   /**
    * Get single event by ID
    */
   async getById(id: string): Promise<Event> {
     const response = await api.get<{ data: Event }>(`/events/${id}`)
-    return response.data.data
+    return response.data
   }
 
   /**
@@ -31,7 +39,7 @@ class EventService {
    */
   async getPublicById(id: string): Promise<Event> {
     const response = await api.get<{ data: Event }>(`/public/events/${id}`)
-    return response.data.data
+    return response.data
   }
 
 
@@ -40,7 +48,16 @@ class EventService {
    */
   async getBySlug(slug: string): Promise<Event> {
     const response = await api.get<{ data: Event }>(`/events/slug/${slug}`)
-    return response.data.data
+    return response.data
+  }
+
+
+  /**
+   * Get public event by slug (public access)
+   */
+  async getPublicBySlug(slug: string): Promise<Event> {
+    const response = await api.get<{ data: Event }>(`/public/events/slug/${slug}`)
+    return response.data
   }
 
 

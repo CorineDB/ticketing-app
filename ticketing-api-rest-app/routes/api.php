@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\TicketController;
 use App\Http\Controllers\Api\TicketTypeController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\WebhookController;
 use Illuminate\Support\Facades\Route;
 
@@ -51,6 +52,15 @@ Route::post('/scan/confirm', [ScanController::class, 'confirm'])
 
 // Webhooks (public, no authentication)
 Route::post('/webhooks/fedapay', [WebhookController::class, 'fedapayWebhook']);
+
+// Payment callback (public, no authentication - FedaPay redirects users here)
+Route::get('/payment/callback', [PaymentController::class, 'callback'])->name('payment.callback');
+
+// Ticket purchase (public - no authentication required to buy tickets)
+Route::post('/tickets/purchase', [TicketController::class, 'purchase']);
+
+// Event by slug (public - must be BEFORE apiResource to avoid conflict with {id})
+Route::get('/events/slug/{slug}', [EventController::class, 'showBySlug']);
 
 // Protected routes (authentication required)
 Route::middleware('auth:sanctum')->group(function () {

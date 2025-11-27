@@ -54,4 +54,9 @@ class EventRepository extends BaseRepository implements EventRepositoryContract
                            ->where('organisateur_id', $organisateurId)
                            ->first();
     }
+
+    public function findBySlug(string $slug)
+    {
+        return $this->model->where('slug', $slug)->first();
+    }
 }

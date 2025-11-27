@@ -22,10 +22,10 @@ export function useEvents() {
       const response: PaginatedResponse<Event> = await eventService.getAll(filters)
       events.value = response.data
       pagination.value = {
-        total: response.total,
-        per_page: response.per_page,
-        current_page: response.current_page,
-        last_page: response.last_page
+        total: response?.total,
+        per_page: response?.per_page,
+        current_page: response?.current_page,
+        last_page: response?.last_page
       }
     } catch (e: any) {
       error.value = e.response?.data?.message || 'Failed to fetch events'
