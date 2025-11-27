@@ -58,7 +58,7 @@ import type { TicketType } from '@/types/api'
 
 const route = useRoute()
 const router = useRouter()
-const { fetchTicketType, ticketType, loading } = useTicketTypes()
+const { fetchPublicTicketType, ticketType, loading } = useTicketTypes()
 
 const quantity = ref(1)
 const processing = ref(false)
@@ -66,8 +66,10 @@ const error = ref('')
 const form = ref({ firstname: '', lastname: '', email: '', phone_number: '' })
 
 onMounted(async () => {
-  const id = (route.params.ticketTypeId as string)
-  if (id) await fetchTicketType(id)
+  const id = route.params.ticketTypeId as string
+  console.log('Loading ticket type:', id)
+  if (id) await fetchPublicTicketType(id)
+  console.log('Loaded ticket type:', ticketType.value)
 })
 
 const handleSubmit = async () => {
