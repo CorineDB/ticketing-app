@@ -2,7 +2,7 @@
 
 namespace App\Services\Core\Eloquent;
 
-use App\Services\Contracts\BaseServiceInterface;
+use App\Services\Core\Contracts\BaseServiceInterface;
 use App\Repositories\Core\Contracts\BaseRepositoryInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
