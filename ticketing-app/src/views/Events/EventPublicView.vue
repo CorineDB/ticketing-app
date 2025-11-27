@@ -183,7 +183,7 @@ const loading = ref(true)
 onMounted(async () => {
   try {
     const slug = route.params.slug as string
-    event.value = await eventService.getBySlug(slug)
+    event.value = await eventService.getPublicBySlug(slug)
   } catch (error) {
     console.error('Failed to fetch event:', error)
   } finally {
