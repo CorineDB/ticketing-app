@@ -34,6 +34,19 @@ export function useTicketTypes() {
     }
   }
 
+  const fetchPublicTicketType = async (id: string) => {
+    loading.value = true
+    error.value = null
+    try {
+      ticketType.value = await ticketTypeService.getPublicById(id)
+    } catch (e: any) {
+      error.value = e.response?.data?.message || 'Failed to fetch ticket type'
+      console.error('Error fetching ticket type:', e)
+    } finally {
+      loading.value = false
+    }
+  }
+
   const createTicketType = async (data: CreateTicketTypeData) => {
     loading.value = true
     error.value = null
@@ -138,6 +151,7 @@ export function useTicketTypes() {
     error,
     fetchTicketTypes,
     fetchTicketType,
+    fetchPublicTicketType,
     createTicketType,
     updateTicketType,
     deleteTicketType,
