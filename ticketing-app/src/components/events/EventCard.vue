@@ -6,9 +6,9 @@
     <!-- Event Banner -->
     <div class="relative h-48 bg-gradient-to-br from-blue-500 to-purple-500 overflow-hidden">
       <img
-        v-if="event.banner"
-        :src="event.banner"
-        :alt="event.name"
+        v-if="event.image_url"
+        :src="event.image_url"
+        :alt="event.title"
         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
       />
       <div v-else class="w-full h-full flex items-center justify-center">
@@ -24,26 +24,26 @@
     <!-- Event Info -->
     <div class="p-6">
       <h3 class="text-xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
-        {{ event.name }}
+        {{ event.title }}
       </h3>
 
       <div class="space-y-2 mb-4">
         <!-- Date & Time -->
         <div class="flex items-center text-sm text-gray-600">
           <CalendarIcon class="w-4 h-4 mr-2 flex-shrink-0" />
-          <span>{{ formatDate(event.start_date) }} at {{ event.start_time }}</span>
+          <span>{{ formatDate(event.start_datetime) }} at {{ formatTime(event.start_datetime) }}</span>
         </div>
 
         <!-- Venue -->
-        <div class="flex items-center text-sm text-gray-600">
+        <div v-if="event.location" class="flex items-center text-sm text-gray-600">
           <MapPinIcon class="w-4 h-4 mr-2 flex-shrink-0" />
-          <span class="truncate">{{ event.venue }}, {{ event.city }}</span>
+          <span class="truncate">{{ event.location }}</span>
         </div>
 
         <!-- Organization -->
-        <div v-if="event.organization" class="flex items-center text-sm text-gray-600">
+        <div v-if="event.organisateur" class="flex items-center text-sm text-gray-600">
           <BuildingIcon class="w-4 h-4 mr-2 flex-shrink-0" />
-          <span class="truncate">{{ event.organization.name }}</span>
+          <span class="truncate">{{ event.organisateur.name }}</span>
         </div>
       </div>
 
@@ -76,7 +76,7 @@
 import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import type { Event } from '@/types/api'
-import { formatDate, formatCurrency } from '@/utils/formatters'
+import { formatDate, formatCurrency, formatTime } from '@/utils/formatters'
 import StatusBadge from '@/components/common/StatusBadge.vue'
 import Badge from '@/components/common/Badge.vue'
 import {
