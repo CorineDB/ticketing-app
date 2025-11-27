@@ -1,10 +1,10 @@
 services:
-  # Backend API (Laravel)
+  # Backend API (Laravel) - FREE TIER
   - type: web
-    name: ticketing-api
+    name: ticketing-api-free
     runtime: docker
     region: oregon
-    plan: starter
+    plan: free  # Plan gratuit
     healthCheckPath: /api/health
     dockerfilePath: ./ticketing-api-rest-app/Dockerfile
     dockerContext: ./ticketing-api-rest-app
@@ -39,23 +39,23 @@ services:
         value: pgsql
       - key: DB_HOST
         fromDatabase:
-          name: ticketing-db
+          name: ticketing-db-free
           property: host
       - key: DB_PORT
         fromDatabase:
-          name: ticketing-db
+          name: ticketing-db-free
           property: port
       - key: DB_DATABASE
         fromDatabase:
-          name: ticketing-db
+          name: ticketing-db-free
           property: database
       - key: DB_USERNAME
         fromDatabase:
-          name: ticketing-db
+          name: ticketing-db-free
           property: user
       - key: DB_PASSWORD
         fromDatabase:
-          name: ticketing-db
+          name: ticketing-db-free
           property: password
       - key: SESSION_DRIVER
         value: database
@@ -150,121 +150,9 @@ services:
       - key: FEDAPAY_CURRENCY
         value: XOF
 
-  # Queue Worker (Background Jobs)
-  - type: worker
-    name: ticketing-queue
-    runtime: docker
-    region: oregon
-    plan: starter
-    dockerfilePath: ./ticketing-api-rest-app/Dockerfile.worker
-    dockerContext: ./ticketing-api-rest-app
-    envVars:
-      - key: APP_NAME
-        value: Plateforme de gestion des tickets - Queue Worker
-      - key: APP_ENV
-        value: production
-      - key: APP_KEY
-        generateValue: true
-      - key: APP_DEBUG
-        value: false
-      - key: APP_URL
-        sync: false
-      - key: CLIENT_APP_URL
-        sync: false
-      - key: APP_LOCALE
-        value: en
-      - key: APP_FALLBACK_LOCALE
-        value: en
-      - key: LOG_CHANNEL
-        value: errorlog
-      - key: LOG_LEVEL
-        value: error
-      - key: LOG_STACK
-        value: single
-      - key: DB_CONNECTION
-        value: pgsql
-      - key: DB_HOST
-        fromDatabase:
-          name: ticketing-db
-          property: host
-      - key: DB_PORT
-        fromDatabase:
-          name: ticketing-db
-          property: port
-      - key: DB_DATABASE
-        fromDatabase:
-          name: ticketing-db
-          property: database
-      - key: DB_USERNAME
-        fromDatabase:
-          name: ticketing-db
-          property: user
-      - key: DB_PASSWORD
-        fromDatabase:
-          name: ticketing-db
-          property: password
-      - key: QUEUE_CONNECTION
-        value: database
-      - key: CACHE_STORE
-        value: database
-      - key: SESSION_DRIVER
-        value: database
-      - key: MAIL_MAILER
-        value: smtp
-      - key: MAIL_HOST
-        sync: false
-      - key: MAIL_PORT
-        value: 587
-      - key: MAIL_USERNAME
-        sync: false
-      - key: MAIL_PASSWORD
-        sync: false
-      - key: MAIL_ENCRYPTION
-        value: tls
-      - key: MAIL_FROM_ADDRESS
-        sync: false
-      - key: MAIL_FROM_NAME
-        value: Plateforme de gestion des tickets
-      - key: SMS_PROVIDER
-        value: custom_api
-      - key: SMS_PROVIDER_URL
-        sync: false
-      - key: SMS_PROVIDER_API_ACCOUNT_ID
-        sync: false
-      - key: SMS_PROVIDER_API_ACCOUNT_PASSWORD
-        sync: false
-      - key: SMS_PROVIDER_API_KEY
-        sync: false
-      - key: SMS_ALERT_THRESHOLD
-        value: 1000
-      - key: ALERT_EMAIL
-        sync: false
-      - key: ALERT_SMS
-        sync: false
-      - key: CINETPAY_API_KEY
-        sync: false
-      - key: CINETPAY_SITE_ID
-        sync: false
-      - key: CINETPAY_SECRET_KEY
-        sync: false
-      - key: CINETPAY_API_URL
-        value: https://api-checkout.cinetpay.com/v2/payment
-      - key: CINETPAY_MODE
-        value: production
-      - key: FEDAPAY_PUBLIC_KEY
-        sync: false
-      - key: FEDAPAY_SECRET_KEY
-        sync: false
-      - key: FEDAPAY_WEBHOOK_SECRET
-        sync: false
-      - key: FEDAPAY_ENVIRONMENT
-        value: live
-      - key: FEDAPAY_CURRENCY
-        value: XOF
-
-  # Frontend (Vue 3 Static Site)
+  # Frontend (Vue 3 Static Site) - TOUJOURS GRATUIT
   - type: web
-    name: ticketing-frontend
+    name: ticketing-frontend-free
     env: static
     buildCommand: "cd ticketing-app && npm install && npm run build"
     staticPublishPath: ticketing-app/dist
@@ -293,6 +181,6 @@ services:
         value: production
 
 databases:
-  - name: ticketing-db
-    plan: starter
+  - name: ticketing-db-free
+    plan: free  # Plan gratuit PostgreSQL
     region: oregon
