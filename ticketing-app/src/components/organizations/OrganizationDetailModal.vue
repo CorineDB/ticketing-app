@@ -4,19 +4,19 @@
       <h3 class="text-lg font-medium text-gray-900">Organization Details</h3>
     </template>
     <template #body>
-      <div v-if="organization" class="space-y-4">
+      <div v-if="organisateur" class="space-y-4">
         <div>
           <p class="text-sm font-medium text-gray-500">Name:</p>
-          <p class="text-lg font-semibold text-gray-900">{{ organization.name }}</p>
+          <p class="text-lg font-semibold text-gray-900">{{ organisateur.name }}</p>
         </div>
-        <div v-if="organization.description">
+        <div v-if="organisateur.description">
           <p class="text-sm font-medium text-gray-500">Description:</p>
-          <p class="text-gray-700">{{ organization.description }}</p>
+          <p class="text-gray-700">{{ organisateur.description }}</p>
         </div>
         <!-- Add more detail fields as necessary -->
       </div>
       <div v-else class="text-gray-500">
-        <p>No organization selected.</p>
+        <p>No organisateur selected.</p>
       </div>
     </template>
     <template #footer>
@@ -39,12 +39,12 @@ interface Organization {
   id?: string;
   name: string;
   description?: string;
-  // Add other organization properties here
+  // Add other organisateur properties here
 }
 
 const props = defineProps<{
   show: boolean;
-  organization?: Organization | null;
+  organisateur?: User | null;
 }>();
 
 const emit = defineEmits(['update:show']);

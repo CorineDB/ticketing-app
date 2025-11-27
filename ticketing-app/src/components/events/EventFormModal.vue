@@ -412,7 +412,7 @@ const isStepValid = computed(() => {
 watch(() => props.event, (event) => {
   if (event) {
     formData.value = {
-      title: event.name,
+      title: event.title,
       description: event.description,
       location: event.venue,
       start_date: event.start_date,

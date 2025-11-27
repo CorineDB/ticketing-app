@@ -112,7 +112,7 @@
                   </div>
                 </td>
                 <td class="py-3 px-4 text-sm text-gray-600">
-                  {{ user.organization?.name || '-' }}
+                  {{ user.organisateur?.name || '-' }}
                 </td>
                 <td class="py-3 px-4">
                   <StatusBadge :status="user.status" type="user" />

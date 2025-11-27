@@ -118,7 +118,7 @@
         <p class="mt-6 text-center text-sm text-gray-600">
           Don't have an account?
           <a href="#" class="text-blue-600 hover:text-blue-700 font-medium">
-            Contact your organization admin
+            Contact your organisateur admin
           </a>
         </p>
       </div>

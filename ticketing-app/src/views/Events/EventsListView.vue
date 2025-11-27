@@ -131,13 +131,13 @@
                       <img
                         v-if="event.banner"
                         :src="event.banner"
-                        :alt="event.name"
+                        :alt="event.title"
                         class="w-full h-full object-cover rounded-lg"
                       />
                     </div>
                     <div>
-                      <div class="font-medium text-gray-900">{{ event.name }}</div>
-                      <div class="text-sm text-gray-500">{{ event.organization?.name }}</div>
+                      <div class="font-medium text-gray-900">{{ event.title }}</div>
+                      <div class="text-sm text-gray-500">{{ event.organisateur?.name }}</div>
                     </div>
                   </div>
                 </td>

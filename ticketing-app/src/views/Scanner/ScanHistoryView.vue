@@ -41,7 +41,7 @@
           >
             <option value="">All Events</option>
             <option v-for="event in events" :key="event.id" :value="event.id">
-              {{ event.name }}
+              {{ event.title }}
             </option>
           </select>
 

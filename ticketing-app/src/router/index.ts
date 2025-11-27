@@ -184,8 +184,8 @@ const routes: RouteRecordRaw[] = [
 
   // Organizations (Super Admin only)
   {
-    path: '/dashboard/organizations',
-    name: 'organizations',
+    path: '/dashboard/organisateurs',
+    name: 'organisateurs',
     component: OrganizationsListView,
     meta: {
       requiresAuth: true,
@@ -193,8 +193,8 @@ const routes: RouteRecordRaw[] = [
     }
   },
   {
-    path: '/dashboard/organizations/:id',
-    name: 'organization-detail',
+    path: '/dashboard/organisateurs/:id',
+    name: 'organisateur-detail',
     component: OrganizationDetailView,
     meta: {
       requiresAuth: true,
