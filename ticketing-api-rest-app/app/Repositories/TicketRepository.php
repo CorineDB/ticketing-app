@@ -41,4 +41,12 @@ class TicketRepository extends BaseRepository implements TicketRepositoryContrac
 
         return $code;
     }
+
+    public function countByTicketTypeAndStatuses(string $ticketTypeId, array $statuses): int
+    {
+        return $this->model
+            ->where('ticket_type_id', $ticketTypeId)
+            ->whereIn('status', $statuses)
+            ->count();
+    }
 }

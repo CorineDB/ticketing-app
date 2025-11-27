@@ -161,4 +161,33 @@ class TicketService extends BaseService implements TicketServiceContract
             ]);
         });
     }
+    /**
+     * Get ticket type by ID
+     */
+    public function getTicketType(string $ticketTypeId)
+    {
+        return $this->ticketTypeRepository->find($ticketTypeId);
+    }
+
+    /**
+     * Check if quota is available for a ticket type
+     */
+    public function checkQuotaAvailability(string $ticketTypeId, int $quantity = 1): bool
+    {
+        $ticketType = $this->ticketTypeRepository->find($ticketTypeId);
+
+        if (!$ticketType) {
+            return false;
+        }
+
+        // Count sold tickets for this ticket type
+        $soldCount = $this->repository->countByTicketTypeAndStatuses(
+            $ticketTypeId,
+            ['issued', 'reserved', 'paid', 'in', 'out']
+        );
+
+        $available = $ticketType->quota - $soldCount;
+
+        return $available >= $quantity;
+    }
 }
