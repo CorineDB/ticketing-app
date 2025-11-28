@@ -22,3 +22,10 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# ---- Security: ignore sensitive test or environment files ----
+2025-11-28-tester-directement-lapi-pour-identifier-les-erreu.txt
+RESUME_TESTS_FEDAPAY.md
+switch-fedapay-env.php
+test-create-customer.php
+
