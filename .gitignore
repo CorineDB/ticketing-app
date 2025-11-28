@@ -1,0 +1,6 @@
+# ---- Security: ignore sensitive test or environment files ----
+ticketing-api-rest-app/2025-11-28-tester-directement-lapi-pour-identifier-les-erreu.txt
+ticketing-api-rest-app/RESUME_TESTS_FEDAPAY.md
+ticketing-api-rest-app/switch-fedapay-env.php
+ticketing-api-rest-app/test-create-customer.php
+
