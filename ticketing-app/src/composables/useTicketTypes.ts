@@ -8,7 +8,7 @@ export function useTicketTypes() {
   const loading = ref(false)
   const error = ref<string | null>(null)
 
-  const fetchTicketTypes = async (eventId: number) => {
+  const fetchTicketTypes = async (eventId: string) => {
     loading.value = true
     error.value = null
     try {

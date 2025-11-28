@@ -30,8 +30,7 @@ class EventService {
    * Get single event by ID (authenticated)
    */
   async getById(id: string): Promise<Event> {
-    const response = await api.get<{ data: Event }>(`/events/${id}`)
-    console.log("Response Data:", response.data);
+    const response = await api.get<Event>(`/events/${id}`)
     return response.data
   }
 
@@ -170,15 +169,21 @@ class EventService {
               Object.entries(item).forEach(([subKey, subValue]) => {
                 // Only append if value is not empty string, undefined, or null
                 if (subValue !== undefined && subValue !== null && subValue !== '') {
-                  formData.append(`${key}[${index}][${subKey}]`, String(subValue))
+                  // Convert booleans to 0/1 for FormData
+                  const formValue = typeof subValue === 'boolean' ? (subValue ? '1' : '0') : String(subValue)
+                  formData.append(`${key}[${index}][${subKey}]`, formValue)
                 }
               })
             } else {
-              formData.append(`${key}[${index}]`, String(item))
+              // Convert booleans to 0/1 for FormData
+              const formValue = typeof item === 'boolean' ? (item ? '1' : '0') : String(item)
+              formData.append(`${key}[${index}]`, formValue)
             }
           })
         } else {
-          formData.append(key, String(value))
+          // Convert booleans to 0/1 for FormData
+          const formValue = typeof value === 'boolean' ? (value ? '1' : '0') : String(value)
+          formData.append(key, formValue)
         }
       }
     })

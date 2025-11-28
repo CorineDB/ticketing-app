@@ -40,10 +40,9 @@ export function useEvents() {
     error.value = null
     try {
       event.value = await eventService.getById(id)
-      console.log("Fetched Event:", event.value);
     } catch (e: any) {
       error.value = e.response?.data?.message || 'Failed to fetch event'
-      console.error('Error fetching event:', e)
+      console.error('useEvents: Error fetching event:', e)
     } finally {
       loading.value = false
     }

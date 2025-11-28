@@ -78,8 +78,8 @@
           :to="`/events/${event.slug}`"
           class="flex items-center gap-4 p-4 rounded-lg border border-gray-200 hover:bg-gray-50"
         >
-          <div v-if="event.img_url" class="w-20 h-20 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0">
-            <img :src="event.img_url" :alt="event.title" class="w-full h-full object-cover" />
+          <div v-if="event.image_url" class="w-20 h-20 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0">
+            <img :src="getImageUrl(event.image_url)" :alt="event.title" class="w-full h-full object-cover" />
           </div>
           <div class="flex-1">
             <h3 class="font-semibold text-gray-900">{{ event.title }}</h3>
@@ -111,7 +111,7 @@
 import { ref, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import dashboardService from '@/services/dashboardService'
-import { formatDate } from '@/utils/formatters'
+import { formatDate, getImageUrl } from '@/utils/formatters'
 import TicketCard from '@/components/tickets/TicketCard.vue'
 import Badge from '@/components/common/Badge.vue'
 import {

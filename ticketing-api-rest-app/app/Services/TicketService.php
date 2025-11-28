@@ -94,7 +94,9 @@ class TicketService extends BaseService implements TicketServiceContract
     {
         $signature = $this->generateHMACSignature($ticket->id, $ticket->event_id);
 
-        $qrData = config('app.url') . "/t/{$ticket->id}?sig={$signature}";
+        // QR code pointe vers le frontend pour le scan
+        $frontendUrl = config('app.frontend_url', env('FRONTEND_URL', 'http://localhost:5173'));
+        $qrData = $frontendUrl . "/dashboard/scan?t={$ticket->id}&sig={$signature}";
 
         $qrImage = QrCode::format('png')
             ->size(300)

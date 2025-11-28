@@ -2,7 +2,7 @@
   <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-6 text-center">
     <!-- Ticket Info Header -->
     <div class="mb-6">
-      <h3 class="text-2xl font-bold text-gray-900 mb-2">{{ ticket.event?.name }}</h3>
+      <h3 class="text-2xl font-bold text-gray-900 mb-2">{{ ticket.event?.title }}</h3>
       <p class="text-gray-600">{{ ticket.holder_name }}</p>
       <TicketStatusBadge :status="ticket.status" class="mt-2" />
     </div>
@@ -44,7 +44,7 @@
       </div>
       <div class="flex items-center justify-between text-sm">
         <span class="text-gray-600">Date</span>
-        <span class="font-medium text-gray-900">{{ formatDate(ticket.event?.start_date) }}</span>
+        <span class="font-medium text-gray-900">{{ formatDate(ticket.event?.start_datetime) }}</span>
       </div>
       <div class="flex items-center justify-between text-sm">
         <span class="text-gray-600">Venue</span>

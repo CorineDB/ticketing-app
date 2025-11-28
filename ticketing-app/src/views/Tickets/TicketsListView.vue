@@ -70,14 +70,13 @@
 
           <!-- Payment Status Filter -->
           <select
-            v-model="filters.payment_status"
+            v-model="filters.paid"
             @change="fetchTickets"
             class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
-            <option value="">All Payments</option>
-            <option value="pending">Pending</option>
-            <option value="paid">Paid</option>
-            <option value="refunded">Refunded</option>
+            <option :value="undefined">All Payments</option>
+            <option :value="true">Paid</option>
+            <option :value="false">Unpaid</option>
           </select>
         </div>
       </div>
@@ -155,7 +154,7 @@
                   #{{ ticket.id }}
                 </td>
                 <td class="py-3 px-4 text-sm text-gray-900">
-                  {{ ticket.event?.name }}
+                  {{ getEventName(ticket.event_id) }}
                 </td>
                 <td class="py-3 px-4">
                   <div class="text-sm text-gray-900">{{ ticket.buyer_name }}</div>
@@ -168,7 +167,7 @@
                   {{ formatCurrency(ticket.price) }}
                 </td>
                 <td class="py-3 px-4">
-                  <StatusBadge :status="ticket.payment_status" type="payment" />
+                  <StatusBadge :status="getPaymentStatus(ticket)" type="ticket" />
                 </td>
                 <td class="py-3 px-4">
                   <StatusBadge :status="ticket.status" type="ticket" />
@@ -191,7 +190,7 @@
                       <EditIcon class="w-4 h-4" />
                     </button>
                     <button
-                      v-if="canMarkTicketsPaid && ticket.payment_status === 'pending'"
+                      v-if="canMarkTicketsPaid && getPaymentStatus(ticket) === 'pending'"
                       @click="markTicketPaid(ticket)"
                       class="p-2 text-green-600 hover:bg-green-50 rounded-lg"
                       title="Mark as paid"
@@ -238,13 +237,13 @@
 
     <!-- Modals -->
     <TicketFormModal
-      v-model="showTicketModal"
+      v-model:show="showTicketModal"
       :ticket="selectedTicket"
       @submit="handleTicketSubmit"
     />
 
     <TicketQRCodeModal
-      v-model="showQRModal"
+      v-model:show="showQRModal"
       :ticket="selectedTicket"
     />
 
@@ -301,7 +300,7 @@ const filters = ref<TicketFilters>({
   search: '',
   event_id: '',
   status: '',
-  payment_status: ''
+  paid: undefined // Use undefined for "All" state
 })
 
 const showTicketModal = ref(false)
@@ -321,6 +320,9 @@ async function loadData() {
     fetchTickets(filters.value),
     fetchEvents({})
   ])
+  console.log("TicketsListView: loading:", loading.value);
+  console.log("TicketsListView: tickets.length:", tickets.value.length);
+  console.log("TicketsListView: tickets:", tickets.value);
 }
 
 function debouncedSearch() {
@@ -335,14 +337,23 @@ function clearFilters() {
     search: '',
     event_id: '',
     status: '',
-    payment_status: ''
+    paid: undefined
   }
   fetchTickets(filters.value)
 }
 
+const getEventName = (eventId: string) => {
+  return events.value.find(event => event.id === eventId)?.title || 'N/A'
+}
+
+const getPaymentStatus = (ticket: Ticket): 'paid' | 'pending' | 'unpaid' => {
+  if (ticket.status === 'paid' || ticket.paid_at) return 'paid';
+  if (ticket.status === 'reserved') return 'pending';
+  return 'unpaid'; // Or 'issued'
+}
+
 function viewTicket(ticket: Ticket) {
   selectedTicket.value = ticket
-  showQRModal.value = true
 }
 
 function editTicket(ticket: Ticket) {
@@ -352,7 +363,7 @@ function editTicket(ticket: Ticket) {
 
 async function markTicketPaid(ticket: Ticket) {
   if (confirm('Mark this ticket as paid?')) {
-    await updateTicket(ticket.id, { payment_status: 'paid' })
+    await updateTicket(ticket.id, { status: 'paid' })
     await fetchTickets(filters.value)
   }
 }

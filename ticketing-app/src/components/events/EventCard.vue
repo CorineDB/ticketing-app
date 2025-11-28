@@ -7,7 +7,7 @@
     <div class="relative h-48 bg-gradient-to-br from-blue-500 to-purple-500 overflow-hidden">
       <img
         v-if="event.image_url"
-        :src="event.image_url"
+        :src="getImageUrl(event.image_url)"
         :alt="event.title"
         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
       />
@@ -73,10 +73,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import type { Event } from '@/types/api'
-import { formatDate, formatCurrency, formatTime } from '@/utils/formatters'
+import { formatDate, formatCurrency, formatTime, getImageUrl } from '@/utils/formatters'
 import StatusBadge from '@/components/common/StatusBadge.vue'
 import Badge from '@/components/common/Badge.vue'
 import {

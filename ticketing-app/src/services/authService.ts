@@ -77,6 +77,14 @@ class AuthService {
       password_confirmation: password
     })
   }
+
+  /**
+   * Update user profile
+   */
+  async updateProfile(data: Partial<User>): Promise<User> {
+    const response = await api.put<{ data: User }>('/auths/me', data)
+    return response.data.data
+  }
 }
 
 export default new AuthService()

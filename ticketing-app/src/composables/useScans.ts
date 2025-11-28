@@ -33,7 +33,7 @@ export function useScans() {
     }
   }
 
-  const fetchTicketScans = async (ticketId: number) => {
+  const fetchTicketScans = async (ticketId: string) => {
     loading.value = true
     error.value = null
     try {
@@ -46,7 +46,7 @@ export function useScans() {
     }
   }
 
-  const fetchEventSummary = async (eventId: number) => {
+  const fetchEventSummary = async (eventId: string) => {
     loading.value = true
     error.value = null
     try {
@@ -60,7 +60,7 @@ export function useScans() {
     }
   }
 
-  const exportToCSV = async (eventId: number, filters?: ScanFilters) => {
+  const exportToCSV = async (eventId: string, filters?: ScanFilters) => {
     loading.value = true
     error.value = null
     try {
@@ -91,6 +91,6 @@ export function useScans() {
     fetchScans,
     fetchTicketScans,
     fetchEventSummary,
-    exportToCSV
+    exportToCSV: exportScansData
   }
 }

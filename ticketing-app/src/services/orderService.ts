@@ -44,7 +44,7 @@ class OrderService {
   /**
    * Initialize payment for an order
    */
-  async initializePayment(orderId: number): Promise<PaymentInitResponse> {
+  async initializePayment(orderId: string): Promise<PaymentInitResponse> {
     const response = await api.post<{ data: PaymentInitResponse }>(
       `/orders/${orderId}/payment/initialize`
     )
@@ -54,7 +54,7 @@ class OrderService {
   /**
    * Handle payment callback
    */
-  async handlePaymentCallback(transactionId: string, orderId: number): Promise<Order> {
+  async handlePaymentCallback(transactionId: string, orderId: string): Promise<Order> {
     const response = await api.post<{ data: Order }>('/orders/payment/callback', {
       transaction_id: transactionId,
       order_id: orderId

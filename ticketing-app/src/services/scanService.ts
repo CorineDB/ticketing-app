@@ -90,7 +90,7 @@ class ScanService {
   /**
    * Get scan history for a specific ticket
    */
-  async getTicketScans(ticketId: number): Promise<Scan[]> {
+  async getTicketScans(ticketId: string): Promise<Scan[]> {
     const response = await api.get<{ data: Scan[] }>(`/tickets/${ticketId}/scans`)
     return response.data.data
   }
@@ -107,7 +107,7 @@ class ScanService {
   /**
    * Get event scans summary
    */
-  async getEventSummary(eventId: number): Promise<{
+  async getEventSummary(eventId: string): Promise<{
     total_scans: number
     entries: number
     exits: number
@@ -122,7 +122,7 @@ class ScanService {
   /**
    * Export scans to CSV
    */
-  async exportToCSV(eventId: number, filters?: ScanFilters): Promise<Blob> {
+  async exportToCSV(eventId: string, filters?: ScanFilters): Promise<Blob> {
     const params = this.buildQueryParams(filters)
     const response = await api.get(`/events/${eventId}/scans/export`, {
       params,

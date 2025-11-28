@@ -125,6 +125,24 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  async function updateUserProfile(data: Partial<User>): Promise<User | boolean> {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      const updatedUser = await authService.updateProfile(data);
+      user.value = updatedUser;
+      localStorage.setItem('auth_user', JSON.stringify(updatedUser)); // Update local storage
+      return updatedUser;
+    } catch (e: any) {
+      error.value = e.response?.data?.message || 'Failed to update profile';
+      console.error('Error updating user profile:', e);
+      return false;
+    } finally {
+      loading.value = false;
+    }
+  }
+
   function logout() {
     // Clear local storage
     localStorage.removeItem('auth_token')
@@ -183,6 +201,7 @@ export const useAuthStore = defineStore('auth', () => {
     verifyOtp,
     fetchUser,
     changePassword,
+    updateUserProfile,
     logout,
     initializeFromStorage
   }

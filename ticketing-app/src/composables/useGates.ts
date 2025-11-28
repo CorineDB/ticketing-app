@@ -22,7 +22,7 @@ export function useGates() {
     }
   }
 
-  const fetchGatesByEvent = async (eventId: number, filters?: GateFilters) => {
+  const fetchGatesByEvent = async (eventId: string, filters?: GateFilters) => {
     loading.value = true
     error.value = null
     try {
