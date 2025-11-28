@@ -7,7 +7,7 @@
     <div class="relative h-24 bg-gradient-to-br from-blue-500 to-purple-500">
       <img
         v-if="ticket.event?.banner"
-        :src="ticket.event.banner"
+        :src="ticket.event.img_url"
         :alt="ticket.event.title"
         class="w-full h-full object-cover"
       />

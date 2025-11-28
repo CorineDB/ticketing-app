@@ -129,8 +129,8 @@
                   <div class="flex items-center gap-3">
                     <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex-shrink-0">
                       <img
-                        v-if="event.banner"
-                        :src="event.banner"
+                        v-if="event.img_url"
+                        :src="event.img_url"
                         :alt="event.title"
                         class="w-full h-full object-cover rounded-lg"
                       />
@@ -142,7 +142,7 @@
                   </div>
                 </td>
                 <td class="py-3 px-4 text-sm text-gray-600">
-                  {{ formatDate(event.start_date) }}
+                  {{ formatDate(event.start_datetime) }}
                 </td>
                 <td class="py-3 px-4 text-sm text-gray-600">
                   {{ event.venue }}, {{ event.city }}
