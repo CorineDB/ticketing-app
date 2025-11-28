@@ -60,7 +60,7 @@
         <p>Merci pour votre achat! Voici les détails de votre billet:</p>
 
         <div class="ticket-info">
-            <h2>{{ $event->name }}</h2>
+            <h2>{{ $event->title }}</h2>
             <p><strong>Type de billet:</strong> {{ $ticketType->name }}</p>
             <p><strong>Code billet:</strong> {{ $ticket->code }}</p>
             <p><strong>Date de l'événement:</strong> {{ $event->start_datetime->format('d/m/Y H:i') }}</p>

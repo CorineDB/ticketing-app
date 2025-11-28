@@ -28,7 +28,7 @@ class PaymentConfirmationMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Confirmation de paiement - ' . $this->ticket->ticketType->event->name,
+            subject: 'Confirmation de paiement - ' . $this->ticket->ticketType->event->title,
         );
     }
 
@@ -46,7 +46,7 @@ class PaymentConfirmationMail extends Mailable
                 'paymentData' => $this->paymentData,
                 'amount' => $this->paymentData['amount'] ?? $this->ticket->ticketType->price,
                 'transactionId' => $this->paymentData['transaction_id'] ?? 'N/A',
-                'magicLink' => route('tickets.show', ['id' => $this->ticket->id, 'token' => $this->ticket->magic_link_token]),
+                'magicLink' => route('tickets.show', $this->ticket->id) . '?token=' . $this->ticket->magic_link_token,
             ],
         );
     }

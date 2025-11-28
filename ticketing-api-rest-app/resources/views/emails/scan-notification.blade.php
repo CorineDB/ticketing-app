@@ -53,7 +53,7 @@
         <div class="scan-info">
             <h2>Détails du scan</h2>
             <p><strong>Action:</strong> {{ $action === 'in' ? 'Entrée' : 'Sortie' }}</p>
-            <p><strong>Événement:</strong> {{ $event->name }}</p>
+            <p><strong>Événement:</strong> {{ $event->title }}</p>
             <p><strong>Code billet:</strong> {{ $ticket->code }}</p>
             <p><strong>Porte:</strong> {{ $gateName }}</p>
             <p><strong>Heure:</strong> {{ $scanTime->format('d/m/Y H:i:s') }}</p>
@@ -62,7 +62,7 @@
         @if($action === 'in')
             <p>Profitez bien de l'événement!</p>
         @else
-            <p>Merci d'avoir participé à {{ $event->name }}.</p>
+            <p>Merci d'avoir participé à {{ $event->title }}.</p>
             @if($event->allow_reentry)
                 <p><strong>Note:</strong> Vous pouvez rentrer à nouveau avec ce billet.</p>
             @endif

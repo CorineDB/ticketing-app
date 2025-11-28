@@ -58,16 +58,22 @@ class PaymentService implements PaymentServiceContract
                 // Detect country based on phone number format
                 $country = 'BJ'; // Default to Benin
 
-                // Basic validation: Benin numbers start with +229, 229, or local format (6X, 9X)
-                if (preg_match('/^\+?229[0-9]{8}$/', $phoneNumber) || preg_match('/^[69][0-9]{7}$/', $phoneNumber)) {
+                // Benin international format: +229XXXXXXXXXX or 229XXXXXXXXXX (10 digits after country code)
+                if (preg_match('/^\+?229([0-9]{10})$/', $phoneNumber, $matches)) {
+                    $phoneNumber = ltrim($matches[1], '0'); // Extract the 10 digits and remove leading zero
                     $country = 'BJ';
-                    // Remove +229 prefix if present for local format
-                    $phoneNumber = preg_replace('/^\+?229/', '', $phoneNumber);
-                } elseif (preg_match('/^\+?33[0-9]{9}$/', $phoneNumber) || preg_match('/^0[1-9][0-9]{8}$/', $phoneNumber)) {
-                    // French number detected
+                } elseif (preg_match('/^([69][0-9]{7})$/', $phoneNumber, $matches)) {
+                    // Benin local format: 6XXXXXXXX or 9XXXXXXXX (8 digits)
+                    $phoneNumber = $matches[1]; // Extract the 8 digits
+                    $country = 'BJ';
+                } elseif (preg_match('/^\+?33([0-9]{9})$/', $phoneNumber, $matches)) {
+                    // French international format: +33XXXXXXXXX or 33XXXXXXXXX (9 digits after country code)
+                    $phoneNumber = $matches[1]; // Extract the 9 digits
                     $country = 'FR';
-                    // Remove leading 0 for international format
-                    $phoneNumber = preg_replace('/^0/', '', $phoneNumber);
+                } elseif (preg_match('/^0([1-9][0-9]{8})$/', $phoneNumber, $matches)) {
+                    // French local format: 0XXXXXXXXX (10 digits)
+                    $phoneNumber = $matches[1]; // Extract the 9 digits without the leading 0
+                    $country = 'FR';
                 } else {
                     // If format is unclear, skip phone number to avoid FedaPay error
                     Log::warning('Phone number format not recognized, skipping for FedaPay customer', [
@@ -84,6 +90,8 @@ class PaymentService implements PaymentServiceContract
                 }
             }
 
+            Log::debug('FedaPay customer data before creation', $fedapayCustomerData);
+
             // Create or get FedaPay customer
             $customer = Customer::create($fedapayCustomerData);
 
@@ -91,6 +99,8 @@ class PaymentService implements PaymentServiceContract
             $transaction = Transaction::create([
                 'description' => $description,
                 'amount' => $amount,
+                "mode" => "bank_transfer",
+                "provider" => "visa",
                 'currency' => ['iso' => config('services.fedapay.currency', 'XOF')],
                 'callback_url' => route('payment.callback'),
                 'customer' => ['id' => $customer->id],

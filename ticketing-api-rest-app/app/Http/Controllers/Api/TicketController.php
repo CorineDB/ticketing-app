@@ -123,15 +123,24 @@ class TicketController extends Controller
 
     public function show(string $id, Request $request)
     {
-        $token = $request->query('token');
+        // If user is not authenticated, X-MAGIC-TOKEN is required
+        if (!auth()->check()) {
+            $token = $request->header('X-MAGIC-TOKEN') ?? $request->query('token');
 
-        if ($token) {
+            if (!$token) {
+                return response()->json(['error' => 'Unauthenticated. X-MAGIC-TOKEN header required.'], 401);
+            }
+
             $ticket = $this->ticketService->getByMagicLink($token);
+            if (!$ticket) {
+                return response()->json(['error' => 'Invalid or expired magic link token'], 404);
+            }
         } else {
+            // User is authenticated, get ticket normally
             $ticket = $this->ticketService->get($id);
         }
 
-        return response()->json($ticket);
+        return response()->json($ticket->load("event", "ticketType"));
     }
 
     public function update(Request $request, string $id)
@@ -148,12 +157,17 @@ class TicketController extends Controller
 
     public function qr(string $id, Request $request)
     {
-        $token = $request->query('token');
+        // If user is not authenticated, X-MAGIC-TOKEN is required
+        if (!auth()->check()) {
+            $token = $request->header('X-MAGIC-TOKEN') ?? $request->query('token');
 
-        if ($token) {
+            if (!$token) {
+                return response()->json(['error' => 'Unauthenticated. X-MAGIC-TOKEN header required.'], 401);
+            }
+
             $ticket = $this->ticketService->getByMagicLink($token);
             if (!$ticket) {
-                return response()->json(['error' => 'Invalid token'], 401);
+                return response()->json(['error' => 'Invalid or expired magic link token'], 404);
             }
             $id = $ticket->id;
         }
@@ -164,16 +178,18 @@ class TicketController extends Controller
 
     public function downloadQr(string $id, Request $request)
     {
-        $token = $request->query('token');
+        // If user is not authenticated, X-MAGIC-TOKEN is required
+        if (!auth()->check()) {
+            $token = $request->header('X-MAGIC-TOKEN') ?? $request->query('token');
 
-        // Vérification de l'accès via magic link OU authentification
-        if ($token) {
+            if (!$token) {
+                return response()->json(['error' => 'Unauthenticated. X-MAGIC-TOKEN header required.'], 401);
+            }
+
             $ticket = $this->ticketService->getByMagicLink($token);
             if (!$ticket || $ticket->id !== $id) {
-                return response()->json(['error' => 'Invalid token'], 401);
+                return response()->json(['error' => 'Invalid or expired magic link token'], 404);
             }
-        } elseif (!auth()->check()) {
-            return response()->json(['error' => 'Unauthorized'], 401);
         }
 
         try {

@@ -29,7 +29,7 @@ class TicketConfirmationMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Votre billet pour ' . $this->ticket->ticketType->event->name,
+            subject: 'Votre billet pour ' . $this->ticket->ticketType->event->title,
         );
     }
 
@@ -44,7 +44,7 @@ class TicketConfirmationMail extends Mailable
                 'ticket' => $this->ticket,
                 'event' => $this->ticket->ticketType->event,
                 'ticketType' => $this->ticket->ticketType,
-                'magicLink' => route('tickets.show', ['id' => $this->ticket->id, 'token' => $this->ticket->magic_link_token]),
+                'magicLink' => route('tickets.show', $this->ticket->id) . '?token=' . $this->ticket->magic_link_token,
             ],
         );
     }

@@ -77,7 +77,7 @@
 
         <div class="payment-info">
             <h2>Détails du billet</h2>
-            <p><strong>Événement:</strong> {{ $event->name }}</p>
+            <p><strong>Événement:</strong> {{ $event->title }}</p>
             <p><strong>Type de billet:</strong> {{ $ticketType->name }}</p>
             <p><strong>Code billet:</strong> {{ $ticket->code }}</p>
             <p><strong>Statut:</strong> <span style="color: #4CAF50;">Payé</span></p>
