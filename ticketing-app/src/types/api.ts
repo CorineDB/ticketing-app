@@ -110,16 +110,17 @@ export interface Event {
   id: string
   organisateur_id: string
   organisateur?: User
-  name: string
+  title: string
   slug: string
   description?: string
   image_url?: string
+  location: string
   venue: string
   address?: string
   city?: string
   country?: string
-  start_date: string
-  end_date: string
+  start_datetime: string
+  end_datetime: string
   start_time: string
   end_time?: string
   capacity: number
@@ -184,6 +185,7 @@ export interface TicketType {
   description?: string
   price: number
   currency: string
+  usage_limit: number
   quantity: number
   quantity_sold: number
   quantity_available: number

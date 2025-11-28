@@ -167,7 +167,7 @@ export const PERMISSION_GROUPS = {
  * The actual permissions are managed on the backend
  */
 export const DEFAULT_PERMISSIONS_BY_TYPE = {
-  super-admin: Object.values(PERMISSIONS), // All permissions
+  'super-admin': Object.values(PERMISSIONS), // All permissions
 
   organizer: [
     PERMISSIONS.VIEW_EVENTS,

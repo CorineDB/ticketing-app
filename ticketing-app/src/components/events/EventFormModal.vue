@@ -415,7 +415,7 @@ watch(() => props.event, (event) => {
       title: event.title,
       description: event.description,
       location: event.venue,
-      start_date: event.start_date,
+      start_date: event.start_datetime,
       end_date: event.end_date,
       start_time: event.start_time,
       end_time: event.end_time,
@@ -432,8 +432,8 @@ watch(() => props.event, (event) => {
         validity_to: tt.validity_to || ''
       })) || []
     }
-    if (event.banner) {
-      bannerPreview.value = event.banner
+    if (event.img_url) {
+      bannerPreview.value = event.img_url
     }
   }
 }, { immediate: true })

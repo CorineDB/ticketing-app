@@ -78,15 +78,15 @@
           :to="`/events/${event.slug}`"
           class="flex items-center gap-4 p-4 rounded-lg border border-gray-200 hover:bg-gray-50"
         >
-          <div v-if="event.banner" class="w-20 h-20 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0">
-            <img :src="event.banner" :alt="event.title" class="w-full h-full object-cover" />
+          <div v-if="event.img_url" class="w-20 h-20 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0">
+            <img :src="event.img_url" :alt="event.title" class="w-full h-full object-cover" />
           </div>
           <div class="flex-1">
             <h3 class="font-semibold text-gray-900">{{ event.title }}</h3>
             <div class="flex items-center gap-4 mt-1 text-sm text-gray-600">
               <div class="flex items-center gap-1">
                 <CalendarIcon class="w-4 h-4" />
-                {{ formatDate(event.start_date) }}
+                {{ formatDate(event.start_datetime) }}
               </div>
               <div class="flex items-center gap-1">
                 <MapPinIcon class="w-4 h-4" />
@@ -139,7 +139,7 @@ onMounted(async () => {
 
 function getEventStatus(event: any) {
   const now = new Date()
-  const startDate = new Date(event.start_date)
+  const startDate = new Date(event.start_datetime)
 
   if (startDate > now) {
     return 'primary'

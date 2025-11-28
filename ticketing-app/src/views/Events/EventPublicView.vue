@@ -12,8 +12,8 @@
       <!-- Event Banner -->
       <div class="relative h-96 rounded-xl overflow-hidden mb-8">
         <img
-          v-if="event.banner"
-          :src="event.banner"
+          v-if="event.img_url"
+          :src="event.img_url"
           :alt="event.title"
           class="w-full h-full object-cover"
         />
@@ -107,7 +107,7 @@
                 <CalendarIcon class="w-5 h-5 text-gray-400 mt-0.5" />
                 <div>
                   <div class="text-sm text-gray-600">Date & Time</div>
-                  <div class="font-medium text-gray-900">{{ formatDate(event.start_date) }}</div>
+                  <div class="font-medium text-gray-900">{{ formatDate(event.start_datetime) }}</div>
                   <div class="text-sm text-gray-600">{{ event.start_time }}</div>
                 </div>
               </div>

@@ -259,7 +259,7 @@ onMounted(() => {
 async function loadData() {
   await Promise.all([
     fetchUsers(filters.value),
-    fetchRoles({})
+    fetchRoles()
   ])
 }
 

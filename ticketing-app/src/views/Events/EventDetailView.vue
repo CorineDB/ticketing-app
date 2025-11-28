@@ -129,7 +129,7 @@
                 <div class="space-y-2">
                   <div class="flex items-center gap-2 text-gray-900">
                     <CalendarIcon class="w-4 h-4 text-gray-400" />
-                    <span>{{ formatDate(event.start_date) }} - {{ formatDate(event.end_date) }}</span>
+                    <span>{{ formatDate(event.start_datetime) }} - {{ formatDate(event.end_date) }}</span>
                   </div>
                   <div class="flex items-center gap-2 text-gray-900">
                     <ClockIcon class="w-4 h-4 text-gray-400" />
