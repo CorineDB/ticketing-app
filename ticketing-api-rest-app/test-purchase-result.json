@@ -1,36 +1,28 @@
 {
-    "event": {
-        "id": "019ac458-6e48-721d-8a7b-f71f0cd4544c",
-        "title": "Event mythique"
-    },
     "ticket_type": {
-        "id": "019ac458-6e56-7136-8f89-af622c48b07a",
-        "name": "VIP",
-        "price": "20000.00"
+        "id": "019ac8e5-5344-7125-95e5-68dfd4a3a654",
+        "name": "Standard",
+        "price": "100.00"
     },
     "purchase": {
-        "transaction_id": 107724298,
+        "transaction_id": 107729183,
         "tickets": [
             {
-                "id": "019ac8db-5321-729c-bea4-6a26ed3e57af",
-                "code": null,
-                "status": "issued"
-            },
-            {
-                "id": "019ac8db-55ba-71e6-98f0-e3a88d2ecd97",
-                "code": null,
+                "id": "019aca14-145d-721d-b250-445f349c2016",
+                "code": "FKUPOEDP",
                 "status": "issued"
             }
         ],
-        "total_amount": 40000,
+        "total_amount": 100,
         "currency": "XOF",
-        "payment_url": "https:\/\/process.fedapay.com\/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOjEwNzcyNDI5OCwiZXhwIjoxNzY0MzkyODEyfQ.-uc2T7lwLYxFVlUbYeqVAjvXII3sYPW6nYlYGfgEoZU"
+        "payment_url": "https:\/\/process.fedapay.com\/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOjEwNzcyOTE4MywiZXhwIjoxNzY0NDEzMzA4fQ.ZUQXoUQJi5g1wffhrIbjhKZQh24jDtJVSBaZDatwVSA"
     },
     "customer": {
-        "firstname": "Test",
-        "lastname": "E2E",
-        "email": "test-e2e-1764306407@example.com",
-        "phone_number": "+22997123456"
+        "firstname": "Corine D.",
+        "lastname": "BOCOGA",
+        "email": "test-sandbox-1764326904@example.com",
+        "phone_number": "+22996350263"
     },
-    "tested_at": "2025-11-28 05:06:52"
+    "tested_at": "2025-11-28 10:48:28",
+    "environment": "LIVE"
 }

@@ -59,7 +59,13 @@ foreach ($testData['purchase']['tickets'] as $index => $ticket) {
     $num = $index + 1;
     echo "Ticket $num (ID: {$ticket['id']}):\n";
 
-    $response = makeRequest('GET', "$baseUrl/api/public/tickets/{$ticket['id']}");
+    $magicLinkToken = $testData['purchase']['tickets'][$index]['magic_link_token'] ?? null;
+    $url = "$baseUrl/api/public/tickets/{$ticket['id']}";
+    if ($magicLinkToken) {
+        $url .= "?token=$magicLinkToken";
+    }
+
+    $response = makeRequest('GET', $url);
 
     if ($response['http_code'] !== 200) {
         echo "  ❌ Erreur lors de la récupération\n";
@@ -79,7 +85,7 @@ foreach ($testData['purchase']['tickets'] as $index => $ticket) {
 
     $statusIcon = $status === 'paid' ? '✅' : '⚠️ ';
     echo "  $statusIcon Status: $status\n";
-    echo "     Code: {$ticketData['ticket_code']}\n";
+    echo "     Code: {$ticketData['code']}\n";
     echo "     Buyer: {$ticketData['buyer_name']}\n";
 
     if ($status === 'paid') {

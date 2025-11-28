@@ -29,8 +29,8 @@ class ScanNotificationMail extends Mailable
     public function envelope(): Envelope
     {
         $subject = $this->action === 'in'
-            ? 'Entrée confirmée - ' . $this->ticket->ticketType->event->name
-            : 'Sortie confirmée - ' . $this->ticket->ticketType->event->name;
+            ? 'Entrée confirmée - ' . $this->ticket->ticketType->event->title
+            : 'Sortie confirmée - ' . $this->ticket->ticketType->event->title;
 
         return new Envelope(
             subject: $subject,

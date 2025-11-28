@@ -32,7 +32,7 @@ class NotificationService implements NotificationServiceContract
 
             Log::info('Ticket confirmation email queued', [
                 'ticket_id' => $ticketId,
-                'email' => $ticket->email,
+                'email' => $ticket->buyer_email,
             ]);
         } catch (\Exception $e) {
             Log::error('Failed to queue ticket confirmation email', [
@@ -55,7 +55,7 @@ class NotificationService implements NotificationServiceContract
 
             Log::info('Payment confirmation email queued', [
                 'ticket_id' => $ticketId,
-                'email' => $ticket->email,
+                'email' => $ticket->buyer_email,
                 'transaction_id' => $paymentData['transaction_id'] ?? null,
             ]);
         } catch (\Exception $e) {
@@ -84,7 +84,7 @@ class NotificationService implements NotificationServiceContract
 
             Log::info('Scan notification email queued', [
                 'ticket_id' => $ticketId,
-                'email' => $ticket->email,
+                'email' => $ticket->buyer_email,
                 'action' => $action,
             ]);
         } catch (\Exception $e) {

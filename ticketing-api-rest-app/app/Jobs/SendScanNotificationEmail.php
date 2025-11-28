@@ -35,18 +35,18 @@ class SendScanNotificationEmail implements ShouldQueue
     public function handle(): void
     {
         try {
-            Mail::to($this->ticket->email)
+            Mail::to($this->ticket->buyer_email)
                 ->send(new ScanNotificationMail($this->ticket, $this->action, $this->scanData));
 
             Log::info('Scan notification email sent successfully', [
                 'ticket_id' => $this->ticket->id,
-                'email' => $this->ticket->email,
+                'email' => $this->ticket->buyer_email,
                 'action' => $this->action,
             ]);
         } catch (\Exception $e) {
             Log::error('Failed to send scan notification email', [
                 'ticket_id' => $this->ticket->id,
-                'email' => $this->ticket->email,
+                'email' => $this->ticket->buyer_email,
                 'action' => $this->action,
                 'error' => $e->getMessage(),
             ]);
