@@ -1,7 +1,14 @@
 {
-    "verified_at": "2025-11-28 10:45:56",
-    "tickets": [],
+    "verified_at": "2025-11-28 15:13:43",
+    "tickets": [
+        {
+            "id": "019acb06-e15e-714d-800c-83f1df878d03",
+            "code": "QVQLXE6Y",
+            "status": "paid",
+            "paid_at": "2025-11-28T15:13:42.000000Z"
+        }
+    ],
     "all_paid": true,
-    "paid_count": 0,
-    "total_count": 0
+    "paid_count": 1,
+    "total_count": 1
 }

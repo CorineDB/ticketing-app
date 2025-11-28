@@ -319,10 +319,12 @@ function getRoleVariant(roleName?: string): 'primary' | 'success' | 'warning' | 
 async function updateProfile() {
   saving.value = true
   try {
-    // Call API to update profile
-    await new Promise(resolve => setTimeout(resolve, 1000)) // Simulate API call
-    // authStore.updateUser(profileForm.value)
-    alert('Profile updated successfully!')
+    const updated = await authStore.updateUserProfile(profileForm.value)
+    if (updated) {
+      alert('Profile updated successfully!')
+    } else {
+      alert('Failed to update profile')
+    }
   } catch (error) {
     console.error('Failed to update profile:', error)
     alert('Failed to update profile')
@@ -339,13 +341,16 @@ async function changePassword() {
 
   changingPassword.value = true
   try {
-    // Call API to change password
-    await new Promise(resolve => setTimeout(resolve, 1000)) // Simulate API call
-    alert('Password changed successfully!')
-    passwordForm.value = {
-      current_password: '',
-      new_password: '',
-      confirm_password: ''
+    const changed = await authStore.changePassword(passwordForm.value.current_password, passwordForm.value.new_password)
+    if (changed) {
+      alert('Password changed successfully!')
+      passwordForm.value = {
+        current_password: '',
+        new_password: '',
+        confirm_password: ''
+      }
+    } else {
+      alert('Failed to change password')
     }
   } catch (error) {
     console.error('Failed to change password:', error)

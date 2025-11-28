@@ -9,7 +9,7 @@ export function useCheckout() {
   const selectedTicketType = ref<TicketType | null>(null)
   const quantity = ref(1)
 
-  const initiateCheckout = async (eventId: number, ticketTypeId: number, qty: number, customerData: any) => {
+  const initiateCheckout = async (eventId: string, ticketTypeId: string, qty: number, customerData: any) => {
     loading.value = true
     error.value = null
     try {
@@ -29,7 +29,7 @@ export function useCheckout() {
     }
   }
 
-  const processPayment = async (checkoutId: number, paymentData: any) => {
+  const processPayment = async (checkoutId: string, paymentData: any) => {
     loading.value = true
     error.value = null
     try {

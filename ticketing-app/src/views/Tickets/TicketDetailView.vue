@@ -29,15 +29,15 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <p class="text-gray-500">Event:</p>
-              <p class="font-medium">{{ ticket.event?.name || 'N/A' }}</p>
+              <p class="font-medium">{{ getEventName(ticket.event_id) }}</p>
             </div>
             <div>
               <p class="text-gray-500">Ticket Type:</p>
-              <p class="font-medium">{{ ticket.ticketType?.name || 'N/A' }}</p>
+              <p class="font-medium">{{ ticket.ticket_type?.name || 'N/A' }}</p>
             </div>
             <div>
               <p class="text-gray-500">Owner:</p>
-              <p class="font-medium">{{ ticket.owner?.name || 'N/A' }}</p>
+              <p class="font-medium">{{ ticket.buyer_name || 'N/A' }}</p>
             </div>
             <div>
               <p class="text-gray-500">Status:</p>
@@ -51,7 +51,7 @@
 
         <div class="bg-white rounded-xl shadow-lg p-6 text-center">
           <h2 class="text-xl font-semibold mb-4">Ticket QR Code</h2>
-          <TicketQRCode :code="ticket.code" :size="250" />
+          <TicketQRCode :ticket="ticket" />
           <p class="mt-4 text-gray-600">Scan this QR code for entry.</p>
         </div>
       </div>
@@ -61,22 +61,29 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import DashboardLayout from '@/components/layout/DashboardLayout.vue'
 import Can from '@/components/permissions/Can.vue'
 import TicketQRCode from '@/components/tickets/TicketQRCode.vue' // This component needs to be created
 import TicketStatusBadge from '@/components/tickets/TicketStatusBadge.vue' // This component needs to be created
 import { useTickets } from '@/composables/useTickets'
+import { useEvents } from '@/composables/useEvents' // Import useEvents
 
 const route = useRoute()
 const { ticket, loading, error, fetchTicketById, resendTicketEmail, updateTicketStatus } = useTickets()
+const { events, fetchEvents } = useEvents() // Destructure events and fetchEvents
 
 onMounted(() => {
   const ticketId = Array.isArray(route.params.id) ? route.params.id[0] : route.params.id
   if (ticketId) {
     fetchTicketById(ticketId)
+    fetchEvents({}) // Fetch all events to populate 'events' ref
   }
+})
+
+const getEventName = computed(() => (eventId: string) => {
+  return events.value.find(event => event.id === eventId)?.title || 'N/A'
 })
 
 const resendTicket = async () => {

@@ -129,8 +129,8 @@
                   <div class="flex items-center gap-3">
                     <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex-shrink-0">
                       <img
-                        v-if="event.img_url"
-                        :src="event.img_url"
+                        v-if="event.image_url"
+                        :src="getImageUrl(event.image_url)"
                         :alt="event.title"
                         class="w-full h-full object-cover rounded-lg"
                       />
@@ -228,7 +228,7 @@
 import { ref, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useEvents } from '@/composables/useEvents'
-import { formatDate, formatCurrency } from '@/utils/formatters'
+import { formatDate, formatCurrency, getImageUrl } from '@/utils/formatters'
 import type { Event, EventFilters as EventFiltersType } from '@/types/api'
 import DashboardLayout from '@/components/layout/DashboardLayout.vue'
 import EventCard from '@/components/events/EventCard.vue'

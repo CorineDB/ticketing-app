@@ -36,7 +36,7 @@
           <!-- Event Filter -->
           <select
             v-model="filters.event_id"
-            @change="fetchScans"
+            @change="fetchScans(filters.value)"
             class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="">All Events</option>
@@ -48,7 +48,7 @@
           <!-- Gate Filter -->
           <select
             v-model="filters.gate_id"
-            @change="fetchScans"
+            @change="fetchScans(filters.value)"
             class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="">All Gates</option>
@@ -59,8 +59,8 @@
 
           <!-- Type Filter -->
           <select
-            v-model="filters.type"
-            @change="fetchScans"
+            v-model="filters.scan_type"
+            @change="fetchScans(filters.value)"
             class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="">All Types</option>
@@ -77,7 +77,7 @@
               id="start_date"
               v-model="filters.start_date"
               type="date"
-              @change="fetchScans"
+              @change="fetchScans(filters.value)"
               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
@@ -87,7 +87,7 @@
               id="end_date"
               v-model="filters.end_date"
               type="date"
-              @change="fetchScans"
+              @change="fetchScans(filters.value)"
               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
@@ -195,7 +195,7 @@
                   <div class="text-xs text-gray-500">{{ scan.ticket?.buyer_email }}</div>
                 </td>
                 <td class="py-3 px-4 text-sm text-gray-600">
-                  {{ scan.event?.name }}
+                  {{ getEventTitle(scan.event_id) }}
                 </td>
                 <td class="py-3 px-4">
                   <div class="flex items-center gap-2">
@@ -204,22 +204,22 @@
                   </div>
                 </td>
                 <td class="py-3 px-4 text-sm text-gray-600">
-                  {{ scan.scanner_user?.name || '-' }}
+                  {{ scan.scanner?.name || '-' }}
                 </td>
                 <td class="py-3 px-4">
-                  <Badge :variant="scan.type === 'entry' ? 'success' : 'warning'">
-                    {{ scan.type }}
+                  <Badge :variant="scan.scan_type === 'entry' ? 'success' : 'warning'">
+                    {{ scan.scan_type }}
                   </Badge>
                 </td>
                 <td class="py-3 px-4">
                   <div class="flex items-center gap-2">
-                    <CheckCircleIcon v-if="scan.status === 'success'" class="w-4 h-4 text-green-600" />
+                    <CheckCircleIcon v-if="scan.result === 'valid'" class="w-4 h-4 text-green-600" />
                     <XCircleIcon v-else class="w-4 h-4 text-red-600" />
                     <span :class="[
                       'text-sm',
-                      scan.status === 'success' ? 'text-green-600' : 'text-red-600'
+                      scan.result === 'valid' ? 'text-green-600' : 'text-red-600'
                     ]">
-                      {{ scan.status }}
+                      {{ scan.result }}
                     </span>
                   </div>
                   <div v-if="scan.error_message" class="text-xs text-red-500 mt-1">
@@ -276,8 +276,8 @@ const { gates, fetchGates } = useGates()
 const filters = ref<ScanFilters>({
   search: '',
   event_id: '',
-  gate_id: '',
-  type: '',
+  gate_id: undefined,
+  scan_type: undefined,
   start_date: '',
   end_date: ''
 })
@@ -320,12 +320,16 @@ function clearFilters() {
   filters.value = {
     search: '',
     event_id: '',
-    gate_id: '',
-    type: '',
+    gate_id: undefined,
+    scan_type: undefined,
     start_date: '',
     end_date: ''
   }
   fetchScans(filters.value)
+}
+
+const getEventTitle = (eventId: string) => {
+  return events.value.find(event => event.id === eventId)?.title || 'N/A'
 }
 
 async function exportScans() {

@@ -6,7 +6,7 @@
  */
 
 $baseUrl = 'http://localhost:8000';
-$ticketTypeId = '019ac8e5-5344-7125-95e5-68dfd4a3a654';
+$ticketTypeId = '019acb0b-dd9d-7328-82dd-b9de84558b3c';
 
 echo "╔═══════════════════════════════════════════════════════════════╗\n";
 echo "║        TEST D'ACHAT - MODE LIVE (PAIEMENT RÉEL!)             ║\n";
@@ -79,7 +79,7 @@ $purchaseData = [
     'customer' => [
         'firstname' => 'Corine D.',
         'lastname' => 'BOCOGA',
-        'email' => 'test-sandbox-' . time() . '@example.com',
+        'email' => 'cocorine-' . time() . '@gmail.com',
         'phone_number' => '+22996350263',
     ]
 ];
@@ -139,9 +139,6 @@ echo "3️⃣  Après le paiement, vérifiez le statut:\n";
 echo "   php test-verify-payment.php\n\n";
 
 // Sauvegarder les infos
-echo "DEBUG: purchaseResult before saving to JSON:\n";
-echo json_encode($purchaseResult, JSON_PRETTY_PRINT) . "\n\n";
-
 $testData = [
     'ticket_type' => [
         'id' => $ticketType['id'],

@@ -157,3 +157,28 @@ export function formatFileSize(bytes: number): string {
 
   return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i]
 }
+
+/**
+ * Get full image URL from relative path
+ * @param imagePath Relative image path or full URL
+ * @returns Full image URL
+ */
+export function getImageUrl(imagePath: string | undefined): string | undefined {
+  if (!imagePath) return undefined
+
+  // If already a full URL (starts with http:// or https://), return as is
+  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+    return imagePath
+  }
+
+  // Get API base URL from config
+  const baseURL = import.meta.env.VITE_API_URL || 'http://192.168.8.106:8000'
+
+  // Remove trailing slash from baseURL if present
+  const cleanBaseUrl = baseURL.replace(/\/$/, '')
+
+  // Ensure imagePath starts with /
+  const cleanImagePath = imagePath.startsWith('/') ? imagePath : `/${imagePath}`
+
+  return `${cleanBaseUrl}${cleanImagePath}`
+}

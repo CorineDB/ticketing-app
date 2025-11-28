@@ -166,8 +166,8 @@ const props = withDefaults(
 
 defineEmits<{
   edit: [gate: Gate]
-  delete: [gateId: number]
-  updateStatus: [gateId: number, status: 'active' | 'pause' | 'inactive']
+  delete: [gateId: string]
+  updateStatus: [gateId: string, status: 'active' | 'pause' | 'inactive']
   assignScanner: [gate: Gate]
 }>()
 

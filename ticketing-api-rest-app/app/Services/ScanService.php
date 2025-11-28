@@ -51,16 +51,40 @@ class ScanService implements ScanServiceContract
         }
 
         $sessionToken = Str::random(64);
+        $nonce = Str::random(32);
         $expiresIn = 20;
 
         Cache::put("scan_session:{$sessionToken}", [
             'ticket_id' => $ticketId,
-            'nonce' => Str::random(32),
+            'nonce' => $nonce,
         ], now()->addSeconds($expiresIn));
+
+        // Charger les relations pour afficher les infos dans le frontend
+        $ticket->load(['event', 'ticketType']);
 
         return [
             'scan_session_token' => $sessionToken,
+            'scan_nonce' => $nonce,
             'expires_in' => $expiresIn,
+            'ticket' => [
+                'id' => $ticket->id,
+                'code' => $ticket->code,
+                'status' => $ticket->status,
+                'buyer_name' => $ticket->buyer_name,
+                'buyer_email' => $ticket->buyer_email,
+                'buyer_phone' => $ticket->buyer_phone,
+                'event' => [
+                    'id' => $ticket->event->id,
+                    'title' => $ticket->event->title,
+                    'start_datetime' => $ticket->event->start_datetime,
+                    'end_datetime' => $ticket->event->end_datetime,
+                ],
+                'ticket_type' => [
+                    'id' => $ticket->ticketType->id,
+                    'name' => $ticket->ticketType->name,
+                    'price' => $ticket->ticketType->price,
+                ],
+            ],
         ];
     }
 
@@ -79,20 +103,48 @@ class ScanService implements ScanServiceContract
         Cache::forget("scan_session:{$sessionToken}");
 
         $ticketId = $sessionData['ticket_id'];
-
         $lockKey = "ticket_scan_lock:{$ticketId}";
-
-        $lock = Cache::lock($lockKey, 3);
+        $lock = Cache::lock($lockKey, 5);
 
         if (!$lock->get()) {
             throw new \Exception('CONFLICT_SCAN: Ticket is currently being processed', 409);
         }
 
         try {
-            return DB::transaction(function () use ($ticketId, $gateId, $agentId, $action) {
-                return $this->processScan($ticketId, $gateId, $agentId, $action);
+            // On exécute la transaction et on stocke le résultat
+            $result = DB::transaction(function () use ($ticketId, $gateId, $agentId, $action) {
+                try {
+                    return $this->processScan($ticketId, $gateId, $agentId, $action);
+                } catch (\Throwable $th) {
+                    \Log::error('Throwable caught inside DB::transaction in processScan:', [
+                        'message' => $th->getMessage(),
+                        'file' => $th->getFile(),
+                        'line' => $th->getLine(),
+                        'trace' => $th->getTraceAsString(),
+                    ]);
+                    throw $th; // Re-throw the original Throwable
+                }
             });
+
+            // On s'assure que le résultat est bien un tableau avant de le retourner
+            if (!is_array($result)) {
+                // Si ce n'est pas un tableau, on log l'erreur et on retourne une erreur standard
+                \Log::error('ScanService::confirmScan did not return an array.', ['result' => $result]);
+                throw new \Exception('INTERNAL_SERVER_ERROR: Invalid response from scan process', 500);
+            }
+
+            return $result;
+
+        } catch (\Throwable $e) {
+            \Log::error('Throwable caught in ScanService::confirmScan:', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw new \Exception('INTERNAL_SERVER_ERROR: An unexpected error occurred during scan confirmation.', 500, $e); // Re-throw as a standard Exception
         } finally {
+            // Le verrou est libéré quoi qu'il arrive
             $lock->release();
         }
     }
@@ -326,7 +378,16 @@ class ScanService implements ScanServiceContract
             'valid' => $result === 'ok',
             'code' => strtoupper($result),
             'message' => $details['message'] ?? $result,
-            'ticket' => $ticket,
+            'ticket' => [
+                'id' => $ticket->id,
+                'code' => $ticket->code,
+                'status' => $ticket->status,
+                'buyer_name' => $ticket->buyer_name,
+                'buyer_email' => $ticket->buyer_email,
+                'buyer_phone' => $ticket->buyer_phone,
+                'event_id' => $ticket->event_id,
+                'ticket_type_id' => $ticket->ticket_type_id,
+            ],
             'scan_log_id' => $scanLog->id,
         ];
     }

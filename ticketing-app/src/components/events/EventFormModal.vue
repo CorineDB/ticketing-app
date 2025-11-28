@@ -345,14 +345,14 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import type { Event, CreateEventData } from '@/types/api'
+import type { Event as EventType, CreateEventData } from '@/types/api'
 import Modal from '@/components/common/Modal.vue'
 import { XIcon, UploadIcon } from 'lucide-vue-next'
 
 const props = withDefaults(
   defineProps<{
     modelValue: boolean
-    event?: Event | null
+    event?: EventType | null
   }>(),
   {
     event: null
@@ -413,27 +413,31 @@ watch(() => props.event, (event) => {
   if (event) {
     formData.value = {
       title: event.title,
-      description: event.description,
-      location: event.venue,
-      start_date: event.start_datetime,
-      end_date: event.end_date,
-      start_time: event.start_time,
-      end_time: event.end_time,
+      description: event.description || '',
+      location: event.venue || '',
+      start_date: event.start_datetime.split(' ')[0] || '',
+      end_date: event.end_datetime?.split(' ')[0] || '',
+      start_time: event.start_time || '',
+      end_time: event.end_time || '',
       capacity: event.capacity,
-      dress_code: event.dress_code,
+      dress_code: event.dress_code || '',
       allow_reentry: event.allow_reentry,
       image_file: null,
       ticket_types: event.ticket_types?.map(tt => ({
         name: tt.name,
         price: tt.price || 0,
-        quota: tt.quota || 0,
+        quota: tt.quantity || 0,
         usage_limit: tt.usage_limit || 1,
         validity_from: tt.validity_from || '',
         validity_to: tt.validity_to || ''
       })) || []
     }
-    if (event.img_url) {
-      bannerPreview.value = event.img_url
+    if (event.image_url) {
+      // Import API base URL to construct full image URL
+      const baseURL = import.meta.env.VITE_API_URL || 'http://192.168.8.106:8000'
+      const cleanBaseUrl = baseURL.replace(/\/$/, '')
+      const imagePath = event.image_url.startsWith('/') ? event.image_url : `/${event.image_url}`
+      bannerPreview.value = event.image_url.startsWith('http') ? event.image_url : `${cleanBaseUrl}${imagePath}`
     }
   }
 }, { immediate: true })
@@ -466,8 +470,9 @@ function handleFileUpload(event: Event) {
 function removeBanner() {
   bannerPreview.value = ''
   formData.value.image_file = null
-  if (fileInput.value) {
-    fileInput.value.value = ''
+  const inputElement = fileInput.value as HTMLInputElement | undefined
+  if (inputElement) {
+    inputElement.value = ''
   }
 }
 

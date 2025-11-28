@@ -63,6 +63,11 @@ export interface AuthResponse {
   user: User
 }
 
+export interface UserFilters extends BaseFilters {
+  role_id?: string;
+  status?: 'active' | 'inactive' | 'suspended';
+}
+
 // ==================== ORGANIZATION TYPES ====================
 
 export interface Organization {
@@ -275,7 +280,7 @@ export interface Ticket {
   qr_hmac: string // HMAC signature: HMAC_SHA256(ticket_id|event_id, SECRET)
   magic_link_token: string // Public access token for viewing ticket without login
   holder_name: string
-  holder_email: string
+  buyer_email: string // Changed from holder_email
   holder_phone?: string
   price: number
   currency: string
@@ -395,6 +400,7 @@ export interface Scan {
   location?: string
   device_info?: string
   notes?: string
+  error_message?: string // Added this line
 }
 
 // 2-STEP SCAN WORKFLOW TYPES
@@ -470,6 +476,9 @@ export interface ScanFilters {
   scan_type?: ScanType
   result?: ScanResult
   date?: string
+  search?: string
+  start_date?: string
+  end_date?: string
 }
 
 // ==================== DASHBOARD & ANALYTICS TYPES ====================
@@ -719,4 +728,10 @@ export interface AttendanceReport {
     exits: number
     current: number
   }[]
+}
+
+export interface ScanActivityReport {
+  totalScans: number;
+  successfulScans: number;
+  failedScans: number;
 }

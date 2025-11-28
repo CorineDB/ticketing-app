@@ -2,7 +2,9 @@ import api from './api'
 import type {
   DashboardStats,
   OrganizerDashboard,
-  ScannerDashboard
+  ScannerDashboard,
+  SalesReport,
+  ScanActivityReport
 } from '@/types/api'
 
 class DashboardService {
@@ -37,6 +39,22 @@ class DashboardService {
     const response = await api.get('/dashboard/analytics', {
       params: { start_date: startDate, end_date: endDate }
     })
+    return response.data.data
+  }
+
+  /**
+   * Get sales report data
+   */
+  async getSalesData(): Promise<SalesReport> {
+    const response = await api.get<{ data: SalesReport }>('/reports/sales')
+    return response.data.data
+  }
+
+  /**
+   * Get scan activity data
+   */
+  async getScanActivityData(): Promise<ScanActivityReport> {
+    const response = await api.get<{ data: ScanActivityReport }>('/reports/scans')
     return response.data.data
   }
 }

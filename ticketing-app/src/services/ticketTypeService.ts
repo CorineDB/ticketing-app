@@ -9,7 +9,7 @@ class TicketTypeService {
   /**
    * Get all ticket types for an event
    */
-  async getAll(eventId: number): Promise<TicketType[]> {
+  async getAll(eventId: string): Promise<TicketType[]> {
     const response = await api.get<{ data: TicketType[] }>(`/events/${eventId}/ticket-types`)
     return response.data
   }

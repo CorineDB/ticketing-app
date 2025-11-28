@@ -42,8 +42,7 @@ class ScanController extends Controller
                 $data['action']
             );
             return response()->json($result);
-        } catch (\Exception $e) {
-            $code = $e->getCode();
+        } catch (\Throwable $e) {
             if ($code === 0) {
                 $code = 400;
             }

@@ -157,6 +157,42 @@ export function useTickets() {
     }
   }
 
+  const resendTicketEmail = async (id: string) => {
+    loading.value = true
+    error.value = null
+    try {
+      await ticketService.sendEmail(id)
+    } catch (e: any) {
+      error.value = e.response?.data?.message || 'Failed to resend ticket email'
+      console.error('Error resending ticket email:', e)
+      throw e
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const updateTicketStatus = async (id: string, newStatus: string) => {
+    loading.value = true
+    error.value = null
+    try {
+      const updatedTicket = await ticketService.update(id, { status: newStatus as TicketStatus })
+      const index = tickets.value.findIndex(t => t.id === id)
+      if (index !== -1) {
+        tickets.value[index] = updatedTicket
+      }
+      if (ticket.value?.id === id) {
+        ticket.value = updatedTicket
+      }
+      return updatedTicket
+    } catch (e: any) {
+      error.value = e.response?.data?.message || `Failed to update ticket status to ${newStatus}`
+      console.error(`Error updating ticket status to ${newStatus}:`, e)
+      throw e
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     tickets,
     ticket,
@@ -164,12 +200,14 @@ export function useTickets() {
     error,
     pagination,
     fetchTickets,
-    fetchTicket,
+    fetchTicketById: fetchTicket, // Renamed fetchTicket to fetchTicketById
     fetchTicketByCode,
     createTicket,
     updateTicket,
     cancelTicket,
     refundTicket,
-    validateTicket
+    validateTicket,
+    resendTicketEmail,
+    updateTicketStatus
   }
 }

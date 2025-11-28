@@ -92,7 +92,7 @@ class OrganizationService {
   /**
    * Add member to organisateur
    */
-  async addMember(id: string, userId: number, role: string): Promise<void> {
+  async addMember(id: string, userId: string, role: string): Promise<void> {
     await api.post(`/organisateurs/${id}/members`, {
       user_id: userId,
       role
@@ -102,7 +102,7 @@ class OrganizationService {
   /**
    * Remove member from organisateur
    */
-  async removeMember(id: string, userId: number): Promise<void> {
+  async removeMember(id: string, userId: string): Promise<void> {
     await api.delete(`/organisateurs/${id}/members/${userId}`)
   }
 
@@ -131,7 +131,9 @@ class OrganizationService {
         if (value instanceof File) {
           formData.append(key, value)
         } else {
-          formData.append(key, String(value))
+          // Convert booleans to 0/1 for FormData
+          const formValue = typeof value === 'boolean' ? (value ? '1' : '0') : String(value)
+          formData.append(key, formValue)
         }
       }
     })

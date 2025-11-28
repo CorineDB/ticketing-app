@@ -14,7 +14,7 @@
         <div class="h-48 bg-gradient-to-br from-blue-500 to-purple-500 relative">
           <img
             v-if="event.image_url"
-            :src="event.image_url"
+            :src="getImageUrl(event.image_url)"
             :alt="event.title"
             class="w-full h-full object-cover"
           />
@@ -47,7 +47,7 @@
                 <StatusBadge :status="event.status" type="event" />
               </div>
               <p v-if="event.description" class="text-gray-600 mb-4">{{ event.description }}</p>
-              <div class="flex items-center gap-2 text-sm text-gray-500">
+              <div v-if="event.organisateur" class="flex items-center gap-2 text-sm text-gray-500">
                 <BuildingIcon class="w-4 h-4" />
                 <span>{{ event.organisateur.name }}</span>
               </div>
@@ -400,7 +400,7 @@ import { useEvents } from '@/composables/useEvents'
 import { useTicketTypes } from '@/composables/useTicketTypes'
 import { useGates } from '@/composables/useGates'
 import { usePermissions } from '@/composables/usePermissions'
-import { formatDate, formatCurrency } from '@/utils/formatters'
+import { formatDate, formatCurrency, getImageUrl } from '@/utils/formatters'
 import type { Event, TicketType, Gate } from '@/types/api'
 import DashboardLayout from '@/components/layout/DashboardLayout.vue'
 import Tabs from '@/components/common/Tabs.vue'
@@ -431,7 +431,7 @@ import {
 
 const route = useRoute()
 const router = useRouter()
-const { fetchEvent, updateEvent, deleteEvent } = useEvents()
+const { event, fetchEvent, updateEvent, deleteEvent } = useEvents()
 const { ticketTypes, fetchTicketTypes, createTicketType, updateTicketType, deleteTicketType } = useTicketTypes()
 const { gates, fetchGates, createGate, updateGate, deleteGate } = useGates()
 const {
@@ -441,7 +441,6 @@ const {
   canManageGates
 } = usePermissions()
 
-const event = ref<Event | null>(null)
 const loading = ref(true)
 const activeTab = ref('overview')
 
@@ -458,10 +457,10 @@ const ticketTypeToDelete = ref<TicketType | null>(null)
 const gateToDelete = ref<Gate | null>(null)
 
 const tabs = computed(() => [
-  { id: 'overview', label: 'Overview', icon: CalendarIcon },
-  { id: 'ticket-types', label: 'Ticket Types', icon: TicketIcon },
-  { id: 'gates', label: 'Gates', icon: DoorOpenIcon },
-  { id: 'statistics', label: 'Statistics', icon: UsersIcon }
+  { key: 'overview', label: 'Overview', icon: CalendarIcon },
+  { key: 'ticket-types', label: 'Ticket Types', icon: TicketIcon },
+  { key: 'gates', label: 'Gates', icon: DoorOpenIcon },
+  { key: 'statistics', label: 'Statistics', icon: UsersIcon }
 ])
 
 onMounted(async () => {
@@ -472,15 +471,16 @@ async function loadEvent() {
   loading.value = true
   try {
     const eventId = (route.params.id)
-    event.value = await fetchEvent(eventId)
+    await fetchEvent(eventId)
 
     console.log("Loaded Event:", event.value);
 
     if (event.value) {
       // Load related data
       await Promise.all([
-        fetchTicketTypes({ event_id: eventId }),
-        fetchGates({ event_id: eventId })
+        fetchTicketTypes({ event_id: event.value.id }),
+        fetchGates({ event_id: event.value.id }),
+        fetchStatistics(event.value.id)
       ])
     }
   } catch (error) {

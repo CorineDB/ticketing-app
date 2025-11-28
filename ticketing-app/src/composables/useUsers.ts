@@ -100,7 +100,7 @@ export function useUsers() {
     }
   }
 
-  const assignRole = async (userId: number, roleId: number) => {
+  const assignRole = async (userId: string, roleId: string) => {
     loading.value = true
     error.value = null
     try {

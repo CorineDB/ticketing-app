@@ -12,8 +12,8 @@
       <!-- Event Banner -->
       <div class="relative h-96 rounded-xl overflow-hidden mb-8">
         <img
-          v-if="event.img_url"
-          :src="event.img_url"
+          v-if="event.image_url"
+          :src="getImageUrl(event.image_url)"
           :alt="event.title"
           class="w-full h-full object-cover"
         />
@@ -160,7 +160,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter, RouterLink } from 'vue-router'
 import eventService from '@/services/eventService'
-import { formatDate, formatCurrency } from '@/utils/formatters'
+import { formatDate, formatCurrency, getImageUrl } from '@/utils/formatters'
 import type { Event, TicketType } from '@/types/api'
 import PublicLayout from '@/components/layout/PublicLayout.vue'
 import StatusBadge from '@/components/common/StatusBadge.vue'

@@ -21,7 +21,7 @@
           class="bg-white rounded-xl shadow-sm border hover:shadow-lg transition-shadow overflow-hidden"
         >
           <div class="h-48 bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
-            <img v-if="event.image_url" :src="event.image_url" :alt="event.title" class="w-full h-full object-cover" />
+            <img v-if="event.image_url" :src="getImageUrl(event.image_url)" :alt="event.title" class="w-full h-full object-cover" />
             <CalendarIcon v-else class="w-16 h-16 text-white opacity-50" />
           </div>
           <div class="p-4">
@@ -53,7 +53,7 @@
 import { ref, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useEvents } from '@/composables/useEvents'
-import { formatDate } from '@/utils/formatters'
+import { formatDate, getImageUrl } from '@/utils/formatters'
 import PublicLayout from '@/components/layout/PublicLayout.vue'
 import { CalendarIcon, MapPinIcon } from 'lucide-vue-next'
 

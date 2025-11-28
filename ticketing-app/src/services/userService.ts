@@ -64,7 +64,7 @@ class UserService {
   /**
    * Assign role to user
    */
-  async assignRole(userId: number, roleId: number): Promise<User> {
+  async assignRole(userId: string, roleId: string): Promise<User> {
     const response = await api.post<{ data: User }>(`/users/${userId}/roles`, {
       role_id: roleId
     })
@@ -74,7 +74,7 @@ class UserService {
   /**
    * Remove role from user
    */
-  async removeRole(userId: number): Promise<User> {
+  async removeRole(userId: string): Promise<User> {
     const response = await api.delete<{ data: User }>(`/users/${userId}/roles`)
     return response.data.data
   }

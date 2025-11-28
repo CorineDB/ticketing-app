@@ -104,7 +104,7 @@ const props = withDefaults(
   defineProps<{
     modelValue: boolean
     gate?: Gate | null
-    eventId: number
+    eventId: string
     scanners?: User[]
   }>(),
   {

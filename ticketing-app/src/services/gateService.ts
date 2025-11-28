@@ -29,7 +29,7 @@ class GateService {
   /**
    * Get gates for a specific event
    */
-  async getByEventId(eventId: number, filters?: GateFilters): Promise<Gate[]> {
+  async getByEventId(eventId: string, filters?: GateFilters): Promise<Gate[]> {
     const response = await api.get<ApiResponse<Gate[]>>(`/events/${eventId}/gates`, {
       params: filters
     })
@@ -80,7 +80,7 @@ class GateService {
   /**
    * Assign a scanner to a gate
    */
-  async assignScanner(gateId: number, scannerId: number | null): Promise<Gate> {
+  async assignScanner(gateId: string, scannerId: string | null): Promise<Gate> {
     const response = await api.patch<ApiResponse<Gate>>(`${this.BASE_URL}/${gateId}/assign`, {
       scanner_id: scannerId
     })
@@ -90,7 +90,7 @@ class GateService {
   /**
    * Get gate statistics
    */
-  async getStatistics(gateId: number, dateFrom?: string, dateTo?: string) {
+  async getStatistics(gateId: string, dateFrom?: string, dateTo?: string) {
     const response = await api.get<ApiResponse<{
       total_scans: number
       valid_scans: number
@@ -110,7 +110,7 @@ class GateService {
   /**
    * Bulk create gates for an event
    */
-  async bulkCreate(eventId: number, gates: Omit<CreateGateData, 'event_id'>[]): Promise<Gate[]> {
+  async bulkCreate(eventId: string, gates: Omit<CreateGateData, 'event_id'>[]): Promise<Gate[]> {
     const response = await api.post<ApiResponse<Gate[]>>(`/events/${eventId}/gates/bulk`, {
       gates
     })

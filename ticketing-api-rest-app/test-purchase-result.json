@@ -5,24 +5,25 @@
         "price": "100.00"
     },
     "purchase": {
-        "transaction_id": 107729183,
+        "transaction_id": 107734278,
         "tickets": [
             {
-                "id": "019aca14-145d-721d-b250-445f349c2016",
-                "code": "FKUPOEDP",
-                "status": "issued"
+                "id": "019acb06-e15e-714d-800c-83f1df878d03",
+                "code": "QVQLXE6Y",
+                "status": "issued",
+                "magic_link_token": "1aGVWmAJGi5XYoHmVdsTYahPxqtCq9Pl6NYJl3tXbBFXV1Hrx5kQZYaiUruQb8Y9"
             }
         ],
         "total_amount": 100,
         "currency": "XOF",
-        "payment_url": "https:\/\/process.fedapay.com\/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOjEwNzcyOTE4MywiZXhwIjoxNzY0NDEzMzA4fQ.ZUQXoUQJi5g1wffhrIbjhKZQh24jDtJVSBaZDatwVSA"
+        "payment_url": "https:\/\/process.fedapay.com\/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOjEwNzczNDI3OCwiZXhwIjoxNzY0NDI5MjIxfQ.Wmj1eae9ETEZorP4j3lrWowpJp4wvhWx7conI1Cil80"
     },
     "customer": {
         "firstname": "Corine D.",
         "lastname": "BOCOGA",
-        "email": "test-sandbox-1764326904@example.com",
+        "email": "cocorine-1764342816@gmail.com",
         "phone_number": "+22996350263"
     },
-    "tested_at": "2025-11-28 10:48:28",
+    "tested_at": "2025-11-28 15:13:41",
     "environment": "LIVE"
 }

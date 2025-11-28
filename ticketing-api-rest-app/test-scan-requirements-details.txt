@@ -1,0 +1,42 @@
+
+      App\Models\User {#6594
+        id: "9d518178-44e1-4f6c-92f4-13bf0d899d79",
+        name: "Control Agent",
+        email: "agent@example.com",
+        email_verified_at: "2025-11-27 01:43:24",
+        #password: "$2y$12$e51G/ITc5y2ZH4HIR2p86epvXqcf3Sm7/pu12f.A6DkhMDQugAAg.",
+        #remember_token: "Ze1d9pcQyw",
+        created_at: "2025-11-27 01:43:24",
+        updated_at: "2025-11-27 01:43:24",
+        type: "agent-de-controle",
+        role_id: "6a725fe4-a757-487c-bf6e-a2e569bd0911",
+      }
+> App\Models\Gate::first()->id;
+= "5939d63e-3ede-440e-bc30-413b896c0eb2"
+Authorization:
+Bearer 9|GT5eSHw0dNeybuhfjEtklwmWWAE3TDhqPwP9Kila2e542b32
+
+ticket qr scan body content
+
+http://192.168.8.106:8000/t/019ac9fc-b13d-72c0-b27e-c1295d21b7a3?sig=16a0f30637122c6f4fb031c93e3da1712aaccfe8929cd2aff39fc38df588ae59
+
+═══════════════════════════════════════════════════════════════
+ÉTAPE 3: REQUEST SCAN (Public - Étape 1)
+═══════════════════════════════════════════════════════════════
+
+POST /api/scan/request
+Paramètres:
+  - ticket_id: 019ac9fc-b13d-72c0-b27e-c1295d21b7a3
+  - sig: 16a0f30637122c6f4fb031c93e3da1712aaccfe8929cd2aff39fc38df588ae59
+
+POST /api/scan/request
+Paramètres:
+  - ticket_id: 019ac9fc-b13d-72c0-b27e-c1295d21b7a3
+  - sig: 16a0f30637122c6f4fb031c93e3da1712aaccfe8929cd2aff39fc38df588ae59
+
+
+echo "      - scan_session_token: $scanSessionToken\n";
+echo "      - scan_nonce: <nonce depuis cache>\n";
+echo "      - gate_id: <ID d'une porte>\n";
+echo "      - agent_id: <ID de l'agent>\n";
+echo "      - action: 'in' ou 'out'\n\n";

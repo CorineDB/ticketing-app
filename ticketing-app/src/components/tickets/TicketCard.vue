@@ -6,8 +6,8 @@
     <!-- Event Banner (Small) -->
     <div class="relative h-24 bg-gradient-to-br from-blue-500 to-purple-500">
       <img
-        v-if="ticket.event?.banner"
-        :src="ticket.event.img_url"
+        v-if="ticket.event?.image_url"
+        :src="getImageUrl(ticket.event.image_url)"
         :alt="ticket.event.title"
         class="w-full h-full object-cover"
       />
@@ -19,7 +19,7 @@
     <!-- Ticket Info -->
     <div class="p-4">
       <h3 class="font-bold text-gray-900 mb-1 truncate">
-        {{ ticket.event?.name }}
+        {{ ticket.event?.title }}
       </h3>
       <p class="text-sm text-gray-600 mb-3">{{ ticket.ticket_type?.name }}</p>
 
@@ -32,7 +32,7 @@
       <!-- Date -->
       <div class="flex items-center gap-2 text-sm text-gray-600 mb-3">
         <CalendarIcon class="w-4 h-4" />
-        <span>{{ formatDate(ticket.event?.start_date) }}</span>
+        <span>{{ formatDate(ticket.event?.start_datetime) }}</span>
       </div>
 
       <!-- Footer -->
@@ -58,7 +58,7 @@
 <script setup lang="ts">
 import { RouterLink } from 'vue-router'
 import type { Ticket } from '@/types/api'
-import { formatDate } from '@/utils/formatters'
+import { formatDate, getImageUrl } from '@/utils/formatters'
 import TicketStatusBadge from './TicketStatusBadge.vue'
 import Badge from '@/components/common/Badge.vue'
 import {
