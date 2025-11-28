@@ -71,37 +71,71 @@ if (empty($events)) {
     exit(1);
 }
 
-$event = $events[0];
-echo "✅ Event trouvé: {$event['title']}\n";
+// Chercher un event qui a des ticket types
+$event = null;
+$ticketTypes = [];
+
+foreach ($events as $evt) {
+    echo "Vérification de l'event: {$evt['title']}\n";
+
+    $response = makeRequest('GET', "$baseUrl/api/public/events/{$evt['id']}/ticket-types");
+
+    if ($response['http_code'] === 200) {
+        $types = $response['data']['data'] ?? [];
+        if (!empty($types)) {
+            // Vérifier qu'au moins un ticket type a du quota disponible
+            $hasQuota = false;
+            foreach ($types as $type) {
+                $remaining = $type['remaining_quota'] ?? $type['quota'] ?? 0;
+                if ($remaining >= 2) { // On veut acheter 2 tickets
+                    $hasQuota = true;
+                    break;
+                }
+            }
+
+            if ($hasQuota) {
+                $event = $evt;
+                $ticketTypes = $types;
+                break;
+            }
+        }
+    }
+}
+
+if (!$event || empty($ticketTypes)) {
+    echo "\n❌ Aucun event avec ticket types trouvé\n";
+    echo "Veuillez créer un ticket type pour un event\n";
+    exit(1);
+}
+
+echo "\n✅ Event trouvé: {$event['title']}\n";
 echo "   ID: {$event['id']}\n";
-echo "   Date: {$event['date']}\n\n";
+echo "   Date: " . ($event['date'] ?? 'N/A') . "\n\n";
 
-// Étape 2: Récupérer les ticket types de cet event
+// Étape 2: Afficher les ticket types trouvés et sélectionner un avec du quota
 echo "═══════════════════════════════════════════════════════════════\n";
-echo "ÉTAPE 2: Récupération des types de tickets\n";
+echo "ÉTAPE 2: Types de tickets disponibles\n";
 echo "═══════════════════════════════════════════════════════════════\n";
 
-$response = makeRequest('GET', "$baseUrl/api/public/events/{$event['id']}/ticket-types");
+// Sélectionner le premier ticket type avec du quota disponible
+$ticketType = null;
+foreach ($ticketTypes as $type) {
+    $remaining = $type['remaining_quota'] ?? $type['quota'] ?? 0;
+    if ($remaining >= 2) {
+        $ticketType = $type;
+        break;
+    }
+}
 
-if ($response['http_code'] !== 200) {
-    echo "❌ Erreur lors de la récupération des ticket types\n";
-    echo "HTTP Code: {$response['http_code']}\n";
+if (!$ticketType) {
+    echo "❌ Aucun ticket type avec quota suffisant\n";
     exit(1);
 }
 
-$ticketTypes = $response['data']['data'] ?? [];
-
-if (empty($ticketTypes)) {
-    echo "❌ Aucun ticket type trouvé pour cet event\n";
-    echo "Veuillez créer un ticket type d'abord\n";
-    exit(1);
-}
-
-$ticketType = $ticketTypes[0];
-echo "✅ Ticket type trouvé: {$ticketType['name']}\n";
+echo "✅ Ticket type sélectionné: {$ticketType['name']}\n";
 echo "   ID: {$ticketType['id']}\n";
 echo "   Prix: {$ticketType['price']} XOF\n";
-echo "   Quota disponible: " . ($ticketType['remaining_quota'] ?? 'N/A') . "\n\n";
+echo "   Quota disponible: " . ($ticketType['remaining_quota'] ?? $ticketType['quota'] ?? 'N/A') . "\n\n";
 
 // Étape 3: Acheter un ticket
 echo "═══════════════════════════════════════════════════════════════\n";
