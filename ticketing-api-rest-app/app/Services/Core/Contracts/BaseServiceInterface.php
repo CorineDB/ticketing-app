@@ -10,9 +10,9 @@ interface BaseServiceInterface
 
     public function findOrFail(mixed $id): Model;
 
-    public function all(array $columns = ['*']): iterable;
+    public function all(array $columns = ['*'], array $relations = []): iterable;
 
-    public function paginate(int $limit = 15, array $columns = ['*']);
+    public function paginate(int $limit = 15, array $columns = ['*'], array $relations = []);
 
     public function create(array $data): Model;
 

@@ -434,7 +434,7 @@ watch(() => props.event, (event) => {
     }
     if (event.image_url) {
       // Import API base URL to construct full image URL
-      const baseURL = import.meta.env.VITE_API_URL || 'http://192.168.8.106:8000'
+      const baseURL = import.meta.env.VITE_API_URL || 'http://192.168.8.107:8000'
       const cleanBaseUrl = baseURL.replace(/\/$/, '')
       const imagePath = event.image_url.startsWith('/') ? event.image_url : `/${event.image_url}`
       bannerPreview.value = event.image_url.startsWith('http') ? event.image_url : `${cleanBaseUrl}${imagePath}`

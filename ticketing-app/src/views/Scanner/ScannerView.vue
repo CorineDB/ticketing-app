@@ -77,7 +77,7 @@
                 />
               </div>
               <div>
-                <div class="font-medium text-gray-900">{{ scan.ticket?.holder_name }}</div>
+                <div class="font-medium text-gray-900">{{ scan.ticket?.buyer_name }}</div>
                 <div class="text-sm text-gray-500">{{ formatTime(scan.scanned_at) }}</div>
               </div>
             </div>

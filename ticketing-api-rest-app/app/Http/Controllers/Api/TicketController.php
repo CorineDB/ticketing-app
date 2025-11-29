@@ -30,7 +30,7 @@ class TicketController extends Controller
         if ($eventId) {
             $tickets = $this->ticketService->getByEvent($eventId);
         } else {
-            $tickets = $this->ticketService->list();
+            $tickets = $this->ticketService->list(limit:1000, relations: ['event', 'ticketType']);
         }
 
         return response()->json(['data' => $tickets]);
@@ -208,4 +208,12 @@ class TicketController extends Controller
         $ticket = $this->ticketService->markAsPaid($id);
         return response()->json($ticket);
     }
+
+    public function sendTicketByEmail(string $id)
+    {
+        $ticket = $this->ticketService->sendTicketByEmail($id);
+        return response()->json($ticket);
+    }
+
+
 }

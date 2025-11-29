@@ -3,15 +3,15 @@
     <!-- Ticket Info Header -->
     <div class="mb-6">
       <h3 class="text-2xl font-bold text-gray-900 mb-2">{{ ticket.event?.title }}</h3>
-      <p class="text-gray-600">{{ ticket.holder_name }}</p>
+      <p class="text-gray-600">{{ ticket.buyer_name }}</p>
       <TicketStatusBadge :status="ticket.status" class="mt-2" />
     </div>
 
     <!-- QR Code -->
     <div class="bg-white p-6 rounded-lg inline-block">
       <img
-        v-if="ticket.qr_code"
-        :src="ticket.qr_code"
+        v-if="qr_code.url"
+        :src="qr_code.url"
         alt="Ticket QR Code"
         class="w-64 h-64"
       />
@@ -75,22 +75,25 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import type { Ticket } from '@/types/api'
 import { formatDate, formatCurrency } from '@/utils/formatters'
 import TicketStatusBadge from './TicketStatusBadge.vue'
+import { useTickets } from '@/composables/useTickets'
 import {
   QrCodeIcon,
   CopyIcon,
   CheckIcon,
   DownloadIcon
 } from 'lucide-vue-next'
+import ticketService from '@/services/ticketService'
 
 const props = defineProps<{
   ticket: Ticket
 }>()
 
 defineEmits<{
+  qr: string
   download: []
 }>()
 
@@ -103,4 +106,22 @@ function copyCode() {
     copied.value = false
   }, 2000)
 }
+
+const qr_code = ref<{ url: string | null }>({ url: null })
+const loading = ref(true)
+
+onMounted(async () => {
+  console.log(props.ticket.id);
+  try {
+    // Fetch ticket by code (magic link token)
+    const code = await ticketService.downloadQR(props.ticket.id, props.ticket.magic_link_token);
+    console.log("Fetched QR code:", code);
+    qr_code.value = { url: URL.createObjectURL(code) };
+    console.log("Fetched QR code:", qr_code.value);
+  } catch (error) {
+    console.error('Failed to fetch ticket:', error)
+  } finally {
+    loading.value = false
+  }
+})
 </script>

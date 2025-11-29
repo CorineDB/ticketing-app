@@ -26,19 +26,19 @@ abstract class BaseService implements BaseServiceInterface
         return $this->repository->findOrFail($id);
     }
 
-    public function all(array $columns = ['*']): iterable
+    public function all(array $columns = ['*'], array $relations = []): iterable
     {
-        return $this->repository->all($columns);
+        return $this->repository->all($columns, $relations);
     }
 
-    public function paginate(int $limit = 15, array $columns = ['*'])
+    public function paginate(int $limit = 15, array $columns = ['*'], array $relations = [])
     {
-        return $this->repository->paginate($limit, $columns);
+        return $this->repository->paginate($limit, $columns, $relations);
     }
 
-    public function list(int $limit = 15)
+    public function list(int $limit = 15, array $columns = ['*'], array $relations = ['*'])
     {
-        return $this->paginate($limit);
+        return $this->paginate($limit, $columns, $relations);
     }
 
     public function get($id): Model
