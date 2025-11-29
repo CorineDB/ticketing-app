@@ -45,7 +45,7 @@ This project has been fully architected following the Sirene Vue3 pattern with:
 - [x] ticketTypeService (manage ticket types)
 - [x] orderService (create, payment, callback)
 - [x] scanService (scan, history, summary)
-- [x] organizationService (CRUD, members)
+- [x] organisateurService (CRUD, members)
 - [x] userService (CRUD, roles)
 - [x] dashboardService (analytics)
 

@@ -14,8 +14,8 @@ export interface User {
   phone?: string
   type: UserType
   avatar?: string
-  organization_id?: number
-  organization?: Organization
+  organisateur_id?: string
+  organisateur?: User
   role?: Role
   permissions?: Permission[]
   created_at: string
@@ -108,12 +108,12 @@ export type EventStatus = 'draft' | 'published' | 'ongoing' | 'completed' | 'can
 
 export interface Event {
   id: string
-  organization_id: string
-  organization?: Organization
+  organisateur_id: string
+  organisateur?: User
   name: string
   slug: string
   description?: string
-  banner?: string
+  image_url?: string
   venue: string
   address?: string
   city?: string
@@ -167,7 +167,7 @@ export interface UpdateEventData extends Partial<CreateEventData> {
 
 export interface EventFilters {
   status?: EventStatus
-  organization_id?: number
+  organisateur_id?: string
   start_date?: string
   end_date?: string
   city?: string
@@ -248,7 +248,7 @@ export interface CreateGateData {
 export interface UpdateGateData extends Partial<CreateGateData> {}
 
 export interface GateFilters {
-  event_id?: number
+  event_id?: string
   gate_type?: GateType
   status?: GateStatus
   scanner_id?: number
@@ -316,7 +316,7 @@ export interface UpdateTicketData {
 }
 
 export interface TicketFilters {
-  event_id?: number
+  event_id?: string
   ticket_type_id?: number
   status?: TicketStatus
   holder_email?: string
@@ -365,7 +365,7 @@ export interface CreateOrderData {
 }
 
 export interface OrderFilters {
-  event_id?: number
+  event_id?: string
   status?: OrderStatus
   customer_email?: string
   search?: string
@@ -462,7 +462,7 @@ export interface ScanTicketData {
 }
 
 export interface ScanFilters {
-  event_id?: number
+  event_id?: string
   gate_id?: number
   scanner_id?: number
   scan_type?: ScanType
@@ -512,7 +512,7 @@ export interface DashboardStats {
 }
 
 export interface OrganizerDashboard {
-  organization?: Organization
+  organisateur?: User
   stats: {
     total_events: number
     active_events: number

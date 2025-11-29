@@ -9,101 +9,101 @@ import type {
 
 class OrganizationService {
   /**
-   * Get all organizations
+   * Get all organisateurs
    */
   async getAll(filters?: OrganizationFilters): Promise<PaginatedResponse<Organization>> {
     const params = this.buildQueryParams(filters)
-    const response = await api.get<PaginatedResponse<Organization>>('/organizations', { params })
+    const response = await api.get<PaginatedResponse<Organization>>('/organisateurs', { params })
     return response.data
   }
 
   /**
-   * Get single organization by ID
+   * Get single organisateur by ID
    */
   async getById(id: string): Promise<Organization> {
-    const response = await api.get<{ data: Organization }>(`/organizations/${id}`)
+    const response = await api.get<{ data?: User }>(`/organisateurs/${id}`)
     return response.data.data
   }
 
   /**
-   * Get my organization (for organizer role)
+   * Get my organisateur (for organizer role)
    */
   async getMyOrganization(): Promise<Organization> {
-    const response = await api.get<{ data: Organization }>('/organizations/me')
+    const response = await api.get<{ data?: User }>('/organisateurs/me')
     return response.data.data
   }
 
   /**
-   * Create a new organization
+   * Create a new organisateur
    */
   async create(data: CreateOrganizationData): Promise<Organization> {
     const formData = this.toFormData(data)
-    const response = await api.post<{ data: Organization }>('/organizations', formData, {
+    const response = await api.post<{ data?: User }>('/organisateurs', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     })
     return response.data.data
   }
 
   /**
-   * Update an existing organization
+   * Update an existing organisateur
    */
   async update(id: string, data: UpdateOrganizationData): Promise<Organization> {
     const formData = this.toFormData(data)
     formData.append('_method', 'PUT')
-    const response = await api.post<{ data: Organization }>(`/organizations/${id}`, formData, {
+    const response = await api.post<{ data?: User }>(`/organisateurs/${id}`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     })
     return response.data.data
   }
 
   /**
-   * Delete an organization
+   * Delete an organisateur
    */
   async delete(id: string): Promise<void> {
-    await api.delete(`/organizations/${id}`)
+    await api.delete(`/organisateurs/${id}`)
   }
 
   /**
-   * Suspend an organization
+   * Suspend an organisateur
    */
   async suspend(id: string, reason?: string): Promise<Organization> {
-    const response = await api.post<{ data: Organization }>(`/organizations/${id}/suspend`, {
+    const response = await api.post<{ data?: User }>(`/organisateurs/${id}/suspend`, {
       reason
     })
     return response.data.data
   }
 
   /**
-   * Activate an organization
+   * Activate an organisateur
    */
   async activate(id: string): Promise<Organization> {
-    const response = await api.post<{ data: Organization }>(`/organizations/${id}/activate`)
+    const response = await api.post<{ data?: User }>(`/organisateurs/${id}/activate`)
     return response.data.data
   }
 
   /**
-   * Get organization members
+   * Get organisateur members
    */
   async getMembers(id: string): Promise<any[]> {
-    const response = await api.get(`/organizations/${id}/members`)
+    const response = await api.get(`/organisateurs/${id}/members`)
     return response.data.data
   }
 
   /**
-   * Add member to organization
+   * Add member to organisateur
    */
   async addMember(id: string, userId: number, role: string): Promise<void> {
-    await api.post(`/organizations/${id}/members`, {
+    await api.post(`/organisateurs/${id}/members`, {
       user_id: userId,
       role
     })
   }
 
   /**
-   * Remove member from organization
+   * Remove member from organisateur
    */
   async removeMember(id: string, userId: number): Promise<void> {
-    await api.delete(`/organizations/${id}/members/${userId}`)
+    await api.delete(`/organisateurs/${id}/members/${userId}`)
   }
 
   /**

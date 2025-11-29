@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\WebhookController;
+use App\Http\Controllers\Api\DashboardController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
 
@@ -86,6 +87,15 @@ Route::get('/events/slug/{slug}', [EventController::class, 'showBySlug']);
 
 // Protected routes (authentication required)
 Route::middleware('auth:sanctum')->group(function () {
+    // Dashboard routes
+    Route::prefix('dashboard')->group(function () {
+        Route::get('/organizer', [DashboardController::class, 'organizer']);
+        Route::get('/super-admin', [DashboardController::class, 'superAdmin']);
+        Route::get('/scanner', [DashboardController::class, 'scanner']);
+        Route::get('/participant', [DashboardController::class, 'participant']);
+        Route::get('/cashier', [DashboardController::class, 'cashier']);
+    });
+
     // Roles
     Route::apiResource('roles', RoleController::class);
 

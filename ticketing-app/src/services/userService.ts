@@ -7,7 +7,7 @@ interface CreateUserData {
   phone?: string
   password: string
   type: string
-  organization_id?: number
+  organisateur_id?: string
   role_id?: number
 }
 
@@ -17,7 +17,7 @@ interface UpdateUserData {
   phone?: string
   password?: string
   type?: string
-  organization_id?: number
+  organisateur_id?: string
   role_id?: number
 }
 
@@ -80,19 +80,19 @@ class UserService {
   }
 
   /**
-   * Get scanners for an organization
+   * Get scanners for an organisateur
    */
-  async getScanners(organizationId?: number): Promise<User[]> {
-    const params = organizationId ? { organization_id: organizationId } : {}
+  async getScanners(organisateurId?: number): Promise<User[]> {
+    const params = organisateurId ? { organisateur_id: organisateurId } : {}
     const response = await api.get<{ data: User[] }>('/users/scanners', { params })
     return response.data.data
   }
 
   /**
-   * Get cashiers for an organization
+   * Get cashiers for an organisateur
    */
-  async getCashiers(organizationId?: number): Promise<User[]> {
-    const params = organizationId ? { organization_id: organizationId } : {}
+  async getCashiers(organisateurId?: number): Promise<User[]> {
+    const params = organisateurId ? { organisateur_id: organisateurId } : {}
     const response = await api.get<{ data: User[] }>('/users/cashiers', { params })
     return response.data.data
   }

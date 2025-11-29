@@ -93,7 +93,7 @@ export const PERMISSION_DESCRIPTIONS: Record<Permission, string> = {
 }
 
 /**
- * Permission groups for UI organization
+ * Permission groups for UI organisateur
  */
 export const PERMISSION_GROUPS = {
   users: {

@@ -14,7 +14,7 @@
         <img
           v-if="event.banner"
           :src="event.banner"
-          :alt="event.name"
+          :alt="event.title"
           class="w-full h-full object-cover"
         />
         <div v-else class="w-full h-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
@@ -32,11 +32,11 @@
         <div class="lg:col-span-2 space-y-8">
           <!-- Event Header -->
           <div>
-            <h1 class="text-4xl font-bold text-gray-900 mb-4">{{ event.name }}</h1>
+            <h1 class="text-4xl font-bold text-gray-900 mb-4">{{ event.title }}</h1>
             <div class="flex items-center gap-4 text-gray-600">
               <div class="flex items-center gap-2">
                 <BuildingIcon class="w-5 h-5" />
-                <span>{{ event.organization?.name }}</span>
+                <span>{{ event.organisateur?.name }}</span>
               </div>
             </div>
           </div>
@@ -180,8 +180,15 @@ const loading = ref(true)
 
 onMounted(async () => {
   try {
-    const slug = route.params.slug as string
-    event.value = await eventService.getPublicBySlug(slug)
+    const param = route.params.slug as string
+    // Détecter si c'est un UUID ou un slug
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(param)
+
+    if (isUUID) {
+      event.value = await eventService.getPublicById(param)
+    } else {
+      event.value = await eventService.getPublicBySlug(param)
+    }
   } catch (error) {
     console.error('Failed to fetch event:', error)
   } finally {

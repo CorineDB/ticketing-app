@@ -4,7 +4,7 @@
     <div>
       <h1 class="text-3xl font-bold text-gray-900">Super Admin Dashboard</h1>
       <p class="mt-2 text-gray-600">
-        Overview of all organizations, events, and system metrics
+        Overview of all organisateurs, events, and system metrics
       </p>
     </div>
 
@@ -12,7 +12,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       <StatCard
         title="Total Organizations"
-        :value="stats?.total_organizations || 0"
+        :value="stats?.total_organisateurs || 0"
         :icon="BuildingIcon"
         color="blue"
         :loading="loading"
@@ -105,7 +105,7 @@
       <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div class="flex items-center justify-between mb-4">
           <h3 class="text-lg font-semibold text-gray-900">Top Organizations</h3>
-          <RouterLink :to="{ name: 'organizations' }" class="text-sm text-blue-600 hover:text-blue-700">
+          <RouterLink :to="{ name: 'organisateurs' }" class="text-sm text-blue-600 hover:text-blue-700">
             View all
           </RouterLink>
         </div>
@@ -114,9 +114,9 @@
             <div class="h-12 bg-gray-200 rounded"></div>
           </div>
         </div>
-        <div v-else-if="stats?.top_organizations" class="space-y-3">
+        <div v-else-if="stats?.top_organisateurs" class="space-y-3">
           <div
-            v-for="org in stats.top_organizations"
+            v-for="org in stats.top_organisateurs"
             :key="org.id"
             class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50"
           >
@@ -158,13 +158,13 @@
           <RouterLink
             v-for="event in stats.recent_events"
             :key="event.id"
-            :to="`/events/${event.id}`"
+            :to="`dashboard/events/${event.id}`"
             class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50"
           >
             <div>
-              <div class="font-medium text-gray-900">{{ event.name }}</div>
+              <div class="font-medium text-gray-900">{{ event.title }}</div>
               <div class="text-sm text-gray-500">
-                {{ formatDate(event.start_date) }} • {{ event.organization?.name }}
+                {{ formatDate(event.start_datetime) }} • {{ event.organisateur?.name }}
               </div>
             </div>
             <StatusBadge :status="event.status" type="event" />

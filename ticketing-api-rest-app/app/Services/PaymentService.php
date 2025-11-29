@@ -44,16 +44,48 @@ class PaymentService implements PaymentServiceContract
     public function createTransactionForTicket(array $ticketIds, array $customerData, int $amount, string $description): array
     {
         try {
-            // Create or get FedaPay customer
-            $customer = Customer::create([
+            // Prepare customer data
+            $fedapayCustomerData = [
                 'firstname' => $customerData['firstname'],
                 'lastname' => $customerData['lastname'],
                 'email' => $customerData['email'],
-                'phone_number' => [
-                    'number' => $customerData['phone_number'],
-                    'country' => 'BJ', // Benin by default, you can make this configurable
-                ],
-            ]);
+            ];
+
+            // Only add phone_number if provided and looks valid
+            if (!empty($customerData['phone_number'])) {
+                $phoneNumber = $customerData['phone_number'];
+
+                // Detect country based on phone number format
+                $country = 'BJ'; // Default to Benin
+
+                // Basic validation: Benin numbers start with +229, 229, or local format (6X, 9X)
+                if (preg_match('/^\+?229[0-9]{8}$/', $phoneNumber) || preg_match('/^[69][0-9]{7}$/', $phoneNumber)) {
+                    $country = 'BJ';
+                    // Remove +229 prefix if present for local format
+                    $phoneNumber = preg_replace('/^\+?229/', '', $phoneNumber);
+                } elseif (preg_match('/^\+?33[0-9]{9}$/', $phoneNumber) || preg_match('/^0[1-9][0-9]{8}$/', $phoneNumber)) {
+                    // French number detected
+                    $country = 'FR';
+                    // Remove leading 0 for international format
+                    $phoneNumber = preg_replace('/^0/', '', $phoneNumber);
+                } else {
+                    // If format is unclear, skip phone number to avoid FedaPay error
+                    Log::warning('Phone number format not recognized, skipping for FedaPay customer', [
+                        'phone_number' => $phoneNumber
+                    ]);
+                    $phoneNumber = null;
+                }
+
+                if ($phoneNumber) {
+                    $fedapayCustomerData['phone_number'] = [
+                        'number' => $phoneNumber,
+                        'country' => $country,
+                    ];
+                }
+            }
+
+            // Create or get FedaPay customer
+            $customer = Customer::create($fedapayCustomerData);
 
             // Créer une transaction FedaPay
             $transaction = Transaction::create([

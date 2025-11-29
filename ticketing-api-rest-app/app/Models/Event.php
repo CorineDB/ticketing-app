@@ -25,6 +25,7 @@ class Event extends Model
         'timezone',
         'dress_code',
         'allow_reentry',
+        'status',
         'created_by',
         'slug',
     ];
