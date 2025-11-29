@@ -122,7 +122,7 @@ class TicketService extends BaseService implements TicketServiceContract
         $downloadUrl = url("/api/tickets/{$ticket->id}/qr/download?token={$ticket->magic_link_token}");
 
         return [
-            'qr_path' => url($filename),
+            'qr_path' => $filename,
             'url' => $downloadUrl,
             'qr_hmac' => $signature,
             'magic_link_token' => $ticket->magic_link_token,
