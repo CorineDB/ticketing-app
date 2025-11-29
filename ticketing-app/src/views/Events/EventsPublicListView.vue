@@ -57,10 +57,10 @@ import { formatDate, getImageUrl } from '@/utils/formatters'
 import PublicLayout from '@/components/layout/PublicLayout.vue'
 import { CalendarIcon, MapPinIcon } from 'lucide-vue-next'
 
-const { events, loading, fetchEvents } = useEvents()
+const { events, loading, fetchPublicEvents } = useEvents()
 
 onMounted(async () => {
-  await fetchEvents()
+  await fetchPublicEvents()
   console.log('Events loaded:', events.value)
 })
 </script>

@@ -84,7 +84,7 @@
       <!-- Results Count -->
       <div class="flex items-center justify-between">
         <div class="text-sm text-gray-600">
-          {{ tickets.length }} ticket(s) found
+          {{ tickets.data?.length }} ticket(s) found
         </div>
         <div class="flex gap-2">
           <button
@@ -116,9 +116,9 @@
       </div>
 
       <!-- Grid View -->
-      <div v-else-if="viewMode === 'grid' && tickets.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div v-else-if="viewMode === 'grid' && tickets.data?.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <TicketCard
-          v-for="ticket in tickets"
+          v-for="ticket in tickets.data"
           :key="ticket.id"
           :ticket="ticket"
           @view="viewTicket"
@@ -129,7 +129,7 @@
       </div>
 
       <!-- Table View -->
-      <div v-else-if="viewMode === 'table' && tickets.length > 0" class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <div v-else-if="viewMode === 'table' && tickets.data?.length > 0" class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div class="overflow-x-auto">
           <table class="w-full">
             <thead class="bg-gray-50 border-b border-gray-200">
@@ -146,7 +146,7 @@
             </thead>
             <tbody>
               <tr
-                v-for="ticket in tickets"
+                v-for="ticket in tickets.data"
                 :key="ticket.id"
                 class="border-b border-gray-100 hover:bg-gray-50"
               >
@@ -164,7 +164,7 @@
                   {{ ticket.ticket_type?.name }}
                 </td>
                 <td class="py-3 px-4 text-sm font-medium text-gray-900">
-                  {{ formatCurrency(ticket.price) }}
+                  {{ formatCurrency(ticket.ticket_type?.price) }}
                 </td>
                 <td class="py-3 px-4">
                   <StatusBadge :status="getPaymentStatus(ticket)" type="ticket" />
@@ -295,7 +295,7 @@ const {
   canGenerateQRCodes
 } = usePermissions()
 
-const viewMode = ref<'grid' | 'table'>('table')
+const viewMode = ref<'grid' | 'table'>('grid')
 const filters = ref<TicketFilters>({
   search: '',
   event_id: '',
@@ -321,8 +321,8 @@ async function loadData() {
     fetchEvents({})
   ])
   console.log("TicketsListView: loading:", loading.value);
-  console.log("TicketsListView: tickets.length:", tickets.value.length);
-  console.log("TicketsListView: tickets:", tickets.value);
+  console.log("TicketsListView: tickets.length:", tickets.value.data.length);
+  console.log("TicketsListView: tickets:", tickets.value.data);
 }
 
 function debouncedSearch() {

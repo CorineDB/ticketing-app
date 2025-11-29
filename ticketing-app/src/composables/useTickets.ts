@@ -39,6 +39,35 @@ export function useTickets() {
     error.value = null
     try {
       ticket.value = await ticketService.getById(id)
+      console.log('Fetched ticket:', ticket.value);
+    } catch (e: any) {
+      error.value = e.response?.data?.message || 'Failed to fetch ticket'
+      console.error('Error fetching ticket:', e)
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const fetchPublicTicket = async (id: string) => {
+    loading.value = true
+    error.value = null
+    try {
+      ticket.value = await ticketService.getPublicById(id)
+      console.log('Fetched ticket:', ticket.value);
+    } catch (e: any) {
+      error.value = e.response?.data?.message || 'Failed to fetch ticket'
+      console.error('Error fetching ticket:', e)
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const getTicketQR = async (id: string, token: string) => {
+    loading.value = true
+    error.value = null
+    try {
+      return await ticketService.downloadQR(id, token);
+      console.log('Fetched ticket:', qr);
     } catch (e: any) {
       error.value = e.response?.data?.message || 'Failed to fetch ticket'
       console.error('Error fetching ticket:', e)
@@ -201,7 +230,9 @@ export function useTickets() {
     pagination,
     fetchTickets,
     fetchTicketById: fetchTicket, // Renamed fetchTicket to fetchTicketById
+    fetchPublicTicket,
     fetchTicketByCode,
+    qr_code: getTicketQR,
     createTicket,
     updateTicket,
     cancelTicket,

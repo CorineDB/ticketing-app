@@ -26,7 +26,7 @@
             <div>
               <div class="text-sm text-gray-600">Date & Time</div>
               <div class="font-medium text-gray-900">
-                {{ formatDateTime(ticket.event?.start_date) }}
+                {{ formatDateTime(ticket.event?.start_datetime) }}
               </div>
             </div>
           </div>
@@ -107,6 +107,7 @@ import { formatDateTime } from '@/utils/formatters'
 import type { Ticket } from '@/types/api'
 import PublicLayout from '@/components/layout/PublicLayout.vue'
 import TicketQRCode from '@/components/tickets/TicketQRCode.vue'
+import { useTickets } from '@/composables/useTickets'
 import {
   CalendarIcon,
   MapPinIcon,
@@ -115,11 +116,20 @@ import {
 } from 'lucide-vue-next'
 
 const route = useRoute()
-const ticket = ref<Ticket | null>(null)
-const loading = ref(true)
+/* const ticket = ref<Ticket | null>(null)
+const loading = ref(true) */
+const { ticket, loading, error, fetchPublicTicket} = useTickets()
 
 onMounted(async () => {
-  try {
+  //const ticketId = Array.isArray(route.params.id) ? route.params.id[0] : route.params.id
+  const ticketId = route.params.code as string
+  const token = route.query.token as string
+
+  console.log("Fetching public ticket:", ticketId, token)
+  if (ticketId && token) {
+    fetchPublicTicket(ticketId + '?token=' + token)
+  }
+  /* try {
     const code = route.params.code as string
     // Fetch ticket by code (magic link token)
     ticket.value = await ticketService.getByCode(code)
@@ -127,7 +137,7 @@ onMounted(async () => {
     console.error('Failed to fetch ticket:', error)
   } finally {
     loading.value = false
-  }
+  } */
 })
 
 function downloadTicket() {

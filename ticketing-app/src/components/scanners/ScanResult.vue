@@ -48,7 +48,7 @@
         <div v-if="result.success && result.ticket" class="space-y-3 mb-6">
           <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
             <span class="text-sm text-gray-600">Holder</span>
-            <span class="font-semibold text-gray-900">{{ result.ticket.holder_name }}</span>
+            <span class="font-semibold text-gray-900">{{ result.ticket.buyer_name }}</span>
           </div>
           <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
             <span class="text-sm text-gray-600">Ticket Type</span>

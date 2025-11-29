@@ -38,13 +38,14 @@ class TicketConfirmationMail extends Mailable
      */
     public function content(): Content
     {
+        $magicLink = config('app.frontend_url', env('FRONTEND_URL', 'http://localhost:5173')).'/tickets/' . $this->ticket->id . '?token=' . $this->ticket->magic_link_token;
         return new Content(
             view: 'emails.ticket-confirmation',
             with: [
                 'ticket' => $this->ticket,
                 'event' => $this->ticket->ticketType->event,
                 'ticketType' => $this->ticket->ticketType,
-                'magicLink' => route('tickets.show', $this->ticket->id) . '?token=' . $this->ticket->magic_link_token,
+                'magicLink' => $magicLink,//route('tickets.show', $this->ticket->id) . '?token=' . $this->ticket->magic_link_token,
             ],
         );
     }
