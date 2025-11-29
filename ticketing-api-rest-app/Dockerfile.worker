@@ -71,7 +71,6 @@ php artisan db:seed --force\n\
 \n\
 # Clear config cache to ensure latest environment variables\n\
 php artisan config:clear\n\
-php artisan cache:clear\n\
 php artisan route:clear\n\
 php artisan view:clear\n\
 php artisan config:cache\n\
