@@ -28,10 +28,10 @@ class WebhookController extends Controller
 
         // TODO: Re-enable webhook signature verification for production!
         // This is commented out for testing purposes as per user request.
-        // if (!$this->paymentService->verifyWebhookSignature($payload, $signature)) {
-        //     Log::warning('FedaPay webhook signature verification failed (TEMPORARILY DISABLED FOR TESTING)');
-        //     return response()->json(['error' => 'Invalid signature'], 401);
-        // }
+        if (!$this->paymentService->verifyWebhookSignature($payload, $signature)) {
+            Log::warning('FedaPay webhook signature verification failed (TEMPORARILY DISABLED FOR TESTING)');
+            return response()->json(['error' => 'Invalid signature'], 401);
+        }
 
         try {
             $eventData = json_decode($payload, true);
