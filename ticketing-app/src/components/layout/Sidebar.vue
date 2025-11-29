@@ -36,8 +36,7 @@
         />
 
         <!-- Events (Organizer, Super Admin) -->
-        <!-- <template v-if="authStore.can('manage_events')"> -->
-        <template>
+        <template v-if="isSuperAdmin || isOrganizer">
           <div class="pt-4 pb-2">
             <div class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">
               Events
@@ -59,8 +58,7 @@
         </template>
 
         <!-- Tickets -->
-        <!-- <template v-if="authStore.can('view_tickets')"> -->
-        <template>
+        <template v-if="isSuperAdmin || isOrganizer || isScanner">
           <div class="pt-4 pb-2">
             <div class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">
               Tickets
@@ -76,8 +74,7 @@
         </template>
 
         <!-- Scanner (Scanner role) -->
-        <!-- <template v-if="authStore.isScanner"> -->
-        <template>
+        <template v-if="isScanner || isSuperAdmin">
           <div class="pt-4 pb-2">
             <div class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">
               Scanner
@@ -99,7 +96,7 @@
         </template>
 
         <!-- Organizations (Super Admin) -->
-        <template v-if="authStore.isSuperAdmin">
+        <template v-if="isSuperAdmin">
           <div class="pt-4 pb-2">
             <div class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">
               Organizations
@@ -107,7 +104,7 @@
           </div>
 
           <NavLink
-            to="/dashboard/organizations"
+            to="/dashboard/organisateurs"
             :icon="BuildingIcon"
             label="All Organizations"
             @click="$emit('close')"
@@ -115,8 +112,7 @@
         </template>
 
         <!-- Users (Super Admin, Organizer) -->
-        <!-- <template v-if="authStore.can('manage_users')"> -->
-        <template>
+        <template v-if="isSuperAdmin || isOrganizer">
           <div class="pt-4 pb-2">
             <div class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">
               Users
@@ -132,8 +128,7 @@
         </template>
 
         <!-- Reports -->
-        <!-- <template v-if="authStore.can('view_reports')"> -->
-        <template>
+        <template v-if="isSuperAdmin || isOrganizer">
           <div class="pt-4 pb-2">
             <div class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">
               Reports
@@ -160,7 +155,7 @@
 </template>
 
 <script setup lang="ts">
-import { useAuthStore } from '@/stores/auth'
+import { usePermissions } from '@/composables/usePermissions'
 import {
   XIcon,
   LayoutDashboardIcon,
@@ -183,5 +178,5 @@ defineEmits<{
   close: []
 }>()
 
-const authStore = useAuthStore()
+const { isSuperAdmin, isOrganizer, isScanner } = usePermissions()
 </script>

@@ -79,10 +79,10 @@
           class="flex items-center gap-4 p-4 rounded-lg border border-gray-200 hover:bg-gray-50"
         >
           <div v-if="event.banner" class="w-20 h-20 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0">
-            <img :src="event.banner" :alt="event.name" class="w-full h-full object-cover" />
+            <img :src="event.banner" :alt="event.title" class="w-full h-full object-cover" />
           </div>
           <div class="flex-1">
-            <h3 class="font-semibold text-gray-900">{{ event.name }}</h3>
+            <h3 class="font-semibold text-gray-900">{{ event.title }}</h3>
             <div class="flex items-center gap-4 mt-1 text-sm text-gray-600">
               <div class="flex items-center gap-1">
                 <CalendarIcon class="w-4 h-4" />

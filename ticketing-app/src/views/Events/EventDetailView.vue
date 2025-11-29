@@ -13,9 +13,9 @@
         <!-- Banner -->
         <div class="h-48 bg-gradient-to-br from-blue-500 to-purple-500 relative">
           <img
-            v-if="event.banner"
-            :src="event.banner"
-            :alt="event.name"
+            v-if="event.image_url"
+            :src="event.image_url"
+            :alt="event.title"
             class="w-full h-full object-cover"
           />
           <div class="absolute top-4 right-4 flex gap-2">
@@ -43,13 +43,13 @@
           <div class="flex items-start justify-between mb-4">
             <div class="flex-1">
               <div class="flex items-center gap-3 mb-2">
-                <h1 class="text-3xl font-bold text-gray-900">{{ event.name }}</h1>
+                <h1 class="text-3xl font-bold text-gray-900">{{ event.title }}</h1>
                 <StatusBadge :status="event.status" type="event" />
               </div>
               <p v-if="event.description" class="text-gray-600 mb-4">{{ event.description }}</p>
               <div class="flex items-center gap-2 text-sm text-gray-500">
                 <BuildingIcon class="w-4 h-4" />
-                <span>{{ event.organization?.name }}</span>
+                <span>{{ event.organisateur.name }}</span>
               </div>
             </div>
           </div>
@@ -64,7 +64,7 @@
                 <div>
                   <div class="text-sm text-gray-600">Start Date</div>
                   <div class="text-lg font-semibold text-gray-900">
-                    {{ formatDate(event.start_date) }}
+                    {{ formatDate(event.start_datetime) }}
                   </div>
                 </div>
               </div>
@@ -471,8 +471,10 @@ onMounted(async () => {
 async function loadEvent() {
   loading.value = true
   try {
-    const eventId = Number(route.params.id)
+    const eventId = (route.params.id)
     event.value = await fetchEvent(eventId)
+
+    console.log("Loaded Event:", event.value);
 
     if (event.value) {
       // Load related data

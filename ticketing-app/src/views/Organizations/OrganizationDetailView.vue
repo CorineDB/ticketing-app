@@ -1,17 +1,17 @@
 <template>
   <DashboardLayout>
     <div class="container mx-auto px-4 py-8">
-      <div v-if="loading" class="text-center text-gray-500">Loading organization details...</div>
+      <div v-if="loading" class="text-center text-gray-500">Loading organisateur details...</div>
       <div v-else-if="error" class="text-center text-red-500">Error: {{ error }}</div>
-      <div v-else-if="organization">
+      <div v-else-if="organisateur">
         <div class="flex justify-between items-center mb-6">
-          <h1 class="text-3xl font-bold text-gray-900">{{ organization.name }}</h1>
+          <h1 class="text-3xl font-bold text-gray-900">{{ organisateur.name }}</h1>
           <div class="flex space-x-2">
             <!--
-            <Can permission="manage_organizations">
+            <Can permission="manage_organisateurs">
             -->
               <RouterLink
-                :to="{ name: 'organization-edit', params: { id: organization.id } }"
+                :to="{ name: 'organisateur-edit', params: { id: organisateur.id } }"
                 class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
               >
                 Edit Organization
@@ -33,27 +33,27 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <p class="text-gray-500">Email:</p>
-              <p class="font-medium">{{ organization.email }}</p>
+              <p class="font-medium">{{ organisateur.email }}</p>
             </div>
             <div>
               <p class="text-gray-500">Phone:</p>
-              <p class="font-medium">{{ organization.phone || 'N/A' }}</p>
+              <p class="font-medium">{{ organisateur.phone || 'N/A' }}</p>
             </div>
             <div>
               <p class="text-gray-500">Address:</p>
-              <p class="font-medium">{{ organization.address || 'N/A' }}</p>
+              <p class="font-medium">{{ organisateur.address || 'N/A' }}</p>
             </div>
             <div>
               <p class="text-gray-500">Status:</p>
               <p class="font-medium">
-                <StatusBadge :status="organization.status" /> <!-- Assuming status field -->
+                <StatusBadge :status="organisateur.status" /> <!-- Assuming status field -->
               </p>
             </div>
-            <!-- Add more organization details here -->
+            <!-- Add more organisateur details here -->
           </div>
         </div>
 
-        <!-- Placeholder for organization members or other related data -->
+        <!-- Placeholder for organisateur members or other related data -->
         <div class="bg-white rounded-xl shadow-lg p-6">
           <h2 class="text-xl font-semibold mb-4">Members</h2>
           <p class="text-gray-500">List of members will go here.</p>
@@ -75,7 +75,7 @@ import { useOrganizations } from '@/composables/useOrganizations'
 
 const route = useRoute()
 const router = useRouter()
-const { organization, loading, error, fetchOrganizationById, removeOrganization } = useOrganizations()
+const { organisateur, loading, error, fetchOrganizationById, removeOrganization } = useOrganizations()
 
 onMounted(() => {
   const orgId = Array.isArray(route.params.id) ? route.params.id[0] : route.params.id
@@ -85,12 +85,12 @@ onMounted(() => {
 })
 
 const deleteOrganization = async () => {
-  if (confirm('Are you sure you want to delete this organization?')) {
+  if (confirm('Are you sure you want to delete this organisateur?')) {
     const orgId = Array.isArray(route.params.id) ? route.params.id[0] : route.params.id
     if (orgId) {
       await removeOrganization(orgId)
       if (!error.value) {
-        router.push({ name: 'organizations' }) // Redirect to organizations list after deletion
+        router.push({ name: 'organisateurs' }) // Redirect to organisateurs list after deletion
       }
     }
   }

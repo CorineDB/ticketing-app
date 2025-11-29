@@ -5,7 +5,7 @@
       <div class="flex items-center justify-between">
         <div>
           <h1 class="text-3xl font-bold text-gray-900">Organizations</h1>
-          <p class="mt-2 text-gray-600">Manage all organizations in the system</p>
+          <p class="mt-2 text-gray-600">Manage all organisateurs in the system</p>
         </div>
         <button
           @click="showOrgModal = true"
@@ -23,7 +23,7 @@
           <input
             v-model="searchQuery"
             type="text"
-            placeholder="Search by organization name..."
+            placeholder="Search by organisateur name..."
             class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             @input="debouncedSearch"
           />
@@ -32,21 +32,21 @@
 
       <!-- Results Count -->
       <div class="text-sm text-gray-600">
-        {{ organizations.length }} organization(s) found
+        {{ organisateurs.length }} organisateur(s) found
       </div>
 
       <!-- Loading State -->
       <div v-if="loading" class="bg-white rounded-xl shadow-sm border border-gray-200">
         <div class="p-12 text-center text-gray-500">
           <LoaderIcon class="w-8 h-8 animate-spin mx-auto mb-2" />
-          Loading organizations...
+          Loading organisateurs...
         </div>
       </div>
 
       <!-- Organizations Grid -->
-      <div v-else-if="organizations.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div v-else-if="organisateurs.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div
-          v-for="org in organizations"
+          v-for="org in organisateurs"
           :key="org.id"
           class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
         >
@@ -58,7 +58,7 @@
               </div>
               <div>
                 <h3 class="text-lg font-semibold text-gray-900">{{ org.name }}</h3>
-                <StatusBadge :status="org.status || 'active'" type="organization" />
+                <StatusBadge :status="org.status || 'active'" type="organisateur" />
               </div>
             </div>
           </div>
@@ -113,8 +113,8 @@
       <!-- Empty State -->
       <div v-else class="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
         <BuildingIcon class="w-16 h-16 text-gray-400 mx-auto mb-4" />
-        <h3 class="text-lg font-semibold text-gray-900 mb-2">No organizations found</h3>
-        <p class="text-gray-600 mb-6">Get started by creating your first organization</p>
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">No organisateurs found</h3>
+        <p class="text-gray-600 mb-6">Get started by creating your first organisateur</p>
         <button
           @click="showOrgModal = true"
           class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 inline-flex items-center gap-2"
@@ -128,19 +128,19 @@
     <!-- Modals -->
     <OrganizationFormModal
       v-model="showOrgModal"
-      :organization="selectedOrg"
+      :organisateur="selectedOrg"
       @submit="handleOrgSubmit"
     />
 
     <OrganizationDetailModal
       v-model="showDetailModal"
-      :organization="selectedOrg"
+      :organisateur="selectedOrg"
     />
 
     <ConfirmModal
       v-model="showDeleteModal"
       title="Delete Organization"
-      message="Are you sure you want to delete this organization? This will also delete all associated events, users, and data. This action cannot be undone."
+      message="Are you sure you want to delete this organisateur? This will also delete all associated events, users, and data. This action cannot be undone."
       variant="danger"
       confirm-text="Delete"
       @confirm="handleDelete"
@@ -155,8 +155,8 @@ import { formatCurrency } from '@/utils/formatters'
 import type { Organization } from '@/types/api'
 import DashboardLayout from '@/components/layout/DashboardLayout.vue'
 import StatusBadge from '@/components/common/StatusBadge.vue'
-import OrganizationFormModal from '@/components/organizations/OrganizationFormModal.vue'
-import OrganizationDetailModal from '@/components/organizations/OrganizationDetailModal.vue'
+import OrganizationFormModal from '@/components/organisateurs/OrganizationFormModal.vue'
+import OrganizationDetailModal from '@/components/organisateurs/OrganizationDetailModal.vue'
 import ConfirmModal from '@/components/common/ConfirmModal.vue'
 import {
   PlusIcon,
@@ -167,7 +167,7 @@ import {
   TrashIcon
 } from 'lucide-vue-next'
 
-const { organizations, loading, fetchOrganizations, createOrganization, updateOrganization, deleteOrganization } = useOrganizations()
+const { organisateurs, loading, fetchOrganizations, createOrganization, updateOrganization, deleteOrganization } = useOrganizations()
 
 const searchQuery = ref('')
 const showOrgModal = ref(false)
@@ -202,17 +202,17 @@ function getInitials(name: string): string {
     .slice(0, 2)
 }
 
-function viewOrganization(org: Organization) {
+function viewOrganization(org?: User) {
   selectedOrg.value = org
   showDetailModal.value = true
 }
 
-function editOrganization(org: Organization) {
+function editOrganization(org?: User) {
   selectedOrg.value = org
   showOrgModal.value = true
 }
 
-function confirmDelete(org: Organization) {
+function confirmDelete(org?: User) {
   orgToDelete.value = org
   showDeleteModal.value = true
 }

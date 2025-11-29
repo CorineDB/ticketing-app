@@ -110,7 +110,7 @@ npm run type-check # TypeScript type checking
 
 **Permissions**:
 - Create/edit/delete all events
-- Manage all organizations
+- Manage all organisateurs
 - View all statistics globally
 - Manage user roles and permissions
 - Monitor all ticket validations
@@ -118,7 +118,7 @@ npm run type-check # TypeScript type checking
 
 **Access**:
 - Super Admin Dashboard
-- All events (all organizations)
+- All events (all organisateurs)
 - All users management
 - Organizations management
 - Global reports and analytics
@@ -151,7 +151,7 @@ npm run type-check # TypeScript type checking
 **Restrictions**:
 - Cannot manage other organizers' events
 - Cannot access super admin features
-- Cannot manage organizations (unless Super Admin)
+- Cannot manage organisateurs (unless Super Admin)
 
 ---
 
@@ -319,7 +319,7 @@ src/
 │   │   ├── ScanResult.vue
 │   │   └── ScannerStats.vue
 │   │
-│   ├── organizations/     # Organization components
+│   ├── organisateurs/     # Organization components
 │   │   ├── OrganizationCard.vue
 │   │   └── OrganizationFormModal.vue
 │   │
@@ -347,7 +347,7 @@ src/
 │   ├── ticketTypeService.ts  # Ticket type management
 │   ├── orderService.ts       # Order processing
 │   ├── scanService.ts        # Ticket scanning
-│   ├── organizationService.ts # Organization management
+│   ├── organisateurService.ts # Organization management
 │   ├── userService.ts        # User management
 │   └── dashboardService.ts   # Analytics & statistics
 │
@@ -621,7 +621,7 @@ const api = axios.create({
 | `ticketTypeService` | Ticket types | getAll, create, update, activate, deactivate |
 | `orderService` | Order processing | create, initializePayment, handleCallback |
 | `scanService` | QR scanning | scanTicket, getMyScans, getEventSummary |
-| `organizationService` | Organization CRUD | getAll, create, update, getMembers |
+| `organisateurService` | Organization CRUD | getAll, create, update, getMembers |
 | `userService` | User management | getAll, create, update, assignRole |
 | `dashboardService` | Analytics | getSuperAdminStats, getOrganizerStats |
 
@@ -1816,7 +1816,7 @@ users
 - phone (nullable)
 - password (hashed)
 - type (super-admin, organizer, 'agent-de-controle', comptable, participant)
-- organization_id (FK, nullable)
+- organisateur_id (FK, nullable)
 - avatar (nullable)
 - created_at
 - updated_at
@@ -1826,7 +1826,7 @@ users
 ### Organizations Table
 
 ```sql
-organizations
+organisateurs
 - id (PK)
 - name
 - slug (unique)
@@ -1847,7 +1847,7 @@ organizations
 ```sql
 events
 - id (PK)
-- organization_id (FK)
+- organisateur_id (FK)
 - name
 - slug (unique)
 - description (nullable)
@@ -2193,12 +2193,12 @@ GET    /api/events/:id/scans/export  - Export CSV
 
 ### Organizations
 ```
-GET    /api/organizations           - List orgs
-GET    /api/organizations/:id       - Get org
-GET    /api/organizations/me        - My org
-POST   /api/organizations           - Create org
-PUT    /api/organizations/:id       - Update org
-DELETE /api/organizations/:id       - Delete org
+GET    /api/organisateurs           - List orgs
+GET    /api/organisateurs/:id       - Get org
+GET    /api/organisateurs/me        - My org
+POST   /api/organisateurs           - Create org
+PUT    /api/organisateurs/:id       - Update org
+DELETE /api/organisateurs/:id       - Delete org
 ```
 
 ### Users

@@ -166,7 +166,7 @@ const loading = ref(true)
 
 onMounted(async () => {
   try {
-    const data = await dashboardService.getOrganizerDashboard()
+    const data = await dashboardService.getOrganizerStats()
     stats.value = data.stats
     upcomingEvents.value = data.upcoming_events || []
     recentOrders.value = data.recent_orders || []
