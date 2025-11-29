@@ -67,7 +67,7 @@ echo "Database is ready!"\n\
 php artisan migrate --force --no-interaction\n\
 \n\
 # Run seeders \n\
-php artisan db:seed --force\n\
+# php artisan db:seed --force\n\
 \n\
 # Clear config cache to ensure latest environment variables\n\
 php artisan config:clear\n\

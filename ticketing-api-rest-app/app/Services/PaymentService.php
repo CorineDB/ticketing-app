@@ -93,7 +93,38 @@ class PaymentService implements PaymentServiceContract
             Log::debug('FedaPay customer data before creation', $fedapayCustomerData);
 
             // Create or get FedaPay customer
-            $customer = Customer::create($fedapayCustomerData);
+            // Create or get FedaPay customer by email if possible (use retrieve instead of all)
+            $customer = null;
+            $email = $fedapayCustomerData['email'] ?? null;
+
+            if ($email) {
+                try {
+                    // Try to find existing customer by email using retrieve
+                    $existing = Customer::all(['email' => $email]);
+
+                    if ($existing) {
+                        if (is_array($existing) && count($existing) > 0) {
+                            $customer = $existing[0];
+                        } elseif (is_object($existing)) {
+                            // SDK may return an object with ->data (list) or a single customer object with ->id
+                            if (isset($existing->data) && is_array($existing->data) && count($existing->data) > 0) {
+                                $customer = $existing->data[0];
+                            } elseif (isset($existing->id)) {
+                                $customer = $existing;
+                            }
+                        }
+                    }
+                } catch (\Exception $e) {
+                    Log::warning('FedaPay customer lookup by email (retrieve) failed, will create new', [
+                        'email' => $email,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+
+            if (!$customer) {
+                $customer = Customer::create($fedapayCustomerData);
+            }
 
             // Créer une transaction FedaPay
             $transaction = Transaction::create([
