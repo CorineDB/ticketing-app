@@ -37,7 +37,7 @@ RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html/bootstrap/cache
 
 # Installer Faker en dev
-RUN composer require fakerphp/faker --dev
+RUN composer require fakerphp/faker --no-dev
 
 # Install Composer dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction
@@ -67,7 +67,7 @@ echo "Database is ready!"\n\
 php artisan migrate --force --no-interaction\n\
 \n\
 # Run seeders \n\
-# php artisan db:seed --force\n\
+php artisan db:seed --force\n\
 \n\
 # Clear config cache to ensure latest environment variables\n\
 php artisan config:clear\n\
