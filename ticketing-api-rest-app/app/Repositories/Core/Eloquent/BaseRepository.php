@@ -24,14 +24,14 @@ abstract class BaseRepository implements BaseRepositoryInterface
         return $this->model->findOrFail($id);
     }
 
-    public function all(array $columns = ['*']): iterable
+    public function all(array $columns = ['*'], array $relations = []): iterable
     {
-        return $this->model->all($columns);
+        return $this->model->with($relations)->orderBy("created_at", "desc")->all($columns);
     }
 
-    public function paginate(int $limit = 15, array $columns = ['*'])
+    public function paginate(int $limit = 15, array $columns = ['*'], array $relations = [])
     {
-        return $this->model->paginate($limit, $columns);
+        return $this->model->with($relations)->orderBy("created_at", "desc")->paginate($limit, $columns);
     }
 
     public function create(array $data): Model

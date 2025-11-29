@@ -1,8 +1,11 @@
 <template>
   <RouterLink
-    :to="`/tickets/${ticket.code}`"
+    :to="`/dashboard/tickets/${ticket.id}`"
     class="block bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
   >
+  
+    <!-- :to="`/dashboard/tickets/${ticket.id}`" -->
+    <!-- :to="`/tickets/${ticket.id}?token=${ticket.magic_link_token}`" -->
     <!-- Event Banner (Small) -->
     <div class="relative h-24 bg-gradient-to-br from-blue-500 to-purple-500">
       <img
@@ -26,7 +29,7 @@
       <!-- Holder Info -->
       <div class="flex items-center gap-2 text-sm text-gray-600 mb-2">
         <UserIcon class="w-4 h-4" />
-        <span class="truncate">{{ ticket.holder_name }}</span>
+        <span class="truncate">{{ ticket.buyer_name }}</span>
       </div>
 
       <!-- Date -->

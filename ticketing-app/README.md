@@ -1900,9 +1900,9 @@ tickets
 - order_id (FK, nullable)
 - code (unique)
 - qr_code (text)
-- holder_name
-- holder_email
-- holder_phone (nullable)
+- buyer_name
+- buyer_email
+- buyer_phone (nullable)
 - price
 - currency
 - status (pending, paid, cancelled, refunded, used, expired)

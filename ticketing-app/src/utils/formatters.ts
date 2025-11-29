@@ -172,7 +172,7 @@ export function getImageUrl(imagePath: string | undefined): string | undefined {
   }
 
   // Get API base URL from config
-  const baseURL = import.meta.env.VITE_API_URL || 'http://192.168.8.106:8000'
+  const baseURL = import.meta.env.VITE_API_URL || 'http://192.168.8.107:8000'
 
   // Remove trailing slash from baseURL if present
   const cleanBaseUrl = baseURL.replace(/\/$/, '')
