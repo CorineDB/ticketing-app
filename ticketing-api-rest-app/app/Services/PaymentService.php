@@ -97,7 +97,7 @@ class PaymentService implements PaymentServiceContract
             $customer = null;
             $email = $fedapayCustomerData['email'] ?? null;
 
-            if ($email) {
+            /* if ($email) {
                 try {
                     // Try to find existing customer by email using retrieve
                     $existing = Customer::all(['email' => $email]);
@@ -124,7 +124,7 @@ class PaymentService implements PaymentServiceContract
 
             if (!$customer) {
                 $customer = Customer::create($fedapayCustomerData);
-            }
+            } */
 
             // Créer une transaction FedaPay
             $transaction = Transaction::create([
@@ -134,7 +134,12 @@ class PaymentService implements PaymentServiceContract
                 "provider" => "visa",
                 'currency' => ['iso' => config('services.fedapay.currency', 'XOF')],
                 'callback_url' => route('payment.callback'),
-                'customer' => ['id' => $customer->id],
+                'customer' => [
+                    'firstname' => $customerData['firstname'],
+                    'lastname' => $customerData['lastname'],
+                    'email' => $customerData['email']
+                ],
+                //['id' => $customer->id],
                 'merchant_reference' => 'tickets-' . implode('-', $ticketIds),
                 'custom_metadata' => [
                     'ticket_ids' => $ticketIds, // Array of all ticket IDs
@@ -335,7 +340,6 @@ class PaymentService implements PaymentServiceContract
                 'updated_count' => $updatedCount,
                 'transaction_id' => $entity['id'],
             ]);
-
         } catch (\Exception $e) {
             Log::error('Failed to update tickets after payment approval', [
                 'ticket_ids' => $ticketIds,
