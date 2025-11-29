@@ -40,7 +40,7 @@ RUN chown -R www-data:www-data /var/www/html \
 RUN composer require fakerphp/faker
 
 # Install Composer dependencies
-RUN composer install --no-dev --optimize-autoloader --no-interaction
+RUN composer install --optimize-autoloader --no-interaction
 
 # Install npm dependencies and build assets
 RUN npm install && npm run build
