@@ -48,6 +48,9 @@ RUN chown -R www-data:www-data /var/www/html \
 # Install Composer dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
+# Generate application key
+RUN php artisan key:generate --show
+
 # Install npm dependencies and build assets
 # RUN npm ci && npm run build
 # Install npm dependencies and build assets
