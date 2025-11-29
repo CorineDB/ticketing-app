@@ -1,29 +1,29 @@
 {
     "ticket_type": {
-        "id": "019ac8e5-5344-7125-95e5-68dfd4a3a654",
+        "id": "019acb0b-dd9d-7328-82dd-b9de84558b3c",
         "name": "Standard",
         "price": "100.00"
     },
     "purchase": {
-        "transaction_id": 107734278,
+        "transaction_id": 107737142,
         "tickets": [
             {
-                "id": "019acb06-e15e-714d-800c-83f1df878d03",
-                "code": "QVQLXE6Y",
+                "id": "019acbb0-1961-7276-93b6-9a35be224e6a",
+                "code": "R0JRN8VN",
                 "status": "issued",
-                "magic_link_token": "1aGVWmAJGi5XYoHmVdsTYahPxqtCq9Pl6NYJl3tXbBFXV1Hrx5kQZYaiUruQb8Y9"
+                "magic_link_token": "ZLdPq0K7oTKHKbkMrZYWTWOjINJRWGaLgE89IP1BSkkbLzATp5nYxEmEwv6kzjBN"
             }
         ],
         "total_amount": 100,
         "currency": "XOF",
-        "payment_url": "https:\/\/process.fedapay.com\/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOjEwNzczNDI3OCwiZXhwIjoxNzY0NDI5MjIxfQ.Wmj1eae9ETEZorP4j3lrWowpJp4wvhWx7conI1Cil80"
+        "payment_url": "https:\/\/process.fedapay.com\/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOjEwNzczNzE0MiwiZXhwIjoxNzY0NDQwMzExfQ.CV9tLybPaXR86LrZBOJ887r1MUgHy62VlpbVeWPUj-w"
     },
     "customer": {
         "firstname": "Corine D.",
         "lastname": "BOCOGA",
-        "email": "cocorine-1764342816@gmail.com",
+        "email": "cocorine-1764353906@gmail.com",
         "phone_number": "+22996350263"
     },
-    "tested_at": "2025-11-28 15:13:41",
+    "tested_at": "2025-11-28 18:18:31",
     "environment": "LIVE"
 }

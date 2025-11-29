@@ -22,7 +22,15 @@ class TicketService {
    */
   async getById(id: string): Promise<Ticket> {
     const response = await api.get<{ data: Ticket }>(`/tickets/${id}`)
-    return response.data.data
+    return response.data
+  }
+
+  /**
+   * Get single ticket by ID
+   */
+  async getPublicById(id: string): Promise<Ticket> {
+    const response = await api.get<{ data: Ticket }>(`public/tickets/${id}`)
+    return response.data
   }
 
   /**
@@ -31,7 +39,7 @@ class TicketService {
   async getByCode(code: string, token?: string): Promise<Ticket> {
     const params = token ? { token } : {}
     const response = await api.get<{ data: Ticket }>(`/tickets/code/${code}`, { params })
-    return response.data.data
+    return response.data
   }
 
   /**
@@ -80,7 +88,17 @@ class TicketService {
    * Download ticket as PDF
    */
   async downloadPDF(id: string): Promise<Blob> {
-    const response = await api.get(`/tickets/${id}/download`, {
+    const response = await api.get(`public/tickets/${id}/qr/download`, {
+      responseType: 'blob'
+    })
+    return response.data
+  }
+
+  /**
+   * Download ticket as PDF
+   */
+  async downloadQR(id: string, token: string): Promise<Blob> {
+    const response = await api.get(`public/tickets/${id}/qr/download?token=${token}`, {
       responseType: 'blob'
     })
     return response.data
@@ -127,7 +145,7 @@ class TicketService {
     if (filters.event_id) params.event_id = filters.event_id
     if (filters.ticket_type_id) params.ticket_type_id = filters.ticket_type_id
     if (filters.status) params.status = filters.status
-    if (filters.holder_email) params.holder_email = filters.holder_email
+    if (filters.buyer_email) params.buyer_email = filters.buyer_email
     if (filters.search) params.search = filters.search
     if (filters.paid !== undefined) params.paid = filters.paid
     if (filters.used !== undefined) params.used = filters.used

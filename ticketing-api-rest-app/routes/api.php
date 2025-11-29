@@ -116,6 +116,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Tickets
     Route::apiResource('tickets', TicketController::class);
     Route::get('/tickets/{id}/qr', [TicketController::class, 'qr']);
+    Route::post('/tickets/{id}/send-email', [TicketController::class, 'sendTicketByEmail']);
     Route::get('/tickets/{id}/qr/download', [TicketController::class, 'downloadQr']);
     Route::post('/tickets/{id}/mark-paid', [TicketController::class, 'markPaid']);
 

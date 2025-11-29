@@ -10,7 +10,7 @@
           <input
             type="text"
             id="holderName"
-            v-model="form.holder_name"
+            v-model="form.buyer_name"
             class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             required
           />
@@ -20,7 +20,7 @@
           <input
             type="email"
             id="holderEmail"
-            v-model="form.holder_email"
+            v-model="form.buyer_email"
             class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             required
           />
@@ -53,8 +53,8 @@ import Modal from '@/components/common/Modal.vue' // Assuming a common Modal com
 
 interface Ticket {
   id?: string;
-  holder_name: string;
-  holder_email: string;
+  buyer_name: string;
+  buyer_email: string;
   // Add other ticket properties here
 }
 
@@ -66,8 +66,8 @@ const props = defineProps<{
 const emit = defineEmits(['update:show', 'submit']);
 
 const form = reactive<Ticket>({
-  holder_name: '',
-  holder_email: '',
+  buyer_name: '',
+  buyer_email: '',
 });
 
 watch(() => props.ticket, (newTicket) => {
@@ -76,8 +76,8 @@ watch(() => props.ticket, (newTicket) => {
   } else {
     // Reset form for new ticket
     form.id = undefined;
-    form.holder_name = '';
-    form.holder_email = '';
+    form.buyer_name = '';
+    form.buyer_email = '';
   }
 }, { immediate: true });
 

@@ -27,6 +27,12 @@ class TicketService extends BaseService implements TicketServiceContract
         $this->notificationService = $notificationService;
     }
 
+    /* public function list(int $limit = 15, $relations = [])
+    {
+        return $this->paginate($limit, $relations);
+        return $this->repository->query()->with($relations)->paginate($limit, ['*']);
+    } */
+
     public function generateTicket(array $data)
     {
         return DB::transaction(function () use ($data) {
@@ -112,8 +118,12 @@ class TicketService extends BaseService implements TicketServiceContract
             'qr_hmac' => $signature,
         ]);
 
+        // This is the URL that the front should use to display the QR
+        $downloadUrl = url("/api/tickets/{$ticket->id}/qr/download?token={$ticket->magic_link_token}");
+
         return [
-            'qr_path' => $filename,
+            'qr_path' => url($filename),
+            'url' => $downloadUrl,
             'qr_hmac' => $signature,
             'magic_link_token' => $ticket->magic_link_token,
         ];
@@ -150,6 +160,14 @@ class TicketService extends BaseService implements TicketServiceContract
                 'paid_at' => now(),
             ]);
         });
+    }
+    public function sendTicketByEmail(string $ticketId)
+    {
+        $ticket = $this->repository->findOrFail($ticketId);
+
+        $this->notificationService->sendTicketConfirmation($ticket->id);
+
+        return $ticket;
     }
 
     public function invalidateTicket(string $ticketId, string $reason)

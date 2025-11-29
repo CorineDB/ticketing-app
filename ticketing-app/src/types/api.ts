@@ -277,11 +277,12 @@ export interface Ticket {
   order?: Order
   code: string // Unique QR code identifier
   qr_code: string // Base64 QR code image or URL
+  qr_path: string // Path to stored QR code image
   qr_hmac: string // HMAC signature: HMAC_SHA256(ticket_id|event_id, SECRET)
   magic_link_token: string // Public access token for viewing ticket without login
-  holder_name: string
-  buyer_email: string // Changed from holder_email
-  holder_phone?: string
+  buyer_name: string
+  buyer_email: string // Changed from buyer_email
+  buyer_phone?: string
   price: number
   currency: string
   status: TicketStatus
@@ -305,17 +306,17 @@ export interface Ticket {
 
 export interface CreateTicketData {
   ticket_type_id: string
-  holder_name: string
-  holder_email: string
-  holder_phone?: string
+  buyer_name: string
+  buyer_email: string
+  buyer_phone?: string
   payment_method?: PaymentMethod
   payment_reference?: string
 }
 
 export interface UpdateTicketData {
-  holder_name?: string
-  holder_email?: string
-  holder_phone?: string
+  buyer_name?: string
+  buyer_email?: string
+  buyer_phone?: string
   status?: TicketStatus
   payment_reference?: string
   payment_url?: string
@@ -326,7 +327,7 @@ export interface TicketFilters {
   event_id?: string
   ticket_type_id?: number
   status?: TicketStatus
-  holder_email?: string
+  buyer_email?: string
   search?: string
   paid?: boolean
   used?: boolean
@@ -425,7 +426,7 @@ export interface ScanSessionResponse {
   success: boolean
   session_token: string
   ticket_preview?: {
-    holder_name: string
+    buyer_name: string
     ticket_type: string
     status: TicketStatus
   }

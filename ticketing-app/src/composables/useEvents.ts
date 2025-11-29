@@ -35,6 +35,26 @@ export function useEvents() {
     }
   }
 
+  const fetchPublicEvents = async (filters?: EventFilters) => {
+    loading.value = true
+    error.value = null
+    try {
+      const response: PaginatedResponse<Event> = await eventService.getAllPublicEvents(filters)
+      events.value = response.data
+      pagination.value = {
+        total: response?.total,
+        per_page: response?.per_page,
+        current_page: response?.current_page,
+        last_page: response?.last_page
+      }
+    } catch (e: any) {
+      error.value = e.response?.data?.message || 'Failed to fetch events'
+      console.error('Error fetching events:', e)
+    } finally {
+      loading.value = false
+    }
+  }
+
   const fetchEvent = async (id: string) => {
     loading.value = true
     error.value = null
@@ -228,6 +248,7 @@ export function useEvents() {
     error,
     pagination,
     fetchEvents,
+    fetchPublicEvents,
     fetchEvent,
     fetchEventBySlug,
     fetchPublicEvent,
