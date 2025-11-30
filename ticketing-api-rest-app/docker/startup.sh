@@ -33,6 +33,12 @@ else
     sed -i "s/8080/$PORT/g" /etc/nginx/conf.d/default.conf
 
     # 2. Storage Link (Toujours utile)
+
+    # [AJOUT] Force les permissions sur le dossier du volume (au cas où)
+    echo "🔧 Correction des permissions du stockage..."
+    chown -R www-data:www-data /var/www/html/storage/app/public
+    chmod -R 775 /var/www/html/storage/app/public
+
     if [ ! -L public/storage ]; then
         echo "🔗 Création du lien symbolique storage..."
         php artisan storage:link
