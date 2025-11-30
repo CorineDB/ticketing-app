@@ -14,15 +14,24 @@ if [ "$ROLE" = "worker" ]; then
     # Lance juste le traitement des queues.
 
     echo "✅ Lancement du Worker Laravel..."
+
+    # Correction de la commande :
+    # 1. On repasse à 'queue:work' (c'est le standard de prod, 'listen' est pour le dev)
+    # 2. --timeout=180 : Pour s'aligner avec votre classe PHP
+    # 3. --memory=256 : Pour tuer le script proprement s'il dépasse la mémoire (au lieu de crasher le serveur)
+    # 4. --max-time=3600 : Redémarre le processus worker toutes les heures pour éviter les fuites de mémoire
+
+    php artisan queue:work --tries=3 --timeout=180 --memory=256 --max-time=3600
+
     # php artisan queue:work --tries=3 --timeout=90
     # Après : On force le redémarrage du processus après CHAQUE job (--max-jobs=1)
     # et on limite la mémoire PHP à 128Mo pour qu'il échoue proprement avant d'être tué par le système.
     echo "✅ Lancement du Worker Laravel (Mode Optimisé)..."
-    #php artisan queue:work --tries=3 --timeout=120 --max-jobs=1 --memory=128
-    php artisan queue:listen --tries=3 --timeout=120
+    # php artisan queue:work --tries=3 --timeout=120 --max-jobs=1 --memory=128
+    # php artisan queue:listen --tries=3 --timeout=120
     # Ajout de --memory=128 pour forcer l'arrêt si ça dépasse,
     # et suppression du timeout trop long qui garde le processus actif
-    #php artisan queue:work --tries=3 --timeout=60 --memory=256
+    # php artisan queue:work --tries=3 --timeout=60 --memory=256
 
 elif [ "$ROLE" = "scheduler" ]; then
     # --- MODE SCHEDULER (Cron) ---
