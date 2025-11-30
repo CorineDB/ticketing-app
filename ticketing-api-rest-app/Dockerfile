@@ -1,93 +1,43 @@
-# Use PHP 8.2 with Apache
-FROM php:8.2-apache
+FROM php:8.2-fpm
 
-# Set working directory
-WORKDIR /var/www/html
-
-# Install system dependencies
+# 1. Installer les dépendances système et Nginx
 RUN apt-get update && apt-get install -y \
     git \
     curl \
     libpng-dev \
     libonig-dev \
     libxml2-dev \
-    libzip-dev \
     zip \
     unzip \
-    nodejs \
-    npm \
-    postgresql-client \
-    libpq-dev
+    nginx \
+    libpq-dev \
+    && docker-php-ext-install pdo_mysql pdo_pgsql mbstring exif pcntl bcmath gd
 
-# Clear cache
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+# 2. Installer Redis (important pour vos queues)
+RUN pecl install redis && docker-php-ext-enable redis
 
-# Install PHP extensions
-RUN docker-php-ext-install pdo pdo_pgsql pgsql mbstring exif pcntl bcmath gd zip
-
-# Install Composer
+# 3. Installer Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Copy application files
-COPY . /var/www/html
+# 4. Configurer le répertoire de travail
+WORKDIR /var/www/html
 
-# Set proper permissions
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html/storage \
-    && chmod -R 755 /var/www/html/bootstrap/cache
+# 5. Copier les fichiers du projet
+COPY . .
 
-# Install Composer dependencies
-RUN composer install --no-dev --optimize-autoloader --no-interaction
+# 6. Installer les dépendances Laravel (Prod)
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
 
-# Install npm dependencies and build assets
-# RUN npm ci && npm run build
-# Install npm dependencies and build assets
-RUN npm install && npm run build
+# 7. Configurer les permissions (pour que Nginx/PHP puisse écrire dans storage)
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Create SQLite database file if it doesn't exist (fallback)
-RUN touch /var/www/html/database/database.sqlite || true
+# 8. Copier la config Nginx et le script de démarrage (voir étapes suivantes)
+COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
+COPY docker/startup.sh /usr/local/bin/startup.sh
 
-# Configure Apache
-RUN a2enmod rewrite headers
-RUN sed -i 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/000-default.conf
-RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
+# 9. Rendre le script exécutable
+RUN chmod +x /usr/local/bin/startup.sh
 
-# Configure PHP for production
-RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
-
-# Expose port (Render will provide PORT env variable)
-EXPOSE ${PORT:-80}
-
-# Create entrypoint script
-RUN echo '#!/bin/bash\n\
-set -e\n\
-\n\
-# Wait for database to be ready\n\
-until pg_isready -h "${DB_HOST}" -p "${DB_PORT}" -U "${DB_USERNAME}"; do\n\
-  echo "Waiting for database..."\n\
-  sleep 2\n\
-done\n\
-\n\
-echo "Database is ready!"\n\
-\n\
-# Run migrations\n\
-# php artisan migrate --force --no-interaction\n\
-\n\
-# Cache configuration\n\
-# php artisan config:cache\n\
-# php artisan route:cache\n\
-# php artisan view:cache\n\
-\n\
-# Create storage link if it does not exist\n\
-php artisan storage:link || true\n\
-\n\
-# Update Apache port configuration\n\
-sed -i "s/Listen 80/Listen ${PORT:-80}/" /etc/apache2/ports.conf\n\
-sed -i "s/:80/:${PORT:-80}/" /etc/apache2/sites-available/000-default.conf\n\
-\n\
-# Start Apache in foreground\n\
-apache2-foreground\n\
-' > /entrypoint.sh && chmod +x /entrypoint.sh
-
-# Run entrypoint
-CMD ["/entrypoint.sh"]
+# 10. Commande par défaut (pour le service Web)
+CMD ["/usr/local/bin/startup.sh"]

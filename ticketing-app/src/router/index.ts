@@ -263,17 +263,20 @@ router.beforeEach((to, from, next) => {
   }
 
   // Check user type requirement
-  /* if (to.meta.requiresUserType && authStore.user) {
-    if (authStore.user.type !== to.meta.requiresUserType) {
+  // Check user type requirement
+  if (to.meta.requiresUserType && authStore.user) {
+    // If the user's role slug does not match the required user type, deny access
+    if (authStore.user.role.slug !== to.meta.requiresUserType) {
       notifications.error('Access Denied', 'You do not have permission to access this page')
       next({ name: 'dashboard' })
       return
     }
-  } */
+  }
 
   // Check permission requirement
-  /* if (to.meta.requiresPermission && authStore.user) {
-    const hasPermission = authStore.user.permissions?.some(
+  // Check permission requirement
+  if (to.meta.requiresPermission && authStore.user) {
+    const hasPermission = authStore.user.role.permissions?.some(
       (p) => p.slug === to.meta.requiresPermission
     )
 
@@ -282,7 +285,7 @@ router.beforeEach((to, from, next) => {
       next({ name: 'dashboard' })
       return
     }
-  } */
+  }
 
   next()
 })
