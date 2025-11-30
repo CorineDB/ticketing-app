@@ -83,6 +83,13 @@ const routes: RouteRecordRaw[] = [
     component: PaymentCallbackView,
     meta: { public: true }
   },
+    // --- PAYMENT RESULT ROUTE (ADDED) ---
+    {
+      path: '/payment/result',
+      name: 'payment-result',
+      component: () => import('../views/Payments/PaymentResultView.vue'),
+      meta: { public: true, requiresAuth: false } // Can be public as it just shows status based on URL params
+    },
   {
     path: '/tickets/:code',
     name: 'ticket-public',
