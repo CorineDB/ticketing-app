@@ -8,3 +8,13 @@ restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
 healthcheckPath = "/api/health"
 healthcheckTimeout = 100
+
+[build]
+builder = "docker"
+dockerfilePath = "ticketing-api-rest-app/Dockerfile"
+
+[deploy]
+# On pointe vers notre script maître.
+# Plus besoin de taper des commandes différentes dans l'interface !
+startCommand = "/usr/local/bin/startup.sh"
+restartPolicyType = "ON_FAILURE"
