@@ -1,3 +1,4 @@
+
 FROM php:8.2-fpm
 
 # 1. Installer les dépendances système et Nginx

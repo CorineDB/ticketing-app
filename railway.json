@@ -1,14 +1,86 @@
 {
   "$schema": "https://railway.app/railway.schema.json",
-  "build": {
+  "buildDefaults": {
     "builder": "DOCKERFILE",
     "dockerfilePath": "ticketing-api-rest-app/Dockerfile"
   },
-  "deploy": {
-    "numReplicas": 1,
-    "restartPolicyType": "ON_FAILURE",
-    "restartPolicyMaxRetries": 10,
-    "healthcheckPath": "/api/health",
-    "healthcheckTimeout": 100
+  "services": {
+    "postgres-service": {
+      "image": "postgres:16",
+      "variables": {
+        "POSTGRES_DB": "railway",
+        "POSTGRES_USER": "postgres"
+      }
+    },
+    "web": {
+      "source": ".",
+      "variables": {
+        "CONTAINER_ROLE": "web",
+        
+        "DB_CONNECTION": "pgsql",
+        "DATABASE_URL": "${{postgres-service.DATABASE_URL}}",
+        "DB_HOST": "${{postgres-service.PGHOST}}",
+        "DB_PORT": "${{postgres-service.PGPORT}}",
+        "DB_USERNAME": "${{postgres-service.PGUSER}}",
+        "DB_PASSWORD": "${{postgres-service.PGPASSWORD}}",
+        "DB_DATABASE": "${{postgres-service.PGDATABASE}}",
+
+        "APP_KEY": "base64:xGGbik/nNA4lNi4prORUlLSWOYJ7LaDQ90M6UyP4D1I=",
+        "APP_URL": "https://${{web.RAILWAY_PUBLIC_DOMAIN}}",
+        "APP_NAME": "Plateforme de gestion des tickets",
+        "APP_DEBUG": "true",
+        "APP_ENV": "production",
+
+        "QUEUE_CONNECTION": "database",
+        "SESSION_DRIVER": "database",
+        "CACHE_DRIVER": "database",
+
+        "MAIL_FROM_NAME": "${{APP_NAME}}",
+        "MAIL_MAILER": "smtp",
+        "MAIL_HOST": "smtp.titan.email",
+        "MAIL_PORT": "587",
+        "MAIL_USERNAME": "cbocoga@celeriteholding.com",
+        "MAIL_PASSWORD": "#CeleritePassword24#",
+        "MAIL_ENCRYPTION": "tls",
+        "MAIL_FROM_ADDRESS": "cbocoga@celeriteholding.com",
+        "FEDAPAY_ENVIRONMENT": "live",
+        "FEDAPAY_CURRENCY": "XOF"
+      }
+    },
+    "worker": {
+      "source": ".",
+      "variables": {
+        "CONTAINER_ROLE": "worker",
+
+        "DATABASE_URL": "${{postgres-service.DATABASE_URL}}",
+        "DB_HOST": "${{postgres-service.PGHOST}}",
+        "DB_PORT": "${{postgres-service.PGPORT}}",
+        "DB_USERNAME": "${{postgres-service.PGUSER}}",
+        "DB_PASSWORD": "${{postgres-service.PGPASSWORD}}",
+        "DB_DATABASE": "${{postgres-service.PGDATABASE}}",
+        "DB_CONNECTION": "pgsql",
+
+        "APP_KEY": "base64:xGGbik/nNA4lNi4prORUlLSWOYJ7LaDQ90M6UyP4D1I=",
+        "APP_URL": "https://${{web.RAILWAY_PUBLIC_DOMAIN}}",
+        "APP_NAME": "Plateforme de gestion des tickets",
+        "APP_DEBUG": "true",
+        "APP_ENV": "production",
+
+        "QUEUE_CONNECTION": "database",
+        "SESSION_DRIVER": "database",
+        "CACHE_DRIVER": "database",
+
+        "MAIL_FROM_NAME": "${{APP_NAME}}",
+        "MAIL_MAILER": "smtp",
+        "MAIL_HOST": "smtp.titan.email",
+        "MAIL_PORT": "587",
+        "MAIL_USERNAME": "cbocoga@celeriteholding.com",
+        "MAIL_PASSWORD": "#CeleritePassword24#",
+        "MAIL_ENCRYPTION": "tls",
+        "MAIL_FROM_ADDRESS": "cbocoga@celeriteholding.com",
+        "FEDAPAY_ENVIRONMENT": "live",
+        "FEDAPAY_CURRENCY": "XOF"
+      }
+    }
   }
 }

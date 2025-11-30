@@ -1,4 +1,4 @@
-#!/bin/bash
+ #!/bin/bash
 
 # Arrête le script dès qu'une erreur survient (très important pour ne pas lancer un serveur cassé)
 set -e
