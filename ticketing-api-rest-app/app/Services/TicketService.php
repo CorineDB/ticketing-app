@@ -102,7 +102,10 @@ class TicketService extends BaseService implements TicketServiceContract
 
         // QR code pointe vers le frontend pour le scan
         $frontendUrl = config('app.frontend_url', env('CLIENT_APP_URL', 'http://localhost:5173'));
-        $qrData = $frontendUrl . "/dashboard/scan?t={$ticket->id}&sig={$signature}";
+        // $qrData = $frontendUrl . "/dashboard/scan?t={$ticket->id}&sig={$signature}";
+
+        // Nouvelle URL neutre
+        $qrData = $frontendUrl . "/verify?t={$ticket->id}&sig={$signature}";
 
         $qrImage = QrCode::format('png')
             ->size(300)

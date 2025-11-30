@@ -180,7 +180,7 @@ const routes: RouteRecordRaw[] = [
 
   // Scanner
   {
-    path: '/dashboard/scanner',
+    path: '/scanner',
     name: 'scanner',
     component: ScannerView,
     meta: {

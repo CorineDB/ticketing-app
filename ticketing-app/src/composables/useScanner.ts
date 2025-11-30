@@ -103,7 +103,7 @@ export function useScanner() {
   }
 
   return {
-    scans,
+    scanHistory: scans,
     loading,
     error,
     lastScanResult,

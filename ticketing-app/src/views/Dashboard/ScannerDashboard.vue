@@ -24,7 +24,7 @@
       </RouterLink>
 
       <RouterLink
-        to="/scanner/history"
+        to="/dashboard/scanner/history"
         class="bg-white border border-gray-200 rounded-xl p-8 hover:shadow-lg transition-all group"
       >
         <div class="flex items-center justify-between">

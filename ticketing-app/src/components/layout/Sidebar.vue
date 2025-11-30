@@ -68,7 +68,7 @@
           <NavLink
             to="/dashboard/tickets"
             :icon="TicketIcon"
-            label="All Tickets"
+            label="All Scanned Tickets"
             @click="$emit('close')"
           />
         </template>
@@ -82,7 +82,7 @@
           </div>
 
           <NavLink
-            to="/dashboard/scanner"
+            to="/scanner"
             :icon="ScanIcon"
             label="Scan Tickets"
             @click="$emit('close')"

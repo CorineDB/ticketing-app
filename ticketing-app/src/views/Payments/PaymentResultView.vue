@@ -2,15 +2,17 @@
 import { onMounted, ref, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import PublicLayout from '@/components/layout/PublicLayout.vue';
-import StatusBadge from '@/components/common/StatusBadge.vue';
-import { CheckCircleIcon, XCircleIcon, ClockIcon } from 'lucide-vue-next';//'@heroicons/vue/24/solid';
+import { CheckCircleIcon, XCircleIcon, ClockIcon, CircleQuestionMarkIcon } from 'lucide-vue-next';//'@heroicons/vue/24/solid';
+import { useAuthStore } from '@/stores/auth'; // Import du store d'authentification
 
 const route = useRoute();
 const router = useRouter();
+const authStore = useAuthStore(); // Utilisation du store
 
-const status = ref<string>('');
-const message = ref<string>('');
-const transactionId = ref<string>('');
+// Correction: Suppression des génériques explicites <string> pour éviter les erreurs de parsing TSX
+const status = ref('');
+const message = ref('');
+const transactionId = ref('');
 const loading = ref(true);
 
 onMounted(() => {
@@ -22,31 +24,41 @@ onMounted(() => {
   loading.value = false;
 });
 
-const isSuccess = computed(() => status.value === 'approved' || status.value === 'approved');
-const isFailed = computed(() => status.value === 'declined' || status.value === 'canceled' || status.value === 'error');
+// Logique stricte basée sur les statuts: 'approved', 'pending', 'canceled'
+const isSuccess = computed(() => status.value === 'approved');
+const isPending = computed(() => status.value === 'pending');
+const isCanceled = computed(() => status.value === 'canceled');
+const isUnknown = computed(() => !isSuccess.value && !isPending.value && !isCanceled.value);
+
+// Vérifie si l'utilisateur est authentifié pour afficher le bouton Dashboard
+const canAccessDashboard = computed(() => authStore.isAuthenticated);
 
 const statusIcon = computed(() => {
   if (isSuccess.value) return CheckCircleIcon;
-  if (isFailed.value) return XCircleIcon;
-  return ClockIcon;
+  if (isCanceled.value) return XCircleIcon;
+  if (isPending.value) return ClockIcon;
+  return CircleQuestionMarkIcon; // Icône pour statut inconnu
 });
 
 const statusColor = computed(() => {
   if (isSuccess.value) return 'text-green-500';
-  if (isFailed.value) return 'text-red-500';
-  return 'text-yellow-500';
+  if (isCanceled.value) return 'text-red-500';
+  if (isPending.value) return 'text-yellow-500';
+  return 'text-gray-500';
 });
 
 const title = computed(() => {
   if (isSuccess.value) return 'Paiement Réussi !';
-  if (isFailed.value) return 'Paiement Échoué';
+  if (isPending.value) return 'Paiement en Attente';
+  if (isCanceled.value) return 'Paiement Annulé';
   return 'Statut Inconnu';
 });
 
 const description = computed(() => {
-  if (isSuccess.value) return 'Votre transaction a été validée avec succès. Vous recevrez votre billet par email dans quelques instants.';
-  if (isFailed.value) return message.value || 'Une erreur est survenue lors du traitement de votre paiement. Veuillez réessayer.';
-  return 'Nous vérifions le statut de votre transaction. Veuillez patienter.';
+  if (isSuccess.value) return 'Votre transaction a été validée avec succès. Vous allez recevoir votre billet par email dans quelques instants.';
+  if (isPending.value) return 'Votre paiement est en cours de traitement. Vous recevrez une confirmation par email dès qu\'il sera validé. Veuillez ne pas repayer tout de suite.';
+  if (isCanceled.value) return message.value || 'Le paiement a été annulé. Vous pouvez réessayer si vous le souhaitez.';
+  return `Nous n'avons pas pu déterminer le statut exact de votre transaction (Statut: ${status.value}). Veuillez vérifier vos emails ou contacter le support.`;
 });
 
 function goToEvents() {
@@ -54,7 +66,7 @@ function goToEvents() {
 }
 
 function goToDashboard() {
-  router.push('/dashboard');
+  router.push('/dashboard/tickets'); // Redirection plus précise vers la liste des billets
 }
 </script>
 
@@ -85,6 +97,11 @@ function goToDashboard() {
           <p class="text-lg text-gray-600">
             {{ description }}
           </p>
+          
+          <!-- Guest Message (Only for guests on success/pending) -->
+          <div v-if="!canAccessDashboard && (isSuccess || isPending)" class="bg-blue-50 p-4 rounded-md text-sm text-blue-700">
+            <p><strong>Important :</strong> Vérifiez votre boîte de réception (et vos spams) pour récupérer votre billet.</p>
+          </div>
 
           <!-- Transaction ID -->
           <div v-if="transactionId" class="bg-gray-50 px-4 py-2 rounded-md">
@@ -101,12 +118,13 @@ function goToDashboard() {
               Retour aux événements
             </button>
             
+            <!-- Afficher le bouton Dashboard UNIQUEMENT si l'utilisateur est connecté et que ce n'est pas un échec -->
             <button
-              v-if="isSuccess"
+              v-if="(isSuccess || isPending) && canAccessDashboard" 
               @click="goToDashboard"
-              class="inline-flex justify-center items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 w-full sm:w-auto"
+              class="inline-flex justify-center items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-black bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 w-full sm:w-auto"
             >
-              Voir mes billets
+              {{ isPending ? 'Suivre mon statut' : 'Voir mes billets' }}
             </button>
           </div>
         </div>
