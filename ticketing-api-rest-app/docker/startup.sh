@@ -32,18 +32,36 @@ else
     echo "Configuration du port Nginx sur $PORT..."
     sed -i "s/8080/$PORT/g" /etc/nginx/conf.d/default.conf
 
-    # 2. Exécuter les MIGRATIONS (Seulement le web le fait)
-    echo "🚀 Exécution des migrations..."
-    # L'option --force est obligatoire en prod pour éviter la question "Are you sure?"
-    php artisan migrate --force
+    # 2. Storage Link (Toujours utile)
+    if [ ! -L public/storage ]; then
+        echo "🔗 Création du lien symbolique storage..."
+        php artisan storage:link
+    fi
 
-    # 3. 🌱 EXÉCUTION DES SEEDERS
-    # ATTENTION : Assure-toi que tes seeders gèrent les doublons (utilisent firstOrCreate)
-    # Sinon, commente cette ligne après le premier déploiement pour éviter les erreurs.
-    echo "🌱 Exécution des seeders..."
-    php artisan db:seed --force
+    # 3. MIGRATIONS (Contrôlable via variable)
+    # Par défaut on le fait (true), sauf si SKIP_MIGRATIONS=true
+    if [ "${SKIP_MIGRATIONS:-false}" != "true" ]; then
+        echo "🚀 Exécution des migrations..."
+        # L'option --force est obligatoire en prod pour éviter la question "Are you sure?"
+        php artisan migrate --force
+    else
+        echo "⏭️ Migrations ignorées (SKIP_MIGRATIONS=true)"
+    fi
 
-    # 4. Mise en cache pour la PROD
+    # 4. SEEDERS (Contrôlable via variable)
+    # Par défaut on NE LE FAIT PAS (false), sauf si RUN_SEEDS=true
+    if [ "${RUN_SEEDS:-false}" = "true" ]; then
+        # ATTENTION : Assure-toi que tes seeders gèrent les doublons (utilisent firstOrCreate)
+        # Sinon, commente cette ligne après le premier déploiement pour éviter les erreurs.
+        echo "🌱 Exécution des seeders..."
+        php artisan db:seed --force
+    else
+        echo "⏭️ Seeders ignorés (RUN_SEEDS n'est pas 'true')"
+    fi
+
+    # 5. Cache & Démarrage (Toujours faire)
+    # 5. Mise en cache pour la PROD
+    echo "⚡ Mise en cache..."
     echo "⚡ Mise en cache de la configuration..."
     php artisan config:cache
     php artisan route:cache
