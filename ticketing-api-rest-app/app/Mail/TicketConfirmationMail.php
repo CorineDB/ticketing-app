@@ -55,7 +55,7 @@ class TicketConfirmationMail extends Mailable
      *
      * @return array<int, \Illuminate\Mail\Mailables\Attachment>
      */
-    public function attachments(): array
+    /*public function attachments(): array
     {
         $attachments = [];
 
@@ -67,5 +67,5 @@ class TicketConfirmationMail extends Mailable
         }
 
         return $attachments;
-    }
+    }*/
 }
