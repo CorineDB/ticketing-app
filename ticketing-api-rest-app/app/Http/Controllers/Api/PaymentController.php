@@ -25,7 +25,7 @@ class PaymentController extends Controller
         $reference = $request->query('reference');
 
         // Get frontend URL from config or environment
-        $frontendUrl = config('app.frontend_url', env('FRONTEND_URL', 'http://localhost:5173'));
+        $frontendUrl = config('app.frontend_url', env('CLIENT_APP_URL', 'http://localhost:5173'));
 
         // Build redirect URL with payment status
         $redirectUrl = $frontendUrl . '/payment/result?' . http_build_query([
@@ -39,7 +39,7 @@ class PaymentController extends Controller
             'status' => $status,
         ]);
 
-        // Redirect to frontend with payment status
-        return redirect($redirectUrl);
+        // 3. Rediriger l'utilisateur vers le FRONTEND
+        return redirect()->away($redirectUrl);
     }
 }
