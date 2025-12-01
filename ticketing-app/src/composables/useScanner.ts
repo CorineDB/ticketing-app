@@ -104,6 +104,7 @@ export function useScanner() {
 
   return {
     scanHistory: scans,
+    scans,
     loading,
     error,
     lastScanResult,

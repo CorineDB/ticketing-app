@@ -91,6 +91,6 @@ export function useScans() {
     fetchScans,
     fetchTicketScans,
     fetchEventSummary,
-    exportToCSV: exportScansData
+    exportToCSV: exportToCSV,//exportScansData
   }
 }

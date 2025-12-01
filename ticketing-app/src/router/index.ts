@@ -22,8 +22,8 @@ const TicketPublicView = () => import('@/views/Tickets/TicketPublicView.vue')
 const CheckoutView = () => import('@/views/Payments/CheckoutView.vue')
 const PaymentCallbackView = () => import('@/views/Payments/PaymentCallbackView.vue')
 
-const ScannerView = () => import('@/views/Scanners/ScannerView.vue')
-const ScanHistoryView = () => import('@/views/Scanners/ScanHistoryView.vue')
+const ScannerView = () => import('@/views/Scanner/ScannerView.vue')
+const ScanHistoryView = () => import('@/views/Scanner/ScanHistoryView.vue')
 
 const OrganizationsListView = () => import('@/views/Organizations/OrganizationsListView.vue')
 const OrganizationDetailView = () => import('@/views/Organizations/OrganizationDetailView.vue')
