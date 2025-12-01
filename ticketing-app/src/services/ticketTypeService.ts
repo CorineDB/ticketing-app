@@ -11,23 +11,17 @@ class TicketTypeService {
    */
   async getAll(eventId: string): Promise<TicketType[]> {
     const response = await api.get<{ data: TicketType[] }>(`/events/${eventId}/ticket-types`)
-    return response.data
+    return response.data.data
   }
 
   /**
    * Get single ticket type by ID
    */
   async getById(id: string): Promise<TicketType> {
-    const response = await api.get<{ data: TicketType }>(`/ticket-types/${id}`)
-    return response.data
+    return response.data.data
   }
 
-  /**
-   * Get single ticket type by ID
-   */
-  async getPublicById(id: string): Promise<TicketType> {
-    const response = await api.get<{ data: TicketType }>(`/public/ticket-types/${id}`)
-    return response.data
+    return response.data.data
   }
 
   /**

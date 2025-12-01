@@ -216,7 +216,7 @@
                       {{ ticketType.description }}
                     </p>
                   </div>
-                  <StatusBadge :status="ticketType.status" type="ticket-type" />
+                  <StatusBadge :status="ticketType.status" type="ticket" />
                 </div>
 
                 <div class="space-y-3">

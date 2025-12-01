@@ -115,7 +115,7 @@
                   {{ user.organisateur?.name || '-' }}
                 </td>
                 <td class="py-3 px-4">
-                  <StatusBadge :status="user.status" type="user" />
+                  <StatusBadge :status="user.status" type="custom" />
                 </td>
                 <td class="py-3 px-4 text-sm text-gray-600">
                   {{ user.last_login_at ? formatDate(user.last_login_at) : 'Never' }}
@@ -288,15 +288,15 @@ function getInitials(name: string): string {
     .slice(0, 2)
 }
 
-function getRoleVariant(roleName?: string): 'primary' | 'success' | 'warning' | 'danger' | 'default' {
-  if (!roleName) return 'default'
+function getRoleVariant(roleName?: string): 'primary' | 'success' | 'warning' | 'danger' | 'info' | 'secondary' {
+  if (!roleName) return 'secondary'
 
   const lowerRole = roleName.toLowerCase()
   if (lowerRole.includes('admin')) return 'danger'
   if (lowerRole.includes('organizer')) return 'primary'
   if (lowerRole.includes('scanner')) return 'success'
   if (lowerRole.includes('cashier')) return 'warning'
-  return 'default'
+  return 'secondary'
 }
 
 function viewUser(user: User) {

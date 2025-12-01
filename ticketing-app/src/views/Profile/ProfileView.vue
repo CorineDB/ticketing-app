@@ -20,7 +20,7 @@
               <Badge :variant="getRoleVariant(user?.role?.name)">
                 {{ user?.role?.name }}
               </Badge>
-              <StatusBadge :status="user?.status || 'active'" type="user" />
+              <StatusBadge :status="user?.status || 'active'" type="custom" />
             </div>
           </div>
         </div>
@@ -305,15 +305,15 @@ function getInitials(name: string): string {
     .slice(0, 2)
 }
 
-function getRoleVariant(roleName?: string): 'primary' | 'success' | 'warning' | 'danger' | 'default' {
-  if (!roleName) return 'default'
+function getRoleVariant(roleName?: string): 'primary' | 'success' | 'warning' | 'danger' | 'info' | 'secondary' {
+  if (!roleName) return 'secondary'
 
   const lowerRole = roleName.toLowerCase()
   if (lowerRole.includes('admin')) return 'danger'
   if (lowerRole.includes('organizer')) return 'primary'
   if (lowerRole.includes('scanner')) return 'success'
   if (lowerRole.includes('cashier')) return 'warning'
-  return 'default'
+  return 'secondary'
 }
 
 async function updateProfile() {

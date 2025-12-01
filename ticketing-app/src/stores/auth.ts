@@ -18,11 +18,11 @@ export const useAuthStore = defineStore('auth', () => {
   const isScanner = computed(() => user.value?.type === 'agent-de-controle')
   const isCashier = computed(() => user.value?.type === 'comptable')
   const isParticipant = computed(() => user.value?.type === 'participant') */
-  const isSuperAdmin = computed(() => user.value?.role.slug === 'super-admin')
-  const isOrganizer = computed(() => user.value?.role.slug === 'organizer')
-  const isScanner = computed(() => user.value?.role.slug === 'agent-de-controle')
-  const isCashier = computed(() => user.value?.role.slug === 'comptable')
-  const isParticipant = computed(() => user.value?.role.slug === 'participant')
+  const isSuperAdmin = computed(() => user.value?.role?.slug === 'super-admin')
+  const isOrganizer = computed(() => user.value?.role?.slug === 'organizer')
+  const isScanner = computed(() => user.value?.role?.slug === 'agent-de-controle')
+  const isCashier = computed(() => user.value?.role?.slug === 'comptable')
+  const isParticipant = computed(() => user.value?.role?.slug === 'participant')
 
   // Actions
   async function login(credentials: LoginCredentials): Promise<boolean> {
