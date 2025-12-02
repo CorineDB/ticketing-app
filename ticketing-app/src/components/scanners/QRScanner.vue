@@ -78,7 +78,7 @@
 
 <script setup lang="ts">
 import { ref, nextTick, onUnmounted } from 'vue'
-import { Html5QrcodeScanner } from 'html5-qrcode'
+import { Html5QrcodeScanner, Html5Qrcode } from 'html5-qrcode'
 import {
   QrCodeIcon,
   KeyboardIcon,
@@ -97,7 +97,31 @@ const error = ref('')
 
 let scanner: Html5QrcodeScanner | null = null
 
+let html5Qr: Html5Qrcode | null = null
+
 async function startScanning() {
+  scanning.value = true
+  error.value = ''
+
+  await nextTick()
+
+  html5Qr = new Html5Qrcode("qr-reader")
+
+  html5Qr.start(
+    { facingMode: "environment" },
+    {
+      fps: 10,
+      qrbox: 250
+    },
+    (decodedText) => {
+      onScanSuccess(decodedText)
+    },
+    (errorMessage) => {
+      onScanError(errorMessage)
+    }
+  )
+}
+async function startsScanning() {
   scanning.value = true
   error.value = ''
 
@@ -119,7 +143,17 @@ async function startScanning() {
   scanner.render(onScanSuccess, onScanError)
 }
 
-function stopScanning() {
+async function stopScanning() {
+  console.log("Scanning stopped.");
+  if (html5Qr && html5Qr._isScanning) {
+    await html5Qr.stop();
+    await html5Qr.clear();
+    html5Qr = null
+  }
+  scanning.value = false
+}
+
+function stoppScanning() {
 
   console.log("Scanning stopped.");
   if (scanner) {
@@ -146,6 +180,7 @@ function onScanSuccess(decodedText: string) {
 function onScanError(errorMessage: string) {
   // Ignore common scanning errors (no QR in frame, etc.)
   // Only show persistent errors
+  console.log("Scan error: ", errorMessage);  
 }
 
 function handleManualScan() {
