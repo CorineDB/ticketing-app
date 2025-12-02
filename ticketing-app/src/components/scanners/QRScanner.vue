@@ -105,13 +105,18 @@ async function startScanning() {
 
   await nextTick()
 
+  const readerEl = document.getElementById("qr-reader")
+  if (!readerEl) return
+
+  const size = Math.min(readerEl.clientWidth, readerEl.clientHeight, 300) // max 300px
+
   html5Qr = new Html5Qrcode("qr-reader")
 
   html5Qr.start(
-    { facingMode: "environment" },
+    { facingMode: "environment"},
     {
-      fps: 15,
-      qrbox: 300
+      fps: 10,
+      qrbox: size
     },
     (decodedText) => {
       console.log("Scan successful:", decodedText)
