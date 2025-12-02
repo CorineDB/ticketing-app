@@ -77,7 +77,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onUnmounted } from 'vue'
+import { ref, nextTick, onUnmounted } from 'vue'
 import { Html5QrcodeScanner } from 'html5-qrcode'
 import {
   QrCodeIcon,
@@ -97,9 +97,13 @@ const error = ref('')
 
 let scanner: Html5QrcodeScanner | null = null
 
-function startScanning() {
+async function startScanning() {
   scanning.value = true
   error.value = ''
+
+  console.log("Scanning started ...");
+
+  await nextTick() // DOM ready
 
   // Initialize scanner
   scanner = new Html5QrcodeScanner(
@@ -116,6 +120,8 @@ function startScanning() {
 }
 
 function stopScanning() {
+
+  console.log("Scanning stopped.");
   if (scanner) {
     scanner.clear()
     scanner = null
@@ -124,6 +130,7 @@ function stopScanning() {
 }
 
 function onScanSuccess(decodedText: string) {
+  console.log("Scan successful: ", decodedText);
   // Emit scan event
   emit('scan', decodedText)
 
