@@ -21,7 +21,7 @@ export const scanService = {
    * L'agent valide l'entrée après vérification visuelle
    */
   async scanConfirm(payload: ScanConfirmPayload): Promise<ScanConfirmResponse> {
-    const response = await api.post<ScanConfirmResponse>('/scan/confirm', payload)
+    const response = await api.post<ScanConfirmResponse>('/scans/confirm', payload)
     return response.data
   }
 }
