@@ -43,7 +43,8 @@ class ScanController extends Controller
             );
             return response()->json($result);
         } catch (\Throwable $e) {
-            if ($code === 0) {
+            $code = $e->getCode();
+            if ($code === 0 || !is_int($code)) {
                 $code = 400;
             }
             return response()->json([

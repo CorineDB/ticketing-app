@@ -106,7 +106,7 @@
                 <div>
                   <div class="text-sm text-gray-600">Attendance</div>
                   <div class="text-lg font-semibold text-gray-900">
-                    {{ event.current_attendance || 0 }}
+                    {{ event.current_in || 0 }}
                   </div>
                 </div>
               </div>
@@ -129,7 +129,7 @@
                 <div class="space-y-2">
                   <div class="flex items-center gap-2 text-gray-900">
                     <CalendarIcon class="w-4 h-4 text-gray-400" />
-                    <span>{{ formatDate(event.start_datetime) }} - {{ formatDate(event.end_date) }}</span>
+                    <span>{{ formatDate(event.start_datetime) }} - {{ formatDate(event.end_datetime) }}</span>
                   </div>
                   <div class="flex items-center gap-2 text-gray-900">
                     <ClockIcon class="w-4 h-4 text-gray-400" />
@@ -216,7 +216,7 @@
                       {{ ticketType.description }}
                     </p>
                   </div>
-                  <StatusBadge :status="ticketType.status" type="ticket" />
+                  <StatusBadge :status="ticketType.is_active ? 'active' : 'inactive'" type="ticket" />
                 </div>
 
                 <div class="space-y-3">
@@ -230,14 +230,14 @@
                   <div class="flex items-center justify-between">
                     <span class="text-sm text-gray-600">Available</span>
                     <span class="text-sm font-medium text-gray-900">
-                      {{ ticketType.quantity_available }} / {{ ticketType.quantity_total }}
+                      {{ ticketType.quantity_available }} / {{ ticketType.quantity }}
                     </span>
                   </div>
 
                   <div class="bg-gray-200 rounded-full h-2">
                     <div
                       class="bg-green-600 h-2 rounded-full"
-                      :style="{ width: `${(ticketType.quantity_available / ticketType.quantity_total * 100)}%` }"
+                      :style="{ width: `${(ticketType.quantity_available / ticketType.quantity * 100)}%` }"
                     ></div>
                   </div>
 

@@ -110,11 +110,15 @@ async function startScanning() {
   html5Qr.start(
     { facingMode: "environment" },
     {
-      fps: 10,
-      qrbox: 250
+      fps: 15,
+      qrbox: 300
     },
     (decodedText) => {
-      onScanSuccess(decodedText)
+      console.log("Scan successful:", decodedText)
+      emit('scan', decodedText)
+      stopScanning()
+      if ('vibrate' in navigator) navigator.vibrate(200)
+      //onScanSuccess(decodedText)
     },
     (errorMessage) => {
       onScanError(errorMessage)
@@ -133,9 +137,10 @@ async function startscanning() {
   scanner = new Html5QrcodeScanner(
     'qr-reader',
     {
-      fps: 10,
-      qrbox: { width: 250, height: 250 },
-      aspectRatio: 1.0
+      fps: 15,
+      qrbox: { width: 300, height: 300 },
+      aspectRatio: 1.0,
+      disableFlip: false // si QR est retourné sur papier
     },
     false
   )
