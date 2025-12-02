@@ -99,7 +99,7 @@ let scanner: Html5QrcodeScanner | null = null
 
 let html5Qr: Html5Qrcode | null = null
 
-async function startScanning() {
+async function startscanning() {
   scanning.value = true
   error.value = ''
 
@@ -121,7 +121,7 @@ async function startScanning() {
     }
   )
 }
-async function startsScanning() {
+async function startScanning() {
   scanning.value = true
   error.value = ''
 
@@ -143,7 +143,7 @@ async function startsScanning() {
   scanner.render(onScanSuccess, onScanError)
 }
 
-async function stopScanning() {
+async function stopscanning() {
   console.log("Scanning stopped.");
   if (html5Qr && html5Qr._isScanning) {
     await html5Qr.stop();
@@ -153,7 +153,7 @@ async function stopScanning() {
   scanning.value = false
 }
 
-function stoppScanning() {
+function stopScanning() {
 
   console.log("Scanning stopped.");
   if (scanner) {
