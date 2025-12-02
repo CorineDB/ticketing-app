@@ -61,4 +61,28 @@ class Event extends Model
     {
         return $this->hasOne(EventCounter::class);
     }
+
+    public function scopeForAuthUser($query)
+    {
+        $user = auth()->user();
+
+        if (!$user) {
+            // Unauthenticated users see only published events
+            return $query->where('is_published', true)->where('status', 'published');
+        }
+
+        if ($user->isSuperAdmin()) {
+            // Super Admin sees all events
+            return $query;
+        }
+
+        if ($user->isOrganizer()) {
+            // Organizer sees events they created or are the organisateur of
+            return $query->where('organisateur_id', $user->id)
+                         ->orWhere('created_by', $user->id);
+        }
+
+        // Other authenticated users (Agent, Cashier, Participant) see only published events
+        return $query->where('is_published', true)->where('status', 'published');
+    }
 }

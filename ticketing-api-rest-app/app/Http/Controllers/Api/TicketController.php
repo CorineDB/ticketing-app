@@ -25,6 +25,13 @@ class TicketController extends Controller
 
     public function index(Request $request)
     {
+        $code = $request->query('code');
+
+        if ($code) {
+            $ticket = $this->ticketService->getByCode($code);
+            return response()->json(['data' => $ticket ? [$ticket->load(['event', 'ticketType'])] : []]);
+        }
+
         $eventId = $request->query('event_id');
 
         if ($eventId) {
@@ -203,6 +210,16 @@ class TicketController extends Controller
         }
     }
 
+    public function regenerateCode(string $id)
+    {
+        try {
+            $result = $this->ticketService->regenerateQRCodeSecret($id);
+            return response()->json($result);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], $e->getCode() ?: 400);
+        }
+    }
+
     public function markPaid(string $id)
     {
         $ticket = $this->ticketService->markAsPaid($id);
@@ -214,6 +231,5 @@ class TicketController extends Controller
         $ticket = $this->ticketService->sendTicketByEmail($id);
         return response()->json($ticket);
     }
-
 
 }

@@ -52,5 +52,16 @@ class ScanController extends Controller
                 'message' => $e->getMessage(),
             ], $code);
         }
+    public function history(Request $request)
+    {
+        $filters = $request->only([
+            'event_id', 'gate_id', 'scanner_id', 'scan_type', 'result',
+            'start_date', 'end_date', 'search'
+        ]);
+        $perPage = $request->query('per_page', 15);
+
+        $scanHistory = $this->scanService->getScanHistory($filters, $perPage);
+
+        return response()->json($scanHistory);
     }
 }

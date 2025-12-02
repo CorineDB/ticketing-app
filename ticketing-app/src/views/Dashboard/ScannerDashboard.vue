@@ -1,200 +1,228 @@
-<template>
-  <div class="space-y-6">
-    <!-- Header -->
-    <div>
-      <h1 class="text-3xl font-bold text-gray-900">Scanner Dashboard</h1>
-      <p class="mt-2 text-gray-600">
-        Quick access to scanning and today's activity
-      </p>
-    </div>
-
-    <!-- Quick Actions -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <RouterLink
-        to="/scanner"
-        class="group bg-gradient-to-br from-blue-600 to-purple-600 text-white rounded-xl p-8 hover:shadow-lg transition-all"
-      >
-        <div class="flex items-center justify-between">
-          <div>
-            <h3 class="text-2xl font-bold mb-2">Scan Tickets</h3>
-            <p class="text-blue-100">Start scanning QR codes</p>
-          </div>
-          <ScanIcon class="w-12 h-12 opacity-80 group-hover:scale-110 transition-transform" />
-        </div>
-      </RouterLink>
-
-      <RouterLink
-        to="/dashboard/scanner/history"
-        class="bg-white border border-gray-200 rounded-xl p-8 hover:shadow-lg transition-all group"
-      >
-        <div class="flex items-center justify-between">
-          <div>
-            <h3 class="text-2xl font-bold text-gray-900 mb-2">Scan History</h3>
-            <p class="text-gray-600">View your past scans</p>
-          </div>
-          <HistoryIcon class="w-12 h-12 text-gray-400 group-hover:text-gray-600 transition-colors" />
-        </div>
-      </RouterLink>
-    </div>
-
-    <!-- Today's Stats -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-      <StatCard
-        title="Scans Today"
-        :value="stats?.total_scans_today || 0"
-        :icon="ScanIcon"
-        color="blue"
-        :loading="loading"
-      />
-      <StatCard
-        title="Valid Scans"
-        :value="stats?.valid_scans || 0"
-        :icon="CheckCircleIcon"
-        color="green"
-        :loading="loading"
-      />
-      <StatCard
-        title="Invalid Scans"
-        :value="stats?.invalid_scans || 0"
-        :icon="XCircleIcon"
-        color="red"
-        :loading="loading"
-      />
-      <StatCard
-        title="Current Inside"
-        :value="stats?.current_attendance || 0"
-        :icon="UsersIcon"
-        color="purple"
-        :loading="loading"
-      />
-    </div>
-
-    <!-- Current Event Info -->
-    <div v-if="currentEvent" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="text-xl font-semibold text-gray-900">Current Event</h2>
-        <StatusBadge :status="currentEvent.status" type="event" />
-      </div>
-
-      <div class="flex flex-col md:flex-row gap-6">
-        <div v-if="currentEvent.banner" class="w-full md:w-48 h-32 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0">
-          <img :src="currentEvent.banner" :alt="currentEvent.name" class="w-full h-full object-cover" />
-        </div>
-
-        <div class="flex-1">
-          <h3 class="text-2xl font-bold text-gray-900 mb-2">{{ currentEvent.name }}</h3>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-            <div class="flex items-center gap-2 text-gray-600">
-              <CalendarIcon class="w-5 h-5" />
-              <span>{{ formatDate(currentEvent.start_date) }}</span>
-            </div>
-            <div class="flex items-center gap-2 text-gray-600">
-              <MapPinIcon class="w-5 h-5" />
-              <span>{{ currentEvent.venue }}</span>
-            </div>
-            <div class="flex items-center gap-2 text-gray-600">
-              <TicketIcon class="w-5 h-5" />
-              <span>{{ currentEvent.tickets_sold }} tickets sold</span>
-            </div>
-            <div class="flex items-center gap-2 text-gray-600">
-              <UsersIcon class="w-5 h-5" />
-              <span>{{ currentEvent.current_in }}/{{ currentEvent.capacity }} inside</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Recent Scans -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-      <h2 class="text-xl font-semibold text-gray-900 mb-6">Recent Scans</h2>
-
-      <div v-if="loading" class="space-y-3">
-        <div v-for="i in 5" :key="i" class="animate-pulse">
-          <div class="h-16 bg-gray-200 rounded"></div>
-        </div>
-      </div>
-
-      <div v-else-if="recentScans.length > 0" class="space-y-3">
-        <div
-          v-for="scan in recentScans"
-          :key="scan.id"
-          class="flex items-center justify-between p-4 rounded-lg border border-gray-200 hover:bg-gray-50"
-        >
-          <div class="flex items-center gap-4">
-            <div :class="[
-              'w-12 h-12 rounded-full flex items-center justify-center',
-              scan.result === 'valid' ? 'bg-green-100' : 'bg-red-100'
-            ]">
-              <component
-                :is="scan.result === 'valid' ? CheckCircleIcon : XCircleIcon"
-                :class="[
-                  'w-6 h-6',
-                  scan.result === 'valid' ? 'text-green-600' : 'text-red-600'
-                ]"
-              />
-            </div>
-            <div>
-              <div class="font-medium text-gray-900">{{ scan.ticket?.buyer_name }}</div>
-              <div class="text-sm text-gray-500">
-                {{ scan.ticket?.ticket_type?.name }} • {{ formatTime(scan.scanned_at) }}
-              </div>
-            </div>
-          </div>
-          <div class="text-right">
-            <Badge
-              :variant="scan.result === 'valid' ? 'success' : 'danger'"
-            >
-              {{ scan.result }}
-            </Badge>
-            <div class="text-sm text-gray-500 mt-1">
-              {{ scan.scan_type }}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div v-else class="text-center py-8 text-gray-500">
-        No scans yet today
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { RouterLink } from 'vue-router'
-import dashboardService from '@/services/dashboardService'
-import { formatDate, formatTime } from '@/utils/formatters'
-import StatCard from '@/components/dashboard/StatCard.vue'
-import StatusBadge from '@/components/common/StatusBadge.vue'
-import Badge from '@/components/common/Badge.vue'
-import {
-  ScanIcon,
-  HistoryIcon,
-  CheckCircleIcon,
-  XCircleIcon,
-  UsersIcon,
-  CalendarIcon,
-  MapPinIcon,
-  TicketIcon
-} from 'lucide-vue-next'
+import { useRoute, useRouter } from 'vue-router'
+import { useScan } from '@/composables/useScan'
+import TicketInfoCard from '@/components/scan/TicketInfoCard.vue'
+import CountdownTimer from '@/components/scan/CountdownTimer.vue'
+import ScanResult from '@/components/scan/ScanResult.vue'
+import QrScanner from '@/components/scan/QrScanner.vue'
+import { ScanIcon, LogOutIcon } from 'lucide-vue-next'
 
-const stats = ref<any>(null)
-const currentEvent = ref<any>(null)
-const recentScans = ref<any[]>([])
-const loading = ref(true)
+const route = useRoute()
+const router = useRouter()
 
+const showScanner = ref(false)
+const showTicketModal = ref(false)
+
+const {
+  status,
+  ticketInfo,
+  expiresIn,
+  error,
+  loading,
+  scanResult,
+  scanTicket,
+  confirmEntry,
+  reset
+} = useScan()
+
+// Check for query params on mount (External Scan flow)
 onMounted(async () => {
-  try {
-    const data = await dashboardService.getScannerDashboard()
-    stats.value = data.stats
-    currentEvent.value = data.current_event
-    recentScans.value = data.recent_scans || []
-  } catch (error) {
-    console.error('Failed to fetch dashboard:', error)
-  } finally {
-    loading.value = false
+  const ticketId = route.query.t as string
+  const signature = route.query.sig as string
+
+  if (ticketId && signature) {
+    await handleExternalScan(ticketId, signature)
   }
 })
+
+async function handleExternalScan(ticketId: string, signature: string) {
+  // Clear query params to avoid re-triggering on refresh (optional, but cleaner)
+  // router.replace({ query: {} }) 
+  
+  showTicketModal.value = true
+  try {
+    await scanTicket(ticketId, signature)
+  } catch (e) {
+    // Error handled in composable
+  }
+}
+
+function openScanner() {
+  showScanner.value = true
+}
+
+async function handleQrScanned(qrData: string) {
+  showScanner.value = false
+
+  try {
+    let ticketId, signature
+
+    // Try parsing as URL first
+    try {
+      const url = new URL(qrData)
+      ticketId = url.searchParams.get('t')
+      signature = url.searchParams.get('sig')
+    } catch (e) {
+      // Not a URL, maybe JSON? (Legacy support)
+      try {
+        const data = JSON.parse(qrData)
+        ticketId = data.ticket_id
+        signature = data.qr_hmac || data.sig
+      } catch (jsonErr) {
+        throw new Error('Format QR non reconnu')
+      }
+    }
+
+    if (!ticketId || !signature) {
+      throw new Error('QR code invalide ou incomplet')
+    }
+
+    showTicketModal.value = true
+    await scanTicket(ticketId, signature)
+
+  } catch (err: any) {
+    console.error('Erreur scan:', err)
+    // Error will be shown in modal via status/error state
+  }
+}
+
+async function handleConfirm(action: 'in' | 'out' = 'in') {
+  await confirmEntry(action)
+}
+
+function handleClose() {
+  showTicketModal.value = false
+  reset()
+  // If came from external link, clear query params
+  if (route.query.t) {
+     router.replace({ query: {} })
+  }
+}
+
+function handleNewScan() {
+  handleClose()
+  // Small delay to allow modal to close before opening scanner
+  setTimeout(() => {
+    openScanner()
+  }, 300)
+}
 </script>
+
+<template>
+  <div class="scanner-dashboard p-6 max-w-4xl mx-auto">
+    <div class="dashboard-header flex justify-between items-center mb-8">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">Dashboard Agent</h1>
+        <p class="text-gray-600">Scannez les billets pour valider l'entrée</p>
+      </div>
+      <div class="bg-blue-50 text-blue-700 px-4 py-2 rounded-lg font-medium">
+        Porte Principale
+      </div>
+    </div>
+
+    <!-- Main Action Area -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+      <button @click="openScanner" 
+        class="flex flex-col items-center justify-center p-8 bg-blue-600 text-white rounded-xl shadow-lg hover:bg-blue-700 transition-all transform hover:scale-105">
+        <ScanIcon class="w-12 h-12 mb-4" />
+        <span class="text-xl font-bold">SCANNER UN TICKET</span>
+      </button>
+      
+      <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+        <h3 class="text-lg font-semibold mb-4 text-gray-800">Statistiques Session</h3>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="bg-green-50 p-4 rounded-lg text-center">
+            <div class="text-2xl font-bold text-green-700">--</div>
+            <div class="text-sm text-green-600">Entrées</div>
+          </div>
+          <div class="bg-red-50 p-4 rounded-lg text-center">
+            <div class="text-2xl font-bold text-red-700">--</div>
+            <div class="text-sm text-red-600">Refus</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Scans (Placeholder) -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <div class="p-4 border-b border-gray-200 bg-gray-50">
+        <h3 class="font-semibold text-gray-700">Historique Récent</h3>
+      </div>
+      <div class="p-8 text-center text-gray-500">
+        Les derniers scans apparaîtront ici
+      </div>
+    </div>
+
+    <!-- Scanner Widget -->
+    <QrScanner
+      v-if="showScanner"
+      @scanned="handleQrScanned"
+      @error="(msg) => console.error(msg)"
+      @close="showScanner = false"
+    />
+
+    <!-- Ticket Processing Modal -->
+    <div v-if="showTicketModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-75 backdrop-blur-sm" @click="handleClose">
+      <div class="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl" @click.stop>
+        
+        <!-- Loading State -->
+        <div v-if="loading" class="p-12 text-center">
+          <div class="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <p class="text-lg font-medium text-gray-600">Vérification du billet...</p>
+        </div>
+
+        <!-- Error State (Level 1) -->
+        <div v-else-if="status === 'error' && !ticketInfo" class="p-8 text-center">
+          <div class="w-20 h-20 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span class="text-4xl">✕</span>
+          </div>
+          <h2 class="text-2xl font-bold text-gray-900 mb-2">Erreur de Scan</h2>
+          <p class="text-gray-600 mb-6">{{ error }}</p>
+          <button @click="handleNewScan" class="w-full py-3 bg-gray-900 text-white rounded-xl font-semibold hover:bg-gray-800">
+            Réessayer
+          </button>
+        </div>
+
+        <!-- Success/Confirm Result (Level 2) -->
+        <div v-else-if="status === 'success' || (status === 'error' && scanResult)" class="p-6">
+          <ScanResult :result="scanResult!" @new-scan="handleNewScan" />
+        </div>
+
+        <!-- Ticket Info & Action (Level 1 Success) -->
+        <div v-else-if="ticketInfo" class="p-0">
+          <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+            <h2 class="text-lg font-bold text-gray-800">Billet Détecté</h2>
+            <button @click="handleClose" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+          </div>
+
+          <div class="p-6">
+            <CountdownTimer :seconds="expiresIn" />
+            
+            <TicketInfoCard :ticket="ticketInfo" class="mb-6" />
+
+            <div class="grid grid-cols-1 gap-3">
+              <button 
+                @click="handleConfirm('in')" 
+                class="w-full py-4 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold text-lg shadow-md transition-colors flex items-center justify-center gap-2"
+                :disabled="expiresIn <= 0"
+              >
+                <ScanIcon class="w-6 h-6" />
+                AUTORISER L'ENTRÉE
+              </button>
+              
+              <button 
+                @click="handleClose" 
+                class="w-full py-3 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-xl font-semibold transition-colors"
+              >
+                REFUSER / ANNULER
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</template>

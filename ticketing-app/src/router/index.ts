@@ -33,6 +33,12 @@ const ProfileView = () => import('@/views/Users/ProfileView.vue')
 
 const ReportsView = () => import('@/views/Reports/ReportsView.vue')
 
+// NEW VIEWS
+const ScanRedirectView = () => import('@/views/Scanner/ScanRedirectView.vue')
+const PublicTicketView = () => import('@/views/PublicTicketView.vue')
+const PaymentResultView = () => import('@/views/Payments/PaymentResultView.vue')
+const ScanProcessView = () => import('@/views/Scanner/ScanProcessView.vue') // Correct position
+
 const routes: RouteRecordRaw[] = [
   // Public routes
   {
@@ -83,19 +89,33 @@ const routes: RouteRecordRaw[] = [
     component: PaymentCallbackView,
     meta: { public: true }
   },
-    // --- PAYMENT RESULT ROUTE (ADDED) ---
-    {
-      path: '/payment/result',
-      name: 'payment-result',
-      component: () => import('../views/Payments/PaymentResultView.vue'),
-      meta: { public: true, requiresAuth: false } // Can be public as it just shows status based on URL params
-    },
+  {
+    path: '/payment/result',
+    name: 'payment-result',
+    component: PaymentResultView,
+    meta: { public: true, requiresAuth: false }
+  },
   {
     path: '/tickets/:code',
     name: 'ticket-public',
     component: TicketPublicView,
     meta: { public: true }
   },
+  
+  // --- NEW SCAN ROUTES ---
+  {
+    path: '/public/tickets/:id',
+    name: 'PublicTicketView',
+    component: PublicTicketView,
+    meta: { public: true }
+  },
+  {
+    path: '/verify',  // Changed from /dashboard/scan to /verify to match backend
+    name: 'ScanRedirect',
+    component: ScanRedirectView,
+    meta: { public: true }
+  },
+  // -----------------------
 
   // Authenticated routes - All prefixed with /dashboard
   {
@@ -124,8 +144,17 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: '/dashboard/scanner',
-    name: 'scanner-dashboard',
+    name: 'ScannerDashboard', // Renamed from scanner-dashboard to match redirection
     component: ScannerDashboard,
+    meta: {
+      requiresAuth: true,
+      requiresUserType: 'agent-de-controle'
+    }
+  },
+  {
+    path: '/dashboard/scan/process',
+    name: 'ScanProcess',
+    component: ScanProcessView,
     meta: {
       requiresAuth: true,
       requiresUserType: 'agent-de-controle'
@@ -270,9 +299,7 @@ router.beforeEach((to, from, next) => {
   }
 
   // Check user type requirement
-  // Check user type requirement
   if (to.meta.requiresUserType && authStore.user) {
-    // If the user's role slug does not match the required user type, deny access
     if (authStore.user.role.slug !== to.meta.requiresUserType) {
       notifications.error('Access Denied', 'You do not have permission to access this page')
       next({ name: 'dashboard' })
@@ -280,7 +307,6 @@ router.beforeEach((to, from, next) => {
     }
   }
 
-  // Check permission requirement
   // Check permission requirement
   if (to.meta.requiresPermission && authStore.user) {
     const hasPermission = authStore.user.role.permissions?.some(

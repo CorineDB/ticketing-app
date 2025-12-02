@@ -7,6 +7,7 @@ use App\Repositories\Contracts\TicketTypeRepositoryContract;
 use App\Services\Contracts\NotificationServiceContract;
 use App\Services\Contracts\TicketServiceContract;
 use App\Services\Core\Eloquent\BaseService;
+use App\Models\Ticket;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -98,7 +99,7 @@ class TicketService extends BaseService implements TicketServiceContract
 
     protected function generateQRCodeForTicket($ticket)
     {
-        $signature = $this->generateHMACSignature($ticket->id, $ticket->event_id);
+        $signature = $this->generateHMACSignature($ticket);
 
         // QR code pointe vers le frontend pour le scan
         $frontendUrl = config('app.frontend_url', env('CLIENT_APP_URL', 'http://localhost:5173'));
@@ -147,10 +148,40 @@ class TicketService extends BaseService implements TicketServiceContract
         ];
     }
 
-    protected function generateHMACSignature(string $ticketId, string $eventId): string
+    protected function generateHMACSignature(Ticket $ticket): string
     {
         $secret = config('app.ticket_hmac_secret', config('app.key'));
-        return hash_hmac('sha256', $ticketId . '|' . $eventId, $secret);
+        $metadata = $ticket->metadata ?? [];
+        $nonce = $metadata['qr_nonce'] ?? '';
+        return hash_hmac('sha256', $ticket->id . '|' . $ticket->event_id . '|' . $nonce, $secret);
+    }
+
+    public function regenerateQRCodeSecret(string $ticketId)
+    {
+        $ticket = $this->repository->findOrFail($ticketId);
+
+        // Check if paid
+        if ($ticket->status !== 'paid') {
+             throw new \Exception('Ticket must be paid to regenerate QR code', 400);
+        }
+
+        // Check event status
+        $ticket->load('event');
+        $event = $ticket->event;
+        
+        if ($event && now()->gt($event->end_datetime)) {
+             throw new \Exception('Cannot regenerate QR code for past event', 400);
+        }
+
+        // Rotate Nonce
+        $metadata = $ticket->metadata ?? [];
+        $metadata['qr_nonce'] = Str::random(8);
+        
+        $this->repository->update($ticket, ['metadata' => $metadata]);
+        $ticket = $ticket->fresh(); // Refresh to get new metadata
+
+        // Generate new QR
+        return $this->generateQRCodeForTicket($ticket);
     }
 
     public function markAsPaid(string $ticketId)

@@ -78,7 +78,7 @@
 
 <script setup lang="ts">
 import { ref, nextTick, onUnmounted } from 'vue'
-import { Html5QrcodeScanner, Html5Qrcode } from 'html5-qrcode'
+import { Html5QrcodeScanner, Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode'
 import {
   QrCodeIcon,
   KeyboardIcon,
@@ -95,8 +95,7 @@ const manualCode = ref('')
 const processing = ref(false)
 const error = ref('')
 
-let scanner: Html5QrcodeScanner | null = null
-
+// We only use Html5Qrcode for custom UI, not Html5QrcodeScanner
 let html5Qr: Html5Qrcode | null = null
 
 async function startScanning() {
@@ -106,91 +105,90 @@ async function startScanning() {
   await nextTick()
 
   const readerEl = document.getElementById("qr-reader")
-  if (!readerEl) return
+  if (!readerEl) {
+    console.error("Reader element not found")
+    scanning.value = false
+    return
+  }
 
-  const size = Math.min(readerEl.clientWidth, readerEl.clientHeight, 300) // max 300px
-
-  html5Qr = new Html5Qrcode("qr-reader")
-
-  html5Qr.start(
-    { facingMode: "environment"},
-    {
-      fps: 10,
-      qrbox: size
-    },
-    (decodedText) => {
-      console.log("Scan successful:", decodedText)
-      emit('scan', decodedText)
-      stopScanning()
-      if ('vibrate' in navigator) navigator.vibrate(200)
-      //onScanSuccess(decodedText)
-    },
-    (errorMessage) => {
-      onScanError(errorMessage)
+  // Cleanup existing instance if any
+  if (html5Qr) {
+    try {
+      if (html5Qr.isScanning) await html5Qr.stop()
+      html5Qr.clear()
+    } catch (e) {
+      console.warn("Error cleaning up previous scanner:", e)
     }
-  )
-}
-async function startscanning() {
-  scanning.value = true
-  error.value = ''
+    html5Qr = null
+  }
 
-  console.log("Scanning started ...");
+  const size = Math.min(readerEl.clientWidth, readerEl.clientHeight, 300)
 
-  await nextTick() // DOM ready
+  try {
+    html5Qr = new Html5Qrcode("qr-reader")
 
-  // Initialize scanner
-  scanner = new Html5QrcodeScanner(
-    'qr-reader',
-    {
-      fps: 15,
-      qrbox: { width: 300, height: 300 },
-      aspectRatio: 1.0,
-      disableFlip: false // si QR est retourné sur papier
-    },
-    false
-  )
-
-  scanner.render(onScanSuccess, onScanError)
+    await html5Qr.start(
+      { facingMode: "environment" },
+      {
+        fps: 10,
+        qrbox: { width: size, height: size },
+        aspectRatio: 1.0
+      },
+      (decodedText) => {
+        onScanSuccess(decodedText)
+      },
+      (errorMessage) => {
+        onScanError(errorMessage)
+      }
+    )
+  } catch (err: any) {
+    console.error("Failed to start scanner:", err)
+    error.value = "Could not start camera. " + (err.message || "")
+    scanning.value = false
+  }
 }
 
 async function stopScanning() {
-  console.log("Scanning stopped.");
-  if (html5Qr && html5Qr.isScanning) {
-    await html5Qr.stop();
-    await html5Qr.clear();
+  console.log("Stopping scanner...");
+  if (html5Qr) {
+    try {
+      if (html5Qr.isScanning) {
+        await html5Qr.stop()
+      }
+      html5Qr.clear()
+    } catch (err) {
+      console.warn("Error stopping scanner:", err)
+    }
     html5Qr = null
   }
   scanning.value = false
 }
 
-function stopscanning() {
-
-  console.log("Scanning stopped.");
-  if (scanner) {
-    scanner.clear()
-    scanner = null
-  }
-  scanning.value = false
-}
-
 function onScanSuccess(decodedText: string) {
-  console.log("Scan successful: ", decodedText);
-  // Emit scan event
-  emit('scan', decodedText)
-
-  // Stop scanning after successful scan
-  stopScanning()
-
-  // Optional: Add vibration feedback if supported
-  if ('vibrate' in navigator) {
+  console.log("Scan successful:", decodedText);
+  
+  // Vibrate if supported
+  if (typeof navigator !== 'undefined' && navigator.vibrate) {
     navigator.vibrate(200)
   }
+  
+  emit('scan', decodedText)
+  stopScanning()
 }
 
 function onScanError(errorMessage: string) {
-  // Ignore common scanning errors (no QR in frame, etc.)
-  // Only show persistent errors
-  console.log("Scan error: ", errorMessage);  
+  // Filter out common "scanning..." errors to keep logs clean
+  const ignoredErrors = [
+    "No barcode or QR code detected",
+    "NotFoundException",
+    "No MultiFormat Readers were able to detect the code"
+  ];
+
+  if (ignoredErrors.some(err => errorMessage.includes(err))) {
+    return;
+  }
+
+  console.warn("Scan error:", errorMessage);  
 }
 
 function handleManualScan() {
