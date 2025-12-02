@@ -7,7 +7,7 @@
 
 ```php
 // QR code pointe maintenant vers le frontend
-$frontendUrl = config('app.frontend_url', env('FRONTEND_URL', 'http://localhost:5173'));
+$frontendUrl = config('app.frontend_url', env('CLIENT_APP_URL', 'http://localhost:5173'));
 $qrData = $frontendUrl . "/dashboard/scan?t={$ticket->id}&sig={$signature}";
 ```
 

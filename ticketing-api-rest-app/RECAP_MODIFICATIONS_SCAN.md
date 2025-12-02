@@ -12,7 +12,7 @@ $qrData = config('app.url') . "/t/{$ticket->id}?sig={$signature}";
 
 **Après:**
 ```php
-$frontendUrl = config('app.frontend_url', env('FRONTEND_URL', 'http://localhost:5173'));
+$frontendUrl = config('app.frontend_url', env('CLIENT_APP_URL', 'http://localhost:5173'));
 $qrData = $frontendUrl . "/dashboard/scan?t={$ticket->id}&sig={$signature}";
 // Résultat: http://localhost:5173/dashboard/scan?t=019ac9fc-b13d-72c0-b27e-c1295d21b7a3&sig=...
 ```

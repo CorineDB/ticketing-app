@@ -77,8 +77,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onUnmounted } from 'vue'
-import { Html5QrcodeScanner } from 'html5-qrcode'
+import { ref, nextTick, onUnmounted } from 'vue'
+import { Html5QrcodeScanner, Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode'
 import {
   QrCodeIcon,
   KeyboardIcon,
@@ -95,50 +95,100 @@ const manualCode = ref('')
 const processing = ref(false)
 const error = ref('')
 
-let scanner: Html5QrcodeScanner | null = null
+// We only use Html5Qrcode for custom UI, not Html5QrcodeScanner
+let html5Qr: Html5Qrcode | null = null
 
-function startScanning() {
+async function startScanning() {
   scanning.value = true
   error.value = ''
 
-  // Initialize scanner
-  scanner = new Html5QrcodeScanner(
-    'qr-reader',
-    {
-      fps: 10,
-      qrbox: { width: 250, height: 250 },
-      aspectRatio: 1.0
-    },
-    false
-  )
+  await nextTick()
 
-  scanner.render(onScanSuccess, onScanError)
+  const readerEl = document.getElementById("qr-reader")
+  if (!readerEl) {
+    console.error("Reader element not found")
+    scanning.value = false
+    return
+  }
+
+  // Cleanup existing instance if any
+  if (html5Qr) {
+    try {
+      if (html5Qr.isScanning) await html5Qr.stop()
+      html5Qr.clear()
+    } catch (e) {
+      console.warn("Error cleaning up previous scanner:", e)
+    }
+    html5Qr = null
+  }
+
+  const size = Math.min(readerEl.clientWidth, readerEl.clientHeight, 300)
+
+  try {
+    html5Qr = new Html5Qrcode("qr-reader")
+
+    await html5Qr.start(
+      { facingMode: "environment" },
+      {
+        fps: 10,
+        qrbox: { width: size, height: size },
+        aspectRatio: 1.0
+      },
+      (decodedText) => {
+        onScanSuccess(decodedText)
+      },
+      (errorMessage) => {
+        onScanError(errorMessage)
+      }
+    )
+  } catch (err: any) {
+    console.error("Failed to start scanner:", err)
+    error.value = "Could not start camera. " + (err.message || "")
+    scanning.value = false
+  }
 }
 
-function stopScanning() {
-  if (scanner) {
-    scanner.clear()
-    scanner = null
+async function stopScanning() {
+  console.log("Stopping scanner...");
+  if (html5Qr) {
+    try {
+      if (html5Qr.isScanning) {
+        await html5Qr.stop()
+      }
+      html5Qr.clear()
+    } catch (err) {
+      console.warn("Error stopping scanner:", err)
+    }
+    html5Qr = null
   }
   scanning.value = false
 }
 
 function onScanSuccess(decodedText: string) {
-  // Emit scan event
-  emit('scan', decodedText)
-
-  // Stop scanning after successful scan
-  stopScanning()
-
-  // Optional: Add vibration feedback if supported
-  if ('vibrate' in navigator) {
+  console.log("Scan successful:", decodedText);
+  
+  // Vibrate if supported
+  if (typeof navigator !== 'undefined' && navigator.vibrate) {
     navigator.vibrate(200)
   }
+  
+  emit('scan', decodedText)
+  stopScanning()
 }
 
 function onScanError(errorMessage: string) {
-  // Ignore common scanning errors (no QR in frame, etc.)
-  // Only show persistent errors
+  // Filter out common "scanning..." errors to keep logs clean
+  const ignoredErrors = [
+    "No barcode or QR code detected",
+    "NotFoundException",
+    "No MultiFormat Readers were able to detect the code"
+  ];
+
+  if (ignoredErrors.some(err => errorMessage.includes(err))) {
+    return;
+  }
+
+  console.warn("Scan error:", errorMessage);  
 }
 
 function handleManualScan() {

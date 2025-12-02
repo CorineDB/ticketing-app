@@ -26,12 +26,12 @@ abstract class BaseRepository implements BaseRepositoryInterface
 
     public function all(array $columns = ['*'], array $relations = []): iterable
     {
-        return $this->model->with($relations)->orderBy("created_at", "desc")->all($columns);
+        return $this->model->forAuthUser()->with($relations)->orderBy("created_at", "desc")->all($columns);
     }
 
     public function paginate(int $limit = 15, array $columns = ['*'], array $relations = [])
     {
-        return $this->model->with($relations)->orderBy("created_at", "desc")->paginate($limit, $columns);
+        return $this->model->forAuthUser()->with($relations)->orderBy("created_at", "desc")->paginate($limit, $columns);
     }
 
     public function create(array $data): Model

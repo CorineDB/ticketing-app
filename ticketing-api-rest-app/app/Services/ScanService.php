@@ -12,8 +12,58 @@ use App\Services\Contracts\ScanServiceContract;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class ScanService implements ScanServiceContract
+{
+    // ... existing properties ...
+
+    // ... existing constructor ...
+
+    public function getScanHistory(array $filters = [], int $perPage = 15): LengthAwarePaginator
+    {
+        $query = $this->scanLogRepository->query()->forAuthUser();
+
+        if (isset($filters['event_id'])) {
+            $query->where('event_id', $filters['event_id']);
+        }
+        if (isset($filters['gate_id'])) {
+            $query->where('gate_id', $filters['gate_id']);
+        }
+        if (isset($filters['scanner_id'])) {
+            $query->where('agent_id', $filters['scanner_id']);
+        }
+        if (isset($filters['scan_type'])) {
+            $query->where('scan_type', $filters['scan_type']);
+        }
+        if (isset($filters['result'])) {
+            $query->where('result', $filters['result']);
+        }
+        if (isset($filters['start_date'])) {
+            $query->where('scan_time', '>=', $filters['start_date']);
+        }
+        if (isset($filters['end_date'])) {
+            $query->where('scan_time', '<=', $filters['end_date']);
+        }
+        if (isset($filters['search'])) {
+            $search = $filters['search'];
+            $query->where(function ($q) use ($search) {
+                $q->where('ticket_id', 'like', "%{$search}%")
+                  ->orWhereHas('ticket', function ($q) use ($search) {
+                      $q->where('buyer_name', 'like', "%{$search}%")
+                        ->orWhere('buyer_email', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $query->with(['ticket', 'ticket.event', 'agent', 'gate']);
+        
+        // Default sort
+        $query->orderBy('scan_time', 'desc');
+
+        return $query->paginate($perPage);
+    }
+}
 {
     protected TicketRepositoryContract $ticketRepository;
     protected EventRepositoryContract $eventRepository;
@@ -401,8 +451,70 @@ class ScanService implements ScanServiceContract
         }
 
         $secret = config('app.ticket_hmac_secret', config('app.key'));
-        $expectedSignature = hash_hmac('sha256', $ticketId . '|' . $ticket->event_id, $secret);
+        $metadata = $ticket->metadata ?? [];
+        $nonce = $metadata['qr_nonce'] ?? '';
+        $expectedSignature = hash_hmac('sha256', $ticketId . '|' . $ticket->event_id . '|' . $nonce, $secret);
 
         return hash_equals($expectedSignature, $signature);
+    }
+
+    public function getScanHistory(User $user, array $filters = [], int $perPage = 15): LengthAwarePaginator
+    {
+        $query = $this->scanLogRepository->query();
+
+        // Role-based filtering
+        if ($user->isSuperAdmin()) {
+            // Super Admin sees all
+        } elseif ($user->isOrganizer()) {
+            // Organizer sees scans for their events
+            $query->whereHas('ticket.event', function ($q) use ($user) {
+                $q->where('organisateur_id', $user->id);
+            });
+        } elseif ($user->isAgent()) {
+            // Agent sees only their own scans
+            $query->where('agent_id', $user->id);
+        } else {
+            // Others see nothing
+            $query->whereRaw('1 = 0');
+        }
+
+        if (isset($filters['event_id'])) {
+            $query->where('event_id', $filters['event_id']);
+        }
+        if (isset($filters['gate_id'])) {
+            $query->where('gate_id', $filters['gate_id']);
+        }
+        if (isset($filters['scanner_id'])) {
+            $query->where('agent_id', $filters['scanner_id']);
+        }
+        if (isset($filters['scan_type'])) {
+            $query->where('scan_type', $filters['scan_type']);
+        }
+        if (isset($filters['result'])) {
+            $query->where('result', $filters['result']);
+        }
+        if (isset($filters['start_date'])) {
+            $query->where('scan_time', '>=', $filters['start_date']);
+        }
+        if (isset($filters['end_date'])) {
+            $query->where('scan_time', '<=', $filters['end_date']);
+        }
+        if (isset($filters['search'])) {
+            $search = $filters['search'];
+            $query->where(function ($q) use ($search) {
+                $q->where('ticket_id', 'like', "%{$search}%")
+                  ->orWhereHas('ticket', function ($q) use ($search) {
+                      $q->where('buyer_name', 'like', "%{$search}%")
+                        ->orWhere('buyer_email', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $query->with(['ticket', 'ticket.event', 'agent', 'gate']);
+        
+        // Default sort
+        $query->orderBy('scan_time', 'desc');
+
+        return $query->paginate($perPage);
     }
 }

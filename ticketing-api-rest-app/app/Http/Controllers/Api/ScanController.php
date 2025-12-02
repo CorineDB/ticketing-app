@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Scan\ScanConfirmRequest;
 use App\Http\Requests\Api\Scan\ScanRequestRequest;
 use App\Services\Contracts\ScanServiceContract;
+use Illuminate\Http\Request;
 
 class ScanController extends Controller
 {
@@ -43,7 +44,8 @@ class ScanController extends Controller
             );
             return response()->json($result);
         } catch (\Throwable $e) {
-            if ($code === 0) {
+            $code = $e->getCode();
+            if ($code === 0 || !is_int($code)) {
                 $code = 400;
             }
             return response()->json([
@@ -51,5 +53,18 @@ class ScanController extends Controller
                 'message' => $e->getMessage(),
             ], $code);
         }
+    }
+
+    public function history(Request $request)
+    {
+        $filters = $request->only([
+            'event_id', 'gate_id', 'scanner_id', 'scan_type', 'result',
+            'start_date', 'end_date', 'search'
+        ]);
+        $perPage = $request->query('per_page', 15);
+
+        $scanHistory = $this->scanService->getScanHistory($filters, $perPage);
+
+        return response()->json($scanHistory);
     }
 }

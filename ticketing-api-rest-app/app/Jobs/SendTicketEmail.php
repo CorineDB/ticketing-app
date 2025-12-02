@@ -17,7 +17,9 @@ class SendTicketEmail implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public $tries = 3;
-    public $timeout = 60;
+
+    // CORRECTION ICI : On passe de 60 à 180 secondes
+    public $timeout = 180;
 
     /**
      * Create a new job instance.

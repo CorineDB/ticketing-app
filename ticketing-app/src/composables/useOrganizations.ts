@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import organisateurService from '@/services/organisateurService'
+import organizationService from '@/services/organizationService'
 import type { Organization, CreateOrganizationData, UpdateOrganizationData, OrganizationFilters, PaginatedResponse } from '@/types/api'
 
 export function useOrganizations() {
@@ -18,13 +18,13 @@ export function useOrganizations() {
     loading.value = true
     error.value = null
     try {
-      const response: PaginatedResponse<Organization> = await organisateurService.getAll(filters)
+      const response: PaginatedResponse<Organization> = await organizationService.getAll(filters)
       organisateurs.value = response.data
       pagination.value = {
-        total: response.total,
-        per_page: response.per_page,
-        current_page: response.current_page,
-        last_page: response.last_page
+        total: response.meta.total,
+        per_page: response.meta.per_page,
+        current_page: response.meta.current_page,
+        last_page: response.meta.last_page
       }
     } catch (e: any) {
       error.value = e.response?.data?.message || 'Failed to fetch organisateurs'
@@ -38,7 +38,7 @@ export function useOrganizations() {
     loading.value = true
     error.value = null
     try {
-      organisateur.value = await organisateurService.getById(id)
+      organisateur.value = await organizationService.getById(id)
     } catch (e: any) {
       error.value = e.response?.data?.message || 'Failed to fetch organisateur'
       console.error('Error fetching organisateur:', e)
@@ -51,7 +51,7 @@ export function useOrganizations() {
     loading.value = true
     error.value = null
     try {
-      organisateur.value = await organisateurService.getMyOrganization()
+      organisateur.value = await organizationService.getMyOrganization()
     } catch (e: any) {
       error.value = e.response?.data?.message || 'Failed to fetch my organisateur'
       console.error('Error fetching my organisateur:', e)
@@ -64,7 +64,7 @@ export function useOrganizations() {
     loading.value = true
     error.value = null
     try {
-      const newOrganization = await organisateurService.create(data)
+      const newOrganization = await organizationService.create(data)
       organisateurs.value.unshift(newOrganization)
       return newOrganization
     } catch (e: any) {
@@ -80,7 +80,7 @@ export function useOrganizations() {
     loading.value = true
     error.value = null
     try {
-      const updatedOrganization = await organisateurService.update(id, data)
+      const updatedOrganization = await organizationService.update(id, data)
       const index = organisateurs.value.findIndex(o => o.id === id)
       if (index !== -1) {
         organisateurs.value[index] = updatedOrganization
@@ -102,7 +102,7 @@ export function useOrganizations() {
     loading.value = true
     error.value = null
     try {
-      await organisateurService.delete(id)
+      await organizationService.delete(id)
       organisateurs.value = organisateurs.value.filter(o => o.id !== id)
     } catch (e: any) {
       error.value = e.response?.data?.message || 'Failed to delete organisateur'
@@ -117,7 +117,7 @@ export function useOrganizations() {
     loading.value = true
     error.value = null
     try {
-      const suspended = await organisateurService.suspend(id, reason)
+      const suspended = await organizationService.suspend(id, reason)
       const index = organisateurs.value.findIndex(o => o.id === id)
       if (index !== -1) {
         organisateurs.value[index] = suspended
@@ -139,7 +139,7 @@ export function useOrganizations() {
     loading.value = true
     error.value = null
     try {
-      const activated = await organisateurService.activate(id)
+      const activated = await organizationService.activate(id)
       const index = organisateurs.value.findIndex(o => o.id === id)
       if (index !== -1) {
         organisateurs.value[index] = activated

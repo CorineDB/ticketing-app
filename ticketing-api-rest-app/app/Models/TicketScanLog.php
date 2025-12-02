@@ -42,4 +42,29 @@ class TicketScanLog extends Model
     {
         return $this->belongsTo(Gate::class);
     }
+
+    public function scopeForAuthUser($query)
+    {
+        $user = auth()->user();
+
+        if (!$user) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        if ($user->isSuperAdmin()) {
+            return $query;
+        }
+
+        if ($user->isOrganizer()) {
+            return $query->whereHas('ticket.event', function ($q) use ($user) {
+                $q->where('organisateur_id', $user->id);
+            });
+        }
+
+        if ($user->isAgent()) {
+            return $query->where('agent_id', $user->id);
+        }
+
+        return $query->whereRaw('1 = 0');
+    }
 }

@@ -88,21 +88,34 @@ export function useScanner() {
     }
   }
 
-  const fetchMyScans = async (filters?: ScanFilters) => {
-    loading.value = true
-    error.value = null
+  const parseQRCode = (qrData: string): ScanRequestData | null => {
     try {
-      const response: PaginatedResponse<Scan> = await scanService.getMyScans(filters)
-      scans.value = response.data
-    } catch (e: any) {
-      error.value = e.response?.data?.message || 'Failed to fetch my scans'
-      console.error('Error fetching my scans:', e)
-    } finally {
-      loading.value = false
+      console.log("Parsing QR data:", qrData)
+      // Try parsing as JSON first (Standard format for this app)
+      const data = JSON.parse(qrData)
+      
+      // Check if it matches ScanRequestData structure (partially)
+      if (data.ticket_id && data.event_id && data.qr_hmac) {
+        return {
+          ticket_id: data.ticket_id,
+          event_id: data.event_id,
+          qr_hmac: data.qr_hmac,
+          scan_type: 'entry', // Default
+          device_info: navigator.userAgent
+        }
+      } else if (data.code) {
+         // Handle potential legacy or simplified format if needed
+         // But 2-step scan requires hmac. 
+         console.warn("QR code missing required fields for 2-step scan")
+      }
+    } catch (e) {
+      console.error("Failed to parse QR code:", e)
     }
+    return null
   }
 
   return {
+    scanHistory: scans,
     scans,
     loading,
     error,
@@ -112,6 +125,7 @@ export function useScanner() {
     confirmScan,
     performTwoStepScan,
     fetchScans,
-    fetchMyScans
+    fetchMyScans,
+    parseQRCode
   }
 }

@@ -21,6 +21,7 @@ class EventRepository extends BaseRepository implements EventRepositoryContract
     public function findUpcomingEvents()
     {
         return $this->model
+            ->forAuthUser() // Apply scope here
             ->where('start_datetime', '>=', now())
             ->orderBy('start_datetime', 'asc')
             ->get();
@@ -28,7 +29,7 @@ class EventRepository extends BaseRepository implements EventRepositoryContract
 
     public function searchEvents(array $filters)
     {
-        $query = $this->model->newQuery();
+        $query = $this->model->newQuery()->forAuthUser();
 
         if (isset($filters['q'])) {
             $query->where(function ($q) use ($filters) {

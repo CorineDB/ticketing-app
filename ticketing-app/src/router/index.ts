@@ -22,8 +22,8 @@ const TicketPublicView = () => import('@/views/Tickets/TicketPublicView.vue')
 const CheckoutView = () => import('@/views/Payments/CheckoutView.vue')
 const PaymentCallbackView = () => import('@/views/Payments/PaymentCallbackView.vue')
 
-const ScannerView = () => import('@/views/Scanners/ScannerView.vue')
-const ScanHistoryView = () => import('@/views/Scanners/ScanHistoryView.vue')
+const ScannerView = () => import('@/views/Scanner/ScannerView.vue')
+const ScanHistoryView = () => import('@/views/Scanner/ScanHistoryView.vue')
 
 const OrganizationsListView = () => import('@/views/Organizations/OrganizationsListView.vue')
 const OrganizationDetailView = () => import('@/views/Organizations/OrganizationDetailView.vue')
@@ -32,6 +32,12 @@ const UsersListView = () => import('@/views/Users/UsersListView.vue')
 const ProfileView = () => import('@/views/Users/ProfileView.vue')
 
 const ReportsView = () => import('@/views/Reports/ReportsView.vue')
+
+// NEW VIEWS
+const ScanRedirectView = () => import('@/views/Scanner/ScanRedirectView.vue')
+const PublicTicketView = () => import('@/views/PublicTicketView.vue')
+const PaymentResultView = () => import('@/views/Payments/PaymentResultView.vue')
+const ScanProcessView = () => import('@/views/Scanner/ScanProcessView.vue') // Correct position
 
 const routes: RouteRecordRaw[] = [
   // Public routes
@@ -84,11 +90,32 @@ const routes: RouteRecordRaw[] = [
     meta: { public: true }
   },
   {
+    path: '/payment/result',
+    name: 'payment-result',
+    component: PaymentResultView,
+    meta: { public: true, requiresAuth: false }
+  },
+  {
     path: '/tickets/:code',
     name: 'ticket-public',
     component: TicketPublicView,
     meta: { public: true }
   },
+  
+  // --- NEW SCAN ROUTES ---
+  {
+    path: '/public/tickets/:id',
+    name: 'PublicTicketView',
+    component: PublicTicketView,
+    meta: { public: true }
+  },
+  {
+    path: '/verify',  // Changed from /dashboard/scan to /verify to match backend
+    name: 'ScanRedirect',
+    component: ScanRedirectView,
+    meta: { public: true }
+  },
+  // -----------------------
 
   // Authenticated routes - All prefixed with /dashboard
   {
@@ -117,8 +144,17 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: '/dashboard/scanner',
-    name: 'scanner-dashboard',
+    name: 'ScannerDashboard', // Renamed from scanner-dashboard to match redirection
     component: ScannerDashboard,
+    meta: {
+      requiresAuth: true,
+      requiresUserType: 'agent-de-controle'
+    }
+  },
+  {
+    path: '/dashboard/scan/process',
+    name: 'ScanProcess',
+    component: ScanProcessView,
     meta: {
       requiresAuth: true,
       requiresUserType: 'agent-de-controle'
@@ -173,7 +209,7 @@ const routes: RouteRecordRaw[] = [
 
   // Scanner
   {
-    path: '/dashboard/scanner',
+    path: '/scanner',
     name: 'scanner',
     component: ScannerView,
     meta: {
@@ -263,17 +299,17 @@ router.beforeEach((to, from, next) => {
   }
 
   // Check user type requirement
-  /* if (to.meta.requiresUserType && authStore.user) {
-    if (authStore.user.type !== to.meta.requiresUserType) {
+  if (to.meta.requiresUserType && authStore.user) {
+    if (authStore.user.role.slug !== to.meta.requiresUserType) {
       notifications.error('Access Denied', 'You do not have permission to access this page')
       next({ name: 'dashboard' })
       return
     }
-  } */
+  }
 
   // Check permission requirement
-  /* if (to.meta.requiresPermission && authStore.user) {
-    const hasPermission = authStore.user.permissions?.some(
+  if (to.meta.requiresPermission && authStore.user) {
+    const hasPermission = authStore.user.role.permissions?.some(
       (p) => p.slug === to.meta.requiresPermission
     )
 
@@ -282,7 +318,7 @@ router.beforeEach((to, from, next) => {
       next({ name: 'dashboard' })
       return
     }
-  } */
+  }
 
   next()
 })

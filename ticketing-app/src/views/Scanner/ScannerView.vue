@@ -122,6 +122,7 @@ const {
 
 async function handleScan(qrData: string) {
   try {
+    console.log("Handling scanned data: ", qrData);
     // Parse QR code data
     const scanRequest = parseQRCode(qrData)
 

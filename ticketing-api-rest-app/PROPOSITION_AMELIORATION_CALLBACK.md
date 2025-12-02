@@ -53,7 +53,7 @@ public function callback(Request $request)
     // Récupérer les tickets associés à cette transaction
     $tickets = $this->getTicketsFromTransaction($transactionId);
 
-    $frontendUrl = config('app.frontend_url', env('FRONTEND_URL', 'http://localhost:5173'));
+    $frontendUrl = config('app.frontend_url', env('CLIENT_APP_URL', 'http://localhost:5173'));
 
     if ($status === 'approved' && !empty($tickets)) {
         // Paiement réussi → Rediriger vers la page des tickets
@@ -104,7 +104,7 @@ public function callback(Request $request)
 
     $transactionId = $request->query('id') ?? $request->query('transaction_id');
 
-    $frontendUrl = config('app.frontend_url', env('FRONTEND_URL', 'http://localhost:5173'));
+    $frontendUrl = config('app.frontend_url', env('CLIENT_APP_URL', 'http://localhost:5173'));
 
     // Rediriger vers une page dédiée qui charge les tickets
     $redirectUrl = $frontendUrl . '/purchase/' . $transactionId;

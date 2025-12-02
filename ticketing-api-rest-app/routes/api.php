@@ -64,14 +64,9 @@ Route::prefix('public')->group(function () {
     Route::get('/ticket-types/{id}', [TicketTypeController::class, 'show']);
 });
 
-// Scan endpoints (public request, authenticated confirm)
-// Rate limiting: 60 requests per minute per IP for scan requests
+// Public Scan Request (Rate limited)
 Route::post('/scan/request', [ScanController::class, 'request'])
     ->middleware('throttle:scan-request');
-
-// Rate limiting: 30 requests per minute per user for scan confirmations
-Route::post('/scan/confirm', [ScanController::class, 'confirm'])
-    ->middleware(['auth:sanctum', 'throttle:scan-confirm']);
 
 // Webhooks (public, no authentication)
 Route::post('/webhooks/fedapay', [WebhookController::class, 'fedapayWebhook']);
@@ -117,9 +112,17 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('tickets', TicketController::class);
     Route::get('/tickets/{id}/qr', [TicketController::class, 'qr']);
     Route::post('/tickets/{id}/send-email', [TicketController::class, 'sendTicketByEmail']);
+    Route::post('/tickets/{id}/regenerate-qr', [TicketController::class, 'regenerateCode']);
     Route::get('/tickets/{id}/qr/download', [TicketController::class, 'downloadQr']);
     Route::post('/tickets/{id}/mark-paid', [TicketController::class, 'markPaid']);
 
     // Gates
     Route::apiResource('gates', GateController::class);
+
+    // Scan Protected Endpoints
+    Route::prefix('scans')->group(function () {
+        Route::post('/confirm', [ScanController::class, 'confirm'])
+            ->middleware('throttle:scan-confirm');
+        Route::get('/history', [ScanController::class, 'history']);
+    });
 });

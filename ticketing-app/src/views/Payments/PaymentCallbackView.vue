@@ -7,7 +7,7 @@
           <h1 class="text-2xl font-bold text-gray-900 mb-2">Processing Payment...</h1>
           <p class="text-gray-600">Please do not close this page.</p>
         </div>
-        <div v-else-if="paymentStatus === 'success'">
+        <div v-else-if="paymentStatus === 'approved'">
           <CheckCircleIcon class="w-12 h-12 mx-auto mb-4 text-green-500" />
           <h1 class="text-2xl font-bold text-gray-900 mb-2">Payment Successful!</h1>
           <p class="text-gray-600 mb-6">Your tickets have been successfully purchased.</p>
@@ -43,7 +43,7 @@
           </RouterLink>
         </div>
         <div v-else>
-          <QuestionMarkCircleIcon class="w-12 h-12 mx-auto mb-4 text-gray-500" />
+          <CircleQuestionMarkIcon class="w-12 h-12 mx-auto mb-4 text-gray-500" />
           <h1 class="text-2xl font-bold text-gray-900 mb-2">Unknown Payment Status</h1>
           <p class="text-gray-600 mb-6">
             We are unable to determine the status of your payment. Please contact support.
@@ -69,7 +69,7 @@ import {
   CheckCircleIcon,
   XCircleIcon,
   AlertCircleIcon,
-  QuestionMarkCircleIcon
+  CircleQuestionMarkIcon
 } from 'lucide-vue-next'
 import orderService from '@/services/orderService' // Assuming this service can verify payment status
 
@@ -77,7 +77,7 @@ const route = useRoute()
 const router = useRouter()
 
 const loading = ref(true)
-const paymentStatus = ref<'success' | 'cancelled' | 'failed' | 'unknown' | null>(null)
+const paymentStatus = ref<'approved' | 'cancelled' | 'pending' | 'failed' | 'unknown' | null>(null)
 const orderId = ref<string | null>(null)
 
 onMounted(async () => {

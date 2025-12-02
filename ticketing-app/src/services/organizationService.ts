@@ -21,7 +21,7 @@ class OrganizationService {
    * Get single organisateur by ID
    */
   async getById(id: string): Promise<Organization> {
-    const response = await api.get<{ data?: User }>(`/organisateurs/${id}`)
+    const response = await api.get<{ data: Organization }>(`/organisateurs/${id}`)
     return response.data.data
   }
 
@@ -29,7 +29,7 @@ class OrganizationService {
    * Get my organisateur (for organizer role)
    */
   async getMyOrganization(): Promise<Organization> {
-    const response = await api.get<{ data?: User }>('/organisateurs/me')
+    const response = await api.get<{ data: Organization }>('/organisateurs/me')
     return response.data.data
   }
 
@@ -38,7 +38,7 @@ class OrganizationService {
    */
   async create(data: CreateOrganizationData): Promise<Organization> {
     const formData = this.toFormData(data)
-    const response = await api.post<{ data?: User }>('/organisateurs', formData, {
+    const response = await api.post<{ data: Organization }>('/organisateurs', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     })
     return response.data.data
@@ -50,7 +50,7 @@ class OrganizationService {
   async update(id: string, data: UpdateOrganizationData): Promise<Organization> {
     const formData = this.toFormData(data)
     formData.append('_method', 'PUT')
-    const response = await api.post<{ data?: User }>(`/organisateurs/${id}`, formData, {
+    const response = await api.post<{ data: Organization }>(`/organisateurs/${id}`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     })
     return response.data.data
@@ -67,7 +67,7 @@ class OrganizationService {
    * Suspend an organisateur
    */
   async suspend(id: string, reason?: string): Promise<Organization> {
-    const response = await api.post<{ data?: User }>(`/organisateurs/${id}/suspend`, {
+    const response = await api.post<{ data: Organization }>(`/organisateurs/${id}/suspend`, {
       reason
     })
     return response.data.data
@@ -77,7 +77,7 @@ class OrganizationService {
    * Activate an organisateur
    */
   async activate(id: string): Promise<Organization> {
-    const response = await api.post<{ data?: User }>(`/organisateurs/${id}/activate`)
+    const response = await api.post<{ data: Organization }>(`/organisateurs/${id}/activate`)
     return response.data.data
   }
 

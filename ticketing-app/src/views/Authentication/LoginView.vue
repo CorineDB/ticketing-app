@@ -163,12 +163,8 @@ async function handleLogin() {
     console.log(success);
 
     if (success) {
+      router.push('/dashboard')
       // Redirect based on user role
-      if (authStore.isScanner) {
-        router.push('/dashboard/scanner')
-      } else {
-        router.push('/dashboard')
-      }
     } else {
       error.value = 'Invalid email or password'
     }

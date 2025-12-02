@@ -1,10 +1,16 @@
 [build]
 builder = "DOCKERFILE"
-dockerfilePath = "ticketing-api-rest-app/Dockerfile"
+# Chemin vers votre Dockerfile (car vous êtes dans un sous-dossier)
+dockerfilePath = "Dockerfile"
 
 [deploy]
-numReplicas = 1
+# Le script qui gère le mode Web ou Worker selon la variable CONTAINER_ROLE
+startCommand = "/usr/local/bin/startup.sh"
+
+# Politique de redémarrage
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
+
+# Vérification de santé (Vérifiez que cette route existe dans votre API)
 healthcheckPath = "/api/health"
 healthcheckTimeout = 100
