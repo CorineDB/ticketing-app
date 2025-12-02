@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Scan\ScanConfirmRequest;
 use App\Http\Requests\Api\Scan\ScanRequestRequest;
 use App\Services\Contracts\ScanServiceContract;
+use Illuminate\Http\Request;
 
 class ScanController extends Controller
 {
@@ -52,6 +53,8 @@ class ScanController extends Controller
                 'message' => $e->getMessage(),
             ], $code);
         }
+    }
+
     public function history(Request $request)
     {
         $filters = $request->only([
