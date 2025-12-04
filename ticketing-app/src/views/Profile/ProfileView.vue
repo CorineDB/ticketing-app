@@ -248,7 +248,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { formatDate, formatDateTime } from '@/utils/formatters'
 import DashboardLayout from '@/components/layout/DashboardLayout.vue'
@@ -265,15 +265,15 @@ import {
 } from 'lucide-vue-next'
 
 const authStore = useAuthStore()
-const user = authStore.user
+const user = computed(() => authStore.user)
 
 const activeTab = ref('profile')
 const saving = ref(false)
 const changingPassword = ref(false)
 
 const profileForm = ref({
-  name: user?.name || '',
-  email: user?.email || ''
+  name: authStore.user?.name || '',
+  email: authStore.user?.email || ''
 })
 
 const passwordForm = ref({

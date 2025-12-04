@@ -53,9 +53,15 @@ function onScanFailure(error: string) {
 }
 
 async function stopScanner() {
-  if (html5QrCode && html5QrCode.isScanning) {
-    await html5QrCode.stop()
-    html5QrCode.clear()
+  if (html5QrCode) {
+    if (html5QrCode.isScanning) {
+      await html5QrCode.stop()
+    }
+    try {
+      html5QrCode.clear()
+    } catch (e) {
+      // Ignore clear errors
+    }
   }
   html5QrCode = null
   scanning.value = false
