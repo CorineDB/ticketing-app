@@ -8,12 +8,14 @@ import TicketInfoCard from '@/components/scan/TicketInfoCard.vue'
 import CountdownTimer from '@/components/scan/CountdownTimer.vue'
 import ScanResult from '@/components/scan/ScanResult.vue'
 import QrScanner from '@/components/scan/QrScanner.vue'
-import { ScanIcon, LogOutIcon, CheckCircleIcon, XCircleIcon, ClockIcon } from 'lucide-vue-next'
+import QRUpload from '@/components/scan/QRUpload.vue'
+import { ScanIcon, LogOutIcon, CheckCircleIcon, XCircleIcon, ClockIcon, UploadIcon } from 'lucide-vue-next'
 
 const route = useRoute()
 const router = useRouter()
 
 const showScanner = ref(false)
+const showUpload = ref(false)
 const showTicketModal = ref(false)
 const scanType = ref<'in' | 'out'>('in') // Default to entry
 
@@ -70,6 +72,7 @@ function openScanner() {
 
 async function handleQrScanned(qrData: string) {
   showScanner.value = false
+  showUpload.value = false // Close upload modal
 
   try {
     let ticketId, signature
@@ -200,12 +203,20 @@ function getResultLabel(result: string) {
       <button @click="openScanner" 
         class="flex flex-col items-center justify-center p-8 bg-blue-600 text-white rounded-xl shadow-lg hover:bg-blue-700 transition-all transform hover:scale-105">
         <ScanIcon class="w-12 h-12 mb-4" />
-        <span class="text-xl font-bold">SCANNER UN TICKET</span>
+        <span class="text-xl font-bold">SCANNER AVEC CAMÉRA</span>
       </button>
-      
-      <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-        <h3 class="text-lg font-semibold mb-4 text-gray-800">Statistiques Session</h3>
-        <div class="grid grid-cols-2 gap-4">
+
+      <button @click="showUpload = true" 
+        class="flex flex-col items-center justify-center p-8 bg-purple-600 text-white rounded-xl shadow-lg hover:bg-purple-700 transition-all transform hover:scale-105">
+        <UploadIcon class="w-12 h-12 mb-4" />
+        <span class="text-xl font-bold">TÉLÉVERSER QR CODE</span>
+      </button>
+    </div>
+
+    <!-- Statistics -->
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-8">
+      <h3 class="text-lg font-semibold mb-4 text-gray-800">Statistiques Session</h3>
+      <div class="grid grid-cols-2 gap-4">
           <div class="bg-green-50 p-4 rounded-lg text-center">
             <div class="text-2xl font-bold text-green-700">{{ sessionStats.entries }}</div>
             <div class="text-sm text-green-600">Entrées</div>
@@ -286,6 +297,23 @@ function getResultLabel(result: string) {
       @error="(msg) => console.error(msg)"
       @close="showScanner = false"
     />
+
+    <!-- QR Upload Modal -->
+    <div v-if="showUpload" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-75 backdrop-blur-sm" @click="showUpload = false">
+      <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl" @click.stop>
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-xl font-bold text-gray-900">Téléverser un QR Code</h2>
+          <button @click="showUpload = false" class="text-gray-400 hover:text-gray-600">
+            <XCircleIcon class="w-6 h-6" />
+          </button>
+        </div>
+        
+        <QRUpload 
+          @scanned="handleQrScanned" 
+          @error="(msg) => console.error(msg)"
+        />
+      </div>
+    </div>
 
     <!-- Ticket Processing Modal -->
     <div v-if="showTicketModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-75 backdrop-blur-sm" @click="handleClose">
