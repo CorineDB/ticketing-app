@@ -40,7 +40,7 @@ export interface ScanConfirmPayload {
 
 export interface ScanConfirmResponse {
   valid: boolean
-  code: string
+  code: 'OK' | 'INVALID' | 'EXPIRED' | 'ALREADY_IN' | 'ALREADY_OUT' | 'CAPACITY_FULL'
   message: string
   ticket: TicketInfo
   scan_log_id?: string

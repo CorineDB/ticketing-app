@@ -112,13 +112,30 @@ export const useScan = () => {
 
       scanResult.value = result
 
-      if (result.valid) {
+      // Handle different response codes with appropriate status and notifications
+      if (result.code === 'OK') {
         status.value = 'success'
         notifications.success(result.message || 'Entrée autorisée')
-      } else {
+      } else if (result.code === 'ALREADY_IN') {
+        status.value = 'success' // Still show as success but with warning message
+        notifications.warning(result.message || 'Ticket déjà scanné à l\'intérieur')
+      } else if (result.code === 'ALREADY_OUT') {
         status.value = 'error'
         error.value = result.message
-        notifications.error(result.message)
+        notifications.warning(result.message || 'Ticket pas actuellement à l\'intérieur')
+      } else if (result.code === 'CAPACITY_FULL') {
+        status.value = 'error'
+        error.value = result.message
+        notifications.error(result.message || 'Capacité de l\'événement atteinte')
+      } else if (result.code === 'EXPIRED') {
+        status.value = 'error'
+        error.value = result.message
+        notifications.error(result.message || 'Ticket expiré')
+      } else {
+        // INVALID or any other error
+        status.value = 'error'
+        error.value = result.message
+        notifications.error(result.message || 'Ticket invalide')
       }
 
       return result
