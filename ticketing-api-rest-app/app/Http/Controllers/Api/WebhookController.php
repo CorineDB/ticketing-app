@@ -51,7 +51,12 @@ class WebhookController extends Controller
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            return response()->json(['error' => 'Processing failed'], 500);
+            // TEMPORARY: Return error details for debugging
+            return response()->json([
+                'error' => 'Processing failed',
+                'message' => $e->getMessage(),
+                'trace' => explode("\n", $e->getTraceAsString())
+            ], 500);
         }
     }
 }

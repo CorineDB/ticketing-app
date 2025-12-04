@@ -409,19 +409,20 @@ class ScanService implements ScanServiceContract
         return hash_equals($expectedSignature, $signature);
     }
 
-    public function getScanHistory(User $user, array $filters = [], int $perPage = 15): LengthAwarePaginator
+    public function getScanHistory(array $filters = [], int $perPage = 15): LengthAwarePaginator
     {
+        $user = auth()->user();
         $query = $this->scanLogRepository->query();
 
         // Role-based filtering
-        if ($user->isSuperAdmin()) {
+        if ($user && $user->isSuperAdmin()) {
             // Super Admin sees all
-        } elseif ($user->isOrganizer()) {
+        } elseif ($user && $user->isOrganizer()) {
             // Organizer sees scans for their events
             $query->whereHas('ticket.event', function ($q) use ($user) {
                 $q->where('organisateur_id', $user->id);
             });
-        } elseif ($user->isAgent()) {
+        } elseif ($user && $user->isAgent()) {
             // Agent sees only their own scans
             $query->where('agent_id', $user->id);
         } else {
