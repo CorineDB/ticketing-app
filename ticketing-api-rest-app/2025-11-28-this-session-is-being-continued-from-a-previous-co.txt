@@ -787,7 +787,7 @@ test-scan-system.php
            + test-scan-requirements-details.txt
        213 +  $agentId = '9d518178-44e1-4f6c-92f4-13bf0d899d79';  //
            + Control Agent
-       214 +  $gateId = '5939d63e-3ede-440e-bc30-413b896c0eb2';   // Gate
+       214 +  $gateId = 'acac322c-97a5-4887-b33a-6296cbd57060';   // Gate
            +  ID
        215 +  $bearerToken =
            + '9|GT5eSHw0dNeybuhfjEtklwmWWAE3TDhqPwP9Kila2e542b32';
@@ -1583,7 +1583,7 @@ vendor/psy/psysh/src/ExecutionLoopClosure.php(53) : eval()'d code:1
   {
     "ticket_id": "...",
     "agent_id": "9d518178-44e1-4f6c-92f4-13bf0d899d79",
-    "gate_id": "5939d63e-3ede-440e-bc30-413b896c0eb2",
+    "gate_id": "acac322c-97a5-4887-b33a-6296cbd57060",
     "scan_type": "entry",
     "result": "ok",
     "scan_time": "2025-11-28T15:30:45Z"

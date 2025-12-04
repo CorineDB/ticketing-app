@@ -12,7 +12,7 @@
         role_id: "6a725fe4-a757-487c-bf6e-a2e569bd0911",
       }
 > App\Models\Gate::first()->id;
-= "5939d63e-3ede-440e-bc30-413b896c0eb2"
+= "acac322c-97a5-4887-b33a-6296cbd57060"
 Authorization:
 Bearer 9|GT5eSHw0dNeybuhfjEtklwmWWAE3TDhqPwP9Kila2e542b32
 

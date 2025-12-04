@@ -157,7 +157,7 @@ Authorization: Bearer 9|GT5eSHw0dNeybuhfjE...
 {
   "scan_session_token": "G2tMlkjW64J1...",
   "scan_nonce": "gIf0VEjgQNuNqqxYO97Q...",
-  "gate_id": "5939d63e-3ede-440e-bc30-413b896c0eb2",
+  "gate_id": "acac322c-97a5-4887-b33a-6296cbd57060",
   "agent_id": "9d518178-44e1-4f6c-92f4-13bf0d899d79",
   "action": "in"
 }

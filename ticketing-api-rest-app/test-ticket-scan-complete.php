@@ -18,7 +18,8 @@ echo "║     TEST COMPLET: ACHAT → QR → SCAN 2FA                     ║\n"
 echo "╚═══════════════════════════════════════════════════════════════╝\n\n";
 
 // Fonction pour faire une requête HTTP
-function makeRequest($method, $url, $headers = [], $data = null) {
+function makeRequest($method, $url, $headers = [], $data = null)
+{
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
@@ -226,7 +227,7 @@ echo "════════════════════════�
 
 // Données d'authentification (depuis test-scan-requirements-details.txt)
 $agentId = '9d518178-44e1-4f6c-92f4-13bf0d899d79';
-$gateId = '5939d63e-3ede-440e-bc30-413b896c0eb2';
+$gateId = 'acac322c-97a5-4887-b33a-6296cbd57060';
 $bearerToken = '9|GT5eSHw0dNeybuhfjEtklwmWWAE3TDhqPwP9Kila2e542b32';
 
 echo "Agent de contrôle:\n";

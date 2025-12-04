@@ -83,24 +83,24 @@ export const useScan = () => {
     try {
       const currentUser = authStore.user
       // TODO: Get configured gate from local storage or user preferences
-      const currentGate = localStorage.getItem('current_gate_id') || 'default-gate' 
+      const currentGate = localStorage.getItem('current_gate_id') || 'default-gate'
       // Note: In a real app, you'd force the user to select a gate first. 
       // For now we might need a fallback or check if it exists.
 
       if (!currentUser?.id) {
-         throw new Error('Agent non identifié')
+        throw new Error('Agent non identifié')
       }
 
       // Temporary fix: if no gate selected, warn user
       if (!currentGate || currentGate === 'default-gate') {
-         // In production, redirect to gate selection
-         console.warn('Using default gate ID for testing')
+        // In production, redirect to gate selection
+        console.warn('Using default gate ID for testing')
       }
-      
+
       // Use a hardcoded gate ID for testing if none exists (matches test scripts)
       // Or ensure the user selects one. 
       // Ideally, the dashboard should block scanning if no gate is selected.
-      const gateIdToUse = currentGate === 'default-gate' ? '5939d63e-3ede-440e-bc30-413b896c0eb2' : currentGate
+      const gateIdToUse = currentGate === 'default-gate' ? 'acac322c-97a5-4887-b33a-6296cbd57060' : currentGate
 
       const result = await scanService.scanConfirm({
         scan_session_token: sessionData.value.scan_session_token,
@@ -138,7 +138,7 @@ export const useScan = () => {
     if (countdownInterval.value) {
       clearInterval(countdownInterval.value)
     }
-    
+
     countdownInterval.value = window.setInterval(() => {
       expiresIn.value--
 
