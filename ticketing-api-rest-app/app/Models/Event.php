@@ -67,8 +67,8 @@ class Event extends Model
         $user = auth()->user();
 
         if (!$user) {
-            // Unauthenticated users see only published events
-            return $query->where('is_published', true)->where('status', 'published');
+            // Unauthenticated users see all events
+            return $query;
         }
 
         if ($user->isSuperAdmin()) {
@@ -79,10 +79,10 @@ class Event extends Model
         if ($user->isOrganizer()) {
             // Organizer sees events they created or are the organisateur of
             return $query->where('organisateur_id', $user->id)
-                         ->orWhere('created_by', $user->id);
+                ->orWhere('created_by', $user->id);
         }
 
-        // Other authenticated users (Agent, Cashier, Participant) see only published events
-        return $query->where('is_published', true)->where('status', 'published');
+        // Other authenticated users (Agent, Cashier, Participant) see all events
+        return $query;
     }
 }
