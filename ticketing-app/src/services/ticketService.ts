@@ -21,16 +21,16 @@ class TicketService {
    * Get single ticket by ID
    */
   async getById(id: string): Promise<Ticket> {
-    const response = await api.get<{ data: Ticket }>(`/tickets/${id}`)
-    return response.data.data
+    const response = await api.get<Ticket>(`/tickets/${id}`)
+    return response.data
   }
 
   /**
    * Get single ticket by ID
    */
   async getPublicById(id: string): Promise<Ticket> {
-    const response = await api.get<{ data: Ticket }>(`public/tickets/${id}`)
-    return response.data.data
+    const response = await api.get<Ticket>(`public/tickets/${id}`)
+    return response.data
   }
 
   /**
@@ -38,8 +38,8 @@ class TicketService {
    */
   async getByCode(code: string, token?: string): Promise<Ticket> {
     const params = token ? { token } : {}
-    const response = await api.get<{ data: Ticket }>(`/tickets/code/${code}`, { params })
-    return response.data.data
+    const response = await api.get<Ticket>(`/tickets/code/${code}`, { params })
+    return response.data
   }
 
   /**

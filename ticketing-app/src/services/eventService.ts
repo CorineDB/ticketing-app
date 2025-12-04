@@ -12,17 +12,17 @@ class EventService {
   /**
    * Get all events with optional filters
    */
-  async getAll(filters?: EventFilters): Promise<PaginatedResponse<Event>> {
+  async getAll(filters?: EventFilters): Promise<any> {
     const params = this.buildQueryParams(filters)
-    const response = await api.get<PaginatedResponse<Event>>('/events', { params })
+    const response = await api.get<{ data: Event[] }>('/events', { params })
     return response.data
   }
   /**
    * Get public events with optional filters
    */
-  async getAllPublicEvents(filters?: EventFilters): Promise<PaginatedResponse<Event>> {
+  async getAllPublicEvents(filters?: EventFilters): Promise<any> {
     const params = this.buildQueryParams(filters)
-    const response = await api.get<PaginatedResponse<Event>>('/public/events', { params })
+    const response = await api.get<{ data: Event[] }>('/public/events', { params })
     return response.data
   }
 
@@ -38,7 +38,7 @@ class EventService {
    * Get public event by ID
    */
   async getPublicById(id: string): Promise<Event> {
-    const response = await api.get<{ data: Event }>(`/public/events/${id}`)
+    const response = await api.get<Event>(`/public/events/${id}`)
     return response.data
   }
 
@@ -47,7 +47,7 @@ class EventService {
    * Get event by slug (authenticated)
    */
   async getBySlug(slug: string): Promise<Event> {
-    const response = await api.get<{ data: Event }>(`/events/slug/${slug}`)
+    const response = await api.get<Event>(`/events/slug/${slug}`)
     return response.data
   }
 
@@ -56,7 +56,7 @@ class EventService {
    * Get public event by slug (public access)
    */
   async getPublicBySlug(slug: string): Promise<Event> {
-    const response = await api.get<{ data: Event }>(`/public/events/slug/${slug}`)
+    const response = await api.get<Event>(`/public/events/slug/${slug}`)
     return response.data
   }
 
@@ -119,9 +119,9 @@ class EventService {
   /**
    * Get my events (for organizers)
    */
-  async getMyEvents(filters?: EventFilters): Promise<PaginatedResponse<Event>> {
+  async getMyEvents(filters?: EventFilters): Promise<any> {
     const params = this.buildQueryParams(filters)
-    const response = await api.get<PaginatedResponse<Event>>('/events/my-events', { params })
+    const response = await api.get<{ data: Event[] }>('/events/my-events', { params })
     return response.data
   }
 
