@@ -1,6 +1,6 @@
 <template>
   <DashboardLayout>
-    <div class="max-w-5xl mx-auto space-y-6 p-6">
+    <div v-if="user" class="max-w-5xl mx-auto space-y-6 p-6">
       <!-- Header -->
       <div class="flex items-center justify-between">
         <div>
@@ -243,6 +243,10 @@
           </div>
         </div>
       </div>
+    </div>
+    <div v-else class="max-w-5xl mx-auto space-y-6 p-6 text-center py-12">
+      <LoaderIcon class="w-8 h-8 mx-auto animate-spin text-blue-500" />
+      <p class="text-gray-500 mt-4">Chargement du profil...</p>
     </div>
   </DashboardLayout>
 </template>
