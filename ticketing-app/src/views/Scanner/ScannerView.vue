@@ -130,7 +130,7 @@ async function handleScan(qrData: string) {
       lastScanResult.value = {
         success: false,
         result: 'invalid',
-        message: 'Invalid QR code format'
+        message: 'Invalid QR code format s'
       }
       return
     }
