@@ -22,7 +22,7 @@ class TicketService {
    */
   async getById(id: string): Promise<Ticket> {
     const response = await api.get<{ data: Ticket }>(`/tickets/${id}`)
-    return response.data
+    return response.data.data
   }
 
   /**
@@ -30,7 +30,7 @@ class TicketService {
    */
   async getPublicById(id: string): Promise<Ticket> {
     const response = await api.get<{ data: Ticket }>(`public/tickets/${id}`)
-    return response.data
+    return response.data.data
   }
 
   /**
@@ -39,7 +39,7 @@ class TicketService {
   async getByCode(code: string, token?: string): Promise<Ticket> {
     const params = token ? { token } : {}
     const response = await api.get<{ data: Ticket }>(`/tickets/code/${code}`, { params })
-    return response.data
+    return response.data.data
   }
 
   /**
@@ -131,6 +131,14 @@ class TicketService {
       message: string
       ticket?: Ticket
     }>('/tickets/validate', { code })
+    return response.data
+  }
+
+  /**
+   * Regenerate QR code for a ticket
+   */
+  async regenerateQRCode(id: string): Promise<any> {
+    const response = await api.post(`/tickets/${id}/regenerate-qr`)
     return response.data
   }
 

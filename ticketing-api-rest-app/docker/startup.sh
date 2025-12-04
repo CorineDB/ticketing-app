@@ -49,12 +49,37 @@ else
     echo "Configuration du port Nginx sur $PORT..."
     sed -i "s/8080/$PORT/g" /etc/nginx/conf.d/default.conf
 
+    # 2. Permissions & Storage
+    # MODIFICATION ICI : On applique les droits sur le dossier PARENT 'storage/app'
+    # car c'est lui qui est désormais le point de montage du volume
+    echo "🔧 Correction des permissions du stockage..."
+    
+    # On s'assure que la structure existe
+    mkdir -p /var/www/html/storage/app/public
+    mkdir -p /var/www/html/storage/app/private
+    
+    # On donne les droits sur tout le dossier app (public + private)
+    chown -R www-data:www-data /var/www/html/storage/app
+    chmod -R 775 /var/www/html/storage/app
+
     # 2. Storage Link (Toujours utile)
 
     # [AJOUT] Force les permissions sur le dossier du volume (au cas où)
     echo "🔧 Correction des permissions du stockage..."
     chown -R www-data:www-data /var/www/html/storage/app/public
     chmod -R 775 /var/www/html/storage/app/public
+    
+    # Droits génériques sur storage/framework et logs (disque éphémère, mais nécessaire pour tourner)
+    # On utilise -R seulement si le dossier existe pour éviter les erreurs si vide
+    if [ -d "/var/www/html/storage/framework" ]; then
+        chown -R www-data:www-data /var/www/html/storage/framework
+        chmod -R 775 /var/www/html/storage/framework
+    fi
+
+    if [ -d "/var/www/html/storage/logs" ]; then
+        chown -R www-data:www-data /var/www/html/storage/logs
+        chmod -R 775 /var/www/html/storage/logs
+    fi
 
     if [ ! -L public/storage ]; then
         echo "🔗 Création du lien symbolique storage..."

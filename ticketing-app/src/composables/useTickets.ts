@@ -222,6 +222,22 @@ export function useTickets() {
     }
   }
 
+  const regenerateQRCode = async (id: string) => {
+    loading.value = true
+    error.value = null
+    try {
+      await ticketService.regenerateQRCode(id)
+      // Refresh ticket data to get the new QR code
+      await fetchTicket(id)
+    } catch (e: any) {
+      error.value = e.response?.data?.message || 'Failed to regenerate QR code'
+      console.error('Error regenerating QR code:', e)
+      throw e
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     tickets,
     ticket,
@@ -239,6 +255,7 @@ export function useTickets() {
     refundTicket,
     validateTicket,
     resendTicketEmail,
-    updateTicketStatus
+    updateTicketStatus,
+    regenerateQRCode
   }
 }
