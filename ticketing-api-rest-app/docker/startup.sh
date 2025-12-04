@@ -111,6 +111,9 @@ else
     # 5. Mise en cache pour la PROD
     echo "⚡ Mise en cache..."
     echo "⚡ Mise en cache de la configuration..."
+    php artisan config:clear
+    php artisan route:clear
+    php artisan view:clear
     php artisan config:cache
     php artisan route:cache
     php artisan view:cache
