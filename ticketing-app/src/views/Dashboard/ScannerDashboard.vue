@@ -226,7 +226,6 @@ function getResultLabel(result: string) {
             <div class="text-sm text-red-600">Refus</div>
           </div>
         </div>
-      </div>
     </div>
 
     <!-- Recent Scans -->

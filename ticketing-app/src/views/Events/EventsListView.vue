@@ -162,7 +162,7 @@
                 <td class="py-3 px-4">
                   <div class="flex items-center gap-2">
                     <RouterLink
-                      :to="`/events/${event.slug}`"
+                      :to="`/dashboard/events/${event.id}`"
                       class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
                       title="View details"
                     >
