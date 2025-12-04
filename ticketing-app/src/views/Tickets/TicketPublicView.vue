@@ -140,8 +140,31 @@ onMounted(async () => {
   } */
 })
 
-function downloadTicket() {
-  // TODO: Implement ticket download as PDF
-  console.log('Download ticket')
+async function downloadTicket() {
+  if (!ticket.value?.id) return
+  
+  try {
+    const token = route.query.token as string
+    if (!token) {
+      console.error('No token provided for download')
+      return
+    }
+    
+    // Download QR code image
+    const blob = await ticketService.downloadQR(ticket.value.id, token)
+    
+    // Create download link
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `ticket-${ticket.value.code || ticket.value.id}-qr.png`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+  } catch (error) {
+    console.error('Failed to download ticket:', error)
+    alert('Failed to download ticket. Please try again.')
+  }
 }
 </script>
