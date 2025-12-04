@@ -16,55 +16,6 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 class ScanService implements ScanServiceContract
 {
-    // ... existing properties ...
-
-    // ... existing constructor ...
-
-    public function getScanHistory(array $filters = [], int $perPage = 15): LengthAwarePaginator
-    {
-        $query = $this->scanLogRepository->query()->forAuthUser();
-
-        if (isset($filters['event_id'])) {
-            $query->where('event_id', $filters['event_id']);
-        }
-        if (isset($filters['gate_id'])) {
-            $query->where('gate_id', $filters['gate_id']);
-        }
-        if (isset($filters['scanner_id'])) {
-            $query->where('agent_id', $filters['scanner_id']);
-        }
-        if (isset($filters['scan_type'])) {
-            $query->where('scan_type', $filters['scan_type']);
-        }
-        if (isset($filters['result'])) {
-            $query->where('result', $filters['result']);
-        }
-        if (isset($filters['start_date'])) {
-            $query->where('scan_time', '>=', $filters['start_date']);
-        }
-        if (isset($filters['end_date'])) {
-            $query->where('scan_time', '<=', $filters['end_date']);
-        }
-        if (isset($filters['search'])) {
-            $search = $filters['search'];
-            $query->where(function ($q) use ($search) {
-                $q->where('ticket_id', 'like', "%{$search}%")
-                  ->orWhereHas('ticket', function ($q) use ($search) {
-                      $q->where('buyer_name', 'like', "%{$search}%")
-                        ->orWhere('buyer_email', 'like', "%{$search}%");
-                  });
-            });
-        }
-
-        $query->with(['ticket', 'ticket.event', 'agent', 'gate']);
-        
-        // Default sort
-        $query->orderBy('scan_time', 'desc');
-
-        return $query->paginate($perPage);
-    }
-}
-{
     protected TicketRepositoryContract $ticketRepository;
     protected EventRepositoryContract $eventRepository;
     protected GateRepositoryContract $gateRepository;
@@ -503,15 +454,15 @@ class ScanService implements ScanServiceContract
             $search = $filters['search'];
             $query->where(function ($q) use ($search) {
                 $q->where('ticket_id', 'like', "%{$search}%")
-                  ->orWhereHas('ticket', function ($q) use ($search) {
-                      $q->where('buyer_name', 'like', "%{$search}%")
-                        ->orWhere('buyer_email', 'like', "%{$search}%");
-                  });
+                    ->orWhereHas('ticket', function ($q) use ($search) {
+                        $q->where('buyer_name', 'like', "%{$search}%")
+                            ->orWhere('buyer_email', 'like', "%{$search}%");
+                    });
             });
         }
 
         $query->with(['ticket', 'ticket.event', 'agent', 'gate']);
-        
+
         // Default sort
         $query->orderBy('scan_time', 'desc');
 
