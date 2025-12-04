@@ -18,16 +18,16 @@ class TicketTypeService {
    * Get single ticket type by ID
    */
   async getById(id: string): Promise<TicketType> {
-    const response = await api.get<{ data: TicketType }>(`/ticket-types/${id}`)
-    return response.data.data
+    const response = await api.get<TicketType>(`/ticket-types/${id}`)
+    return response.data
   }
 
   /**
-   * Get single ticket type by ID
+   * Get single ticket type by ID (public endpoint)
    */
   async getPublicById(id: string): Promise<TicketType> {
-    const response = await api.get<{ data: TicketType }>(`/public/ticket-types/${id}`)
-    return response.data.data
+    const response = await api.get<TicketType>(`/public/ticket-types/${id}`)
+    return response.data
   }
 
   /**
