@@ -36,7 +36,7 @@ class AuthService {
    * Get current authenticated user
    */
   async me(): Promise<User> {
-    const response = await api.get<{ data: User }>('/auths/me')
+    const response = await api.get<User>('/auths/me')
     return response.data
   }
 
@@ -50,11 +50,11 @@ class AuthService {
   /**
    * Change password
    */
-  async changePassword(oldPassword: string, newPassword: string): Promise<void> {
+  async changePassword(currentPassword: string, newPassword: string): Promise<void> {
     await api.post('/auths/change-password', {
-      old_password: oldPassword,
-      new_password: newPassword,
-      new_password_confirmation: newPassword
+      current_password: currentPassword,
+      password: newPassword,
+      password_confirmation: newPassword
     })
   }
 
