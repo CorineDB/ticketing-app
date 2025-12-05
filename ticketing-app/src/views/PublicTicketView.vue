@@ -2,8 +2,6 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { useScan } from '@/composables/useScan'
-import TicketInfoCard from '@/components/scan/TicketInfoCard.vue'
 import api from '@/services/api'
 import ticketService from '@/services/ticketService'
 import { 
@@ -49,54 +47,61 @@ const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
 
-// Scan mode (with signature)
-const { scanTicket, ticketInfo, loading: scanLoading, error: scanError } = useScan()
-
-// Full ticket view mode (with token)
+// Full ticket view mode (with token or signature)
 const loading = ref(true)
 const loadingQR = ref(false)
 const error = ref<string | null>(null)
 const ticket = ref<Ticket | null>(null)
 const copied = ref(false)
 const qrCodeUrl = ref<string | null>(null)
-
 const isValid = ref(false)
 
+
 // Detect mode based on query params
-const isScanMode = computed(() => !!route.query.sig)
-const isTicketViewMode = computed(() => !!route.query.token)
+
 
 onMounted(async () => {
   const ticketId = route.params.id as string
+  const signature = route.query.sig as string
+  const token = route.query.token as string
   
-  if (isScanMode.value) {
-    // If user is authenticated, redirect to the full scan page
-    if (authStore.isAuthenticated) {
-      const signature = route.query.sig as string
-      router.push({
-        name: 'ScanRedirect',
-        query: {
-          ticket_id: ticketId,
-          qr_hmac: signature
-        }
-      })
+  // If user is authenticated and in scan mode, redirect to full scan page
+  if (signature && authStore.isAuthenticated) {
+    router.push({
+      name: 'ScanRedirect',
+      query: {
+        ticket_id: ticketId,
+        qr_hmac: signature
+      }
+    })
+    return
+  }
+  
+  // For non-authenticated users, show full ticket view with either sig or token
+  if (signature) {
+    // Scan mode - fetch ticket using signature
+    if (!ticketId || !signature) {
+      error.value = 'Lien invalide: Paramètres manquants'
+      loading.value = false
       return
     }
-    
-    // Scan/verification mode for non-authenticated users
-    const signature = route.query.sig as string
-    if (ticketId && signature) {
-      try {
-        await scanTicket(ticketId, signature)
-        isValid.value = true
-      } catch (e) {
-        // Error handled in composable
+
+    try {
+      const response = await api.get(`/public/tickets/${ticketId}?sig=${signature}`)
+      ticket.value = response.data
+      isValid.value = true
+      
+      if (response.data.magic_link_token) {
+        await loadQRCode(ticketId, response.data.magic_link_token)
       }
+    } catch (e: any) {
+      error.value = e.response?.data?.error || e.response?.data?.message || 'Impossible de charger le ticket'
+      console.error('Error loading ticket:', e)
+    } finally {
+      loading.value = false
     }
-  } else if (isTicketViewMode.value) {
-    // Full ticket view mode
-    const token = route.query.token as string
-    
+  } else if (token) {
+    // Token mode - fetch ticket using token
     if (!ticketId || !token) {
       error.value = 'Lien invalide: Paramètres manquants'
       loading.value = false
@@ -182,51 +187,8 @@ function formatCurrency(amount: number) {
 </script>
 
 <template>
-  <!-- SCAN MODE: Simple verification view -->
-  <div v-if="isScanMode" class="min-h-screen bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-md mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
-      
-      <!-- Header / Status -->
-      <div class="p-6 text-center border-b border-gray-100" :class="isValid ? 'bg-green-50' : 'bg-gray-50'">
-        <div v-if="scanLoading" class="flex flex-col items-center">
-          <div class="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mb-4"></div>
-          <h2 class="text-xl font-semibold text-gray-700">Vérification du billet...</h2>
-        </div>
-
-        <div v-else-if="scanError" class="flex flex-col items-center text-red-600">
-          <AlertTriangleIcon class="w-16 h-16 mb-2" />
-          <h2 class="text-2xl font-bold">Billet Invalide</h2>
-          <p class="mt-2 text-sm text-gray-600">{{ scanError }}</p>
-        </div>
-
-        <div v-else-if="ticketInfo" class="flex flex-col items-center text-green-700">
-          <CheckCircleIcon class="w-16 h-16 mb-2" />
-          <h2 class="text-2xl font-bold">Billet Authentique</h2>
-          <p class="mt-2 text-sm text-green-800">Ce billet est valide et enregistré dans notre système.</p>
-        </div>
-      </div>
-
-      <!-- Ticket Details -->
-      <div v-if="ticketInfo && !scanLoading" class="p-6">
-        <TicketInfoCard :ticket="ticketInfo" />
-        
-        <div class="mt-8 text-center">
-            <p class="text-xs text-gray-400 uppercase tracking-wide font-semibold">Sécurisé par TicketingApp</p>
-        </div>
-      </div>
-
-      <!-- Footer Actions -->
-      <div v-if="!scanLoading" class="bg-gray-50 p-4 text-center border-t border-gray-100">
-         <router-link to="/" class="text-blue-600 font-medium hover:underline">
-           Retour à l'accueil
-         </router-link>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- TICKET VIEW MODE: Full ticket display with QR code -->
-  <div v-else-if="isTicketViewMode" class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+  <!-- FULL TICKET VIEW: For all non-authenticated users (both token and sig params) -->
+  <div v-if="!authStore.isAuthenticated" class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-3xl mx-auto">
       
       <!-- Loading State -->
