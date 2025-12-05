@@ -70,7 +70,7 @@
             <Transition name="dropdown">
               <div
                 v-if="showUserMenu"
-                v-on-click-outside="() => showUserMenu = false"
+                ref="userMenuRef"
                 class="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-1"
               >
                 <RouterLink
@@ -169,6 +169,12 @@ const authStore = useAuthStore()
 const showNotifications = ref(false)
 const showUserMenu = ref(false)
 const unreadCount = ref(0)
+const userMenuRef = ref<HTMLElement | null>(null)
+
+// Close user menu when clicking outside
+onClickOutside(userMenuRef, () => {
+  showUserMenu.value = false
+})
 
 const isAuthenticated = computed(() => authStore.isAuthenticated)
 const user = computed(() => authStore.user)

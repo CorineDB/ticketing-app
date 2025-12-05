@@ -58,7 +58,7 @@
         </template>
 
         <!-- Tickets -->
-        <template v-if="isOrganizer || isScanner">
+        <template v-if="isSuperAdmin || isOrganizer || isScanner">
           <div class="pt-4 pb-2">
             <div class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">
               Tickets

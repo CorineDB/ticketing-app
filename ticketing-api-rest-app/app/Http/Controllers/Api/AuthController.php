@@ -31,7 +31,7 @@ class AuthController extends Controller
 
         $user = User::where('email', $request->email)->first();
 
-        if (! $user || ! Hash::check($request->password, $user->password)) {
+        if (!$user || !Hash::check($request->password, $user->password)) {
             throw ValidationException::withMessages([
                 'email' => [__('auth.failed')],
             ]);
@@ -71,6 +71,46 @@ class AuthController extends Controller
     }
 
     /**
+     * Update the authenticated user's profile.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function updateProfile(Request $request)
+    {
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'name' => 'sometimes|string|max:255',
+            'phone' => 'nullable|string|max:20',
+            'avatar' => 'nullable|string', // Base64 string or URL - mapped to 'photo' column
+        ]);
+
+        // Update only the fields that are present in the request
+        if (isset($validated['name'])) {
+            $user->name = $validated['name'];
+        }
+
+        if (array_key_exists('phone', $validated)) {
+            $user->phone = $validated['phone'];
+        }
+
+        if (array_key_exists('avatar', $validated)) {
+            // Map 'avatar' from frontend to 'photo' column in database
+            // TODO: If base64, save to storage and update with file path
+            // For now, just save the string (could be URL or base64)
+            $user->photo = $validated['avatar'];
+        }
+
+        $user->save();
+
+        return response()->json([
+            'message' => 'Profile updated successfully',
+            'data' => $user->load("role.permissions")
+        ]);
+    }
+
+    /**
      * Send a password reset link to the given user.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -85,8 +125,8 @@ class AuthController extends Controller
         );
 
         return $response == Password::RESET_LINK_SENT
-                    ? response()->json(['message' => 'Password reset link sent!'])
-                    : response()->json(['message' => 'Failed to send password reset link.'], 500);
+            ? response()->json(['message' => 'Password reset link sent!'])
+            : response()->json(['message' => 'Failed to send password reset link.'], 500);
     }
 
     /**
@@ -116,8 +156,8 @@ class AuthController extends Controller
         );
 
         return $response == Password::PASSWORD_RESET
-                    ? response()->json(['message' => 'Password has been reset!'])
-                    : response()->json(['message' => 'Failed to reset password.'], 500);
+            ? response()->json(['message' => 'Password has been reset!'])
+            : response()->json(['message' => 'Failed to reset password.'], 500);
     }
 
     /**
@@ -135,7 +175,7 @@ class AuthController extends Controller
 
         $user = $request->user();
 
-        if (! Hash::check($request->current_password, $user->password)) {
+        if (!Hash::check($request->current_password, $user->password)) {
             throw ValidationException::withMessages([
                 'current_password' => ['The provided password does not match your current password.'],
             ]);

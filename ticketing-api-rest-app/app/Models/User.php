@@ -22,11 +22,17 @@ class User extends Authenticatable
         'password',
         'type',
         'role_id',
+        'phone',
+        'photo',
     ];
 
     protected $hidden = [
         'password',
         'remember_token',
+    ];
+
+    protected $appends = [
+        'avatar',
     ];
 
     protected function casts(): array
@@ -35,6 +41,11 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function getAvatarAttribute()
+    {
+        return $this->photo;
     }
 
     public function role(): BelongsTo
