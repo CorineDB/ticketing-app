@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\WebhookController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\BroadcastTestController;
+use App\Http\Controllers\Api\ReportController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
 
@@ -202,5 +203,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/ticket-scanned', [BroadcastTestController::class, 'testTicketScanned']);
         Route::post('/capacity-alert', [BroadcastTestController::class, 'testCapacityAlert']);
         Route::post('/all', [BroadcastTestController::class, 'testAll']);
+    });
+
+    // Reports & Analytics
+    Route::prefix('reports')->group(function () {
+        Route::get('/sales', [ReportController::class, 'getSalesReport']);
+        Route::get('/scans', [ReportController::class, 'getScanActivityReport']);
+        Route::get('/analytics', [ReportController::class, 'getAnalytics']);
+        Route::get('/export/{type}', [ReportController::class, 'exportReport']);
     });
 });
