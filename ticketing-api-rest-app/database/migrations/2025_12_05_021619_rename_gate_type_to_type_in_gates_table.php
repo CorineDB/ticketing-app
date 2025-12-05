@@ -11,7 +11,10 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::table('gates', function (Blueprint $table) {
-            $table->renameColumn('gate_type', 'type');
+            // Only rename if gate_type exists
+            if (Schema::hasColumn('gates', 'gate_type')) {
+                $table->renameColumn('gate_type', 'type');
+            }
         });
     }
 
@@ -21,7 +24,10 @@ return new class extends Migration {
     public function down(): void
     {
         Schema::table('gates', function (Blueprint $table) {
-            $table->renameColumn('type', 'gate_type');
+            // Only rename back if type exists
+            if (Schema::hasColumn('gates', 'type')) {
+                $table->renameColumn('type', 'gate_type');
+            }
         });
     }
 };
