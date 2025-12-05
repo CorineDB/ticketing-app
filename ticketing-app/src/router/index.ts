@@ -133,6 +133,11 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true }
   },
   {
+    path: '/dashboard/settings',
+    redirect: { name: 'profile' },
+    meta: { requiresAuth: true }
+  },
+  {
     path: '/dashboard/super-admin',
     name: 'super-admin-dashboard',
     component: SuperAdminDashboard,
