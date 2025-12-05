@@ -19,9 +19,17 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['http://localhost:5173', 'http://localhost:3000'],
+    'allowed_origins' => array_filter([
+        'http://localhost:5173',
+        'http://localhost:3000',
+        env('FRONTEND_URL'),  // URL du frontend en production
+    ]),
 
-    'allowed_origins_patterns' => [],
+    'allowed_origins_patterns' => [
+        '/^https:\/\/.*\.railway\.app$/',  // Tous les sous-domaines Railway
+        '/^https:\/\/.*\.vercel\.app$/',   // Tous les sous-domaines Vercel
+        '/^https:\/\/.*\.netlify\.app$/',  // Tous les sous-domaines Netlify
+    ],
 
     'allowed_headers' => ['*'],
 
