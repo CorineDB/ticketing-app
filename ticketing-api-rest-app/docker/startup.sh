@@ -18,7 +18,6 @@ if [ "$ROLE" = "worker" ]; then
     # Force l'affichage des logs dans la console (stderr) si LOG_CHANNEL n'est pas défini
     export LOG_CHANNEL=stderr
     export LOG_LEVEL=debug
-    export LOG_STDERR_FORMATTER=Monolog\\Formatter\\JsonFormatter
     
     # Correction de la commande :
     # 1. On repasse à 'queue:work' (c'est le standard de prod, 'listen' est pour le dev)
