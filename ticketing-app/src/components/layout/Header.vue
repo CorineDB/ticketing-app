@@ -70,13 +70,17 @@
             <Transition name="dropdown">
               <div
                 v-if="showUserMenu"
-                v-click-away="() => showUserMenu = false"
+                v-on-click-outside="() => showUserMenu = false"
                 class="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-1"
               >
-                <div class="px-4 py-3 border-b border-gray-200">
+                <RouterLink
+                  to="/dashboard"
+                  class="block px-4 py-3 border-b border-gray-200 hover:bg-gray-50 transition-colors"
+                  @click="showUserMenu = false"
+                >
                   <div class="text-sm font-medium text-gray-900">{{ user?.name }}</div>
                   <div class="text-sm text-gray-500">{{ user?.email }}</div>
-                </div>
+                </RouterLink>
 
                 <RouterLink
                   :to="{ name: 'profile' }"
@@ -137,6 +141,7 @@
 import { ref, computed } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { onClickOutside } from '@vueuse/core'
 import {
   MenuIcon,
   TicketIcon,

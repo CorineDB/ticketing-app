@@ -98,7 +98,7 @@ class TicketService {
    * Download ticket as PDF
    */
   async downloadQR(id: string, token: string): Promise<Blob> {
-    const response = await api.get(`public/tickets/${id}/qr/download?token=${token}`, {
+    const response = await api.get(`/public/tickets/${id}/qr/download?token=${token}`, {
       responseType: 'blob'
     })
     return response.data
