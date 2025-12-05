@@ -252,7 +252,7 @@ const routes: RouteRecordRaw[] = [
     component: ScanHistoryView,
     meta: {
       requiresAuth: true,
-      requiresUserType: 'agent-de-controle'
+      //requiresUserType: 'agent-de-controle'
     }
   },
 
