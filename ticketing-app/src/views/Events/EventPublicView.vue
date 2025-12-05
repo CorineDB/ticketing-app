@@ -175,8 +175,13 @@
                   <p v-if="ticketType.description" class="text-sm text-gray-600 mt-1">
                     {{ ticketType.description }}
                   </p>
-                  <div class="mt-2 text-sm text-gray-500">
-                    {{ ticketType.quantity_available || 0 }} available
+                  <div class="mt-2 flex items-center gap-2">
+                    <span v-if="ticketType.quantity_available && ticketType.quantity_available > 0" class="text-sm text-gray-500">
+                      {{ ticketType.quantity_available }} available
+                    </span>
+                    <span v-else class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800">
+                      🔴 SOLD OUT
+                    </span>
                   </div>
                 </div>
                 <div class="text-right ml-4">
@@ -184,14 +189,20 @@
                     {{ formatCurrency(ticketType.price) }}
                   </div>
                   <button
-                    v-if="!ticketType.quantity_available || ticketType.quantity_available > 0"
+                    v-if="ticketType.quantity_available && ticketType.quantity_available > 0"
                     @click.prevent="selectTicketType(ticketType)"
                     type="button"
-                    class="mt-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer"
+                    class="mt-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer transition-colors"
                   >
                     Buy Ticket
                   </button>
-                  <span v-else class="text-sm text-red-600 font-medium">Sold Out</span>
+                  <button
+                    v-else
+                    disabled
+                    class="mt-2 px-4 py-2 bg-gray-300 text-gray-500 rounded-lg cursor-not-allowed"
+                  >
+                    Sold Out
+                  </button>
                 </div>
               </div>
             </div>
