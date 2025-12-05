@@ -65,28 +65,37 @@ onMounted(async () => {
   const signature = route.query.sig as string
   const token = route.query.token as string
   
-  // If user is authenticated and in scan mode, redirect appropriately
-  if (signature && authStore.isAuthenticated) {
-    // Check if user is an agent (scanner role)
-    const isAgent = authStore.user?.type === 'agent-de-controle'
-    
-    if (isAgent) {
-      // Redirect to dashboard (scanner is integrated in ScannerDashboard)
-      router.push({
-        name: 'dashboard',
-        query: {
-          ticket_id: ticketId,
-          qr_hmac: signature
-        }
-      })
-    } else {
-      // Redirect to ticket details page in dashboard
+  // If user is authenticated, redirect to appropriate dashboard page
+  if (authStore.isAuthenticated) {
+    if (signature) {
+      // Scan mode - check if user is an agent
+      const isAgent = authStore.user?.type === 'agent-de-controle'
+      
+      if (isAgent) {
+        // Redirect to dashboard (scanner is integrated in ScannerDashboard)
+        router.push({
+          name: 'dashboard',
+          query: {
+            ticket_id: ticketId,
+            qr_hmac: signature
+          }
+        })
+      } else {
+        // Redirect to ticket details page in dashboard
+        router.push({
+          name: 'ticket-details',
+          params: { id: ticketId }
+        })
+      }
+      return
+    } else if (token) {
+      // Token mode - redirect to ticket details page
       router.push({
         name: 'ticket-details',
         params: { id: ticketId }
       })
+      return
     }
-    return
   }
   
   // For non-authenticated users, show full ticket view with either sig or token
