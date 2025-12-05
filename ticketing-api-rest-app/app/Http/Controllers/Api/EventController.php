@@ -19,6 +19,10 @@ class EventController extends Controller
     public function index(Request $request)
     {
         $filters = $request->only(['q', 'date_from', 'date_to']);
+
+        // For public routes, only show published events
+        $filters['published_only'] = true;
+
         $events = $this->eventService->search($filters);
         return response()->json(['data' => $events->load(["organisateur", "ticketTypes", "counter"])]);
     }
