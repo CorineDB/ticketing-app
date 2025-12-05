@@ -21,28 +21,8 @@ class UserController extends Controller
             return response()->json(['message' => 'Unauthorized.'], 403);
         }
 
-        // Get all users with optional filters
-        $users = $this->userService->all(['*'], ['role', 'organisateur']);
-
-        // Apply filters if provided
-        $search = $request->query('search');
-        $roleId = $request->query('role_id');
-        $status = $request->query('status');
-
-        if ($search || $roleId || $status) {
-            $users = $users->filter(function ($user) use ($search, $roleId, $status) {
-                if ($search && !str_contains(strtolower($user->name . ' ' . $user->email), strtolower($search))) {
-                    return false;
-                }
-                if ($roleId && (!$user->role || $user->role->id !== $roleId)) {
-                    return false;
-                }
-                if ($status && ($user->status ?? 'active') !== $status) {
-                    return false;
-                }
-                return true;
-            })->values();
-        }
+        // Get all users - NO relations to avoid errors
+        $users = $this->userService->all();
 
         return response()->json(['data' => $users]);
     }

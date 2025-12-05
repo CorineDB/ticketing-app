@@ -1,10 +1,9 @@
 <?php
 
-namespace DummyNamespace;
+namespace App\Repositories;
 
 use App\Models\User;
 use App\Repositories\Contracts\UserRepositoryContract;
-use DummyInterface;
 use App\Repositories\Core\Eloquent\BaseRepository;
 use Illuminate\Support\Facades\Log;
 
