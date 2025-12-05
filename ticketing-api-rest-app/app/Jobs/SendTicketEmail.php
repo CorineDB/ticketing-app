@@ -12,14 +12,14 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 
-class SendTicketEmail //implements ShouldQueue
+class SendTicketEmail implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public $tries = 3;
 
     // CORRECTION ICI : On passe de 60 à 180 secondes
-    public $timeout = 180;
+    public $timeout = 300;
 
     /**
      * Create a new job instance.
