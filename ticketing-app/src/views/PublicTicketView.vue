@@ -65,15 +65,27 @@ onMounted(async () => {
   const signature = route.query.sig as string
   const token = route.query.token as string
   
-  // If user is authenticated and in scan mode, redirect to full scan page
+  // If user is authenticated and in scan mode, redirect appropriately
   if (signature && authStore.isAuthenticated) {
-    router.push({
-      name: 'ScanRedirect',
-      query: {
-        ticket_id: ticketId,
-        qr_hmac: signature
-      }
-    })
+    // Check if user is an agent (scanner role)
+    const isAgent = authStore.user?.type === 'agent-de-controle'
+    
+    if (isAgent) {
+      // Redirect to dashboard (scanner is integrated in ScannerDashboard)
+      router.push({
+        name: 'dashboard',
+        query: {
+          ticket_id: ticketId,
+          qr_hmac: signature
+        }
+      })
+    } else {
+      // Redirect to ticket details page in dashboard
+      router.push({
+        name: 'ticket-details',
+        params: { id: ticketId }
+      })
+    }
     return
   }
   

@@ -43,8 +43,9 @@ const sessionStats = computed(() => {
 
 // Check for query params on mount (External Scan flow)
 onMounted(async () => {
-  const ticketId = route.query.t as string
-  const signature = route.query.sig as string
+  // Support both query param formats
+  const ticketId = (route.query.ticket_id || route.query.t) as string
+  const signature = (route.query.qr_hmac || route.query.sig) as string
 
   if (ticketId && signature) {
     await handleExternalScan(ticketId, signature)
