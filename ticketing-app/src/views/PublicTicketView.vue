@@ -199,8 +199,8 @@ function formatCurrency(amount: number) {
 </script>
 
 <template>
-  <!-- FULL TICKET VIEW: For all non-authenticated users (both token and sig params) -->
-  <div v-if="!authStore.isAuthenticated" class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+  <!-- FULL TICKET VIEW: For non-authenticated users or authenticated users with token -->
+  <div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-3xl mx-auto">
       
       <!-- Loading State -->
@@ -403,22 +403,6 @@ function formatCurrency(amount: number) {
 
       </div>
 
-    </div>
-  </div>
-
-  <!-- ERROR: No valid query params -->
-  <div v-else class="min-h-screen bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-md mx-auto bg-white rounded-2xl shadow-xl p-12 text-center">
-      <AlertTriangleIcon class="w-20 h-20 mb-4 text-red-500 mx-auto" />
-      <h2 class="text-3xl font-bold text-gray-900 mb-2">Lien invalide</h2>
-      <p class="text-gray-600 text-lg">{{ error || 'Paramètres manquants' }}</p>
-      <router-link 
-        to="/" 
-        class="inline-flex items-center gap-2 mt-8 px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition shadow-md"
-      >
-        <ArrowLeftIcon class="w-4 h-4" />
-        Retour à l'accueil
-      </router-link>
     </div>
   </div>
 </template>
