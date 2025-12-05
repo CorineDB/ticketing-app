@@ -21,10 +21,10 @@ export function useTickets() {
       const response: PaginatedResponse<Ticket> = await ticketService.getAll(filters)
       tickets.value = response.data
       pagination.value = {
-        total: response.meta.total,
-        per_page: response.meta.per_page,
-        current_page: response.meta.current_page,
-        last_page: response.meta.last_page
+        total: response.meta?.total || 0,
+        per_page: response.meta?.per_page || 10,
+        current_page: response.meta?.current_page || 1,
+        last_page: response.meta?.last_page || 1
       }
     } catch (e: any) {
       error.value = e.response?.data?.message || 'Failed to fetch tickets'
