@@ -702,22 +702,18 @@ export interface BaseFilters {
 // ==================== REPORT TYPES ====================
 
 export interface SalesReport {
-  event_id: string
-  event_name: string
-  start_date: string
-  end_date: string
-  total_tickets: number
-  total_revenue: number
-  ticket_types: {
-    name: string
-    quantity: number
-    revenue: number
-  }[]
-  payment_methods: {
-    method: string
-    quantity: number
-    revenue: number
-  }[]
+  totalTicketsSold: number
+  totalRevenue: number
+  averageTicketPrice: number
+  salesByStatus: Record<string, number>
+  topEvents: Array<{
+    event_id: string
+    tickets_sold: number
+    event: {
+      id: string
+      title: string
+    }
+  }>
 }
 
 export interface AttendanceReport {
@@ -737,7 +733,22 @@ export interface AttendanceReport {
 }
 
 export interface ScanActivityReport {
-  totalScans: number;
-  successfulScans: number;
-  failedScans: number;
+  totalScans: number
+  successfulScans: number
+  failedScans: number
+  successRate: number
+  scansByType: Record<string, number>
+  scansByResult: Record<string, number>
+  hourlyDistribution: Array<{
+    hour: number
+    count: number
+  }>
+  topScanners: Array<{
+    scanned_by: string
+    scan_count: number
+    scanner?: {
+      id: string
+      name: string
+    }
+  }>
 }
