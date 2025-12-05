@@ -54,8 +54,9 @@
               @click="showUserMenu = !showUserMenu"
               class="flex items-center gap-3 p-2 hover:bg-gray-100 rounded-lg"
             >
-              <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
-                <span class="text-white text-sm font-semibold">
+              <div class="w-8 h-8 rounded-full flex items-center justify-center overflow-hidden" :class="!user?.avatar ? 'bg-gradient-to-br from-blue-500 to-purple-500' : ''">
+                <img v-if="user?.avatar" :src="user.avatar" alt="Avatar" class="w-full h-full object-cover" />
+                <span v-else class="text-white text-sm font-semibold">
                   {{ userInitials }}
                 </span>
               </div>
