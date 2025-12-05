@@ -57,6 +57,12 @@ class User extends Authenticatable
         return $this->hasMany(TicketScanLog::class, 'agent_id');
     }
 
+    // Méthode pour vérifier si l'utilisateur a un rôle spécifique
+    public function hasRole(string $roleSlug): bool
+    {
+        return $this->role && $this->role->slug === $roleSlug;
+    }
+
     // Méthode pour vérifier si l'utilisateur a une permission spécifique
     public function hasPermissionTo(string $permissionSlug): bool
     {

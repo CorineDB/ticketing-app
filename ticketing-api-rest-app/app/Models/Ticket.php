@@ -15,6 +15,7 @@ class Ticket extends Model
     protected $fillable = [
         'event_id',
         'ticket_type_id',
+        'payment_id',  // NEW
         'code',
         'qr_path',
         'qr_hmac',
@@ -48,6 +49,11 @@ class Ticket extends Model
     public function ticketType(): BelongsTo
     {
         return $this->belongsTo(TicketType::class);
+    }
+
+    public function payment(): BelongsTo
+    {
+        return $this->belongsTo(Payment::class);
     }
 
     public function gateIn(): BelongsTo

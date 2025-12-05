@@ -171,8 +171,9 @@ export function getImageUrl(imagePath: string | undefined): string | undefined {
     return imagePath
   }
 
-  // Get API base URL from config
-  const baseURL = import.meta.env.VITE_API_URL || 'https://adorable-connection-production.up.railway.app'
+  // Get API base URL from config and remove /api suffix if present
+  const apiURL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
+  const baseURL = apiURL.replace(/\/api\/?$/, '')
 
   // Remove trailing slash from baseURL if present
   const cleanBaseUrl = baseURL.replace(/\/$/, '')

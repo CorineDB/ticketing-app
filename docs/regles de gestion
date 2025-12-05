@@ -90,7 +90,7 @@ Superadmin peut voir tous les tickets et scans.
 
 4. Gates / contrôles
 
-Chaque gate a un type (gate_type) : entrance, exit, vip, other.
+Chaque gate a un type (type) : entrance, exit, vip, other.
 
 Chaque gate a un status (active, pause, inactive).
 

@@ -100,6 +100,8 @@
           v-for="event in events"
           :key="event.id"
           :event="event"
+          @publish="handlePublish"
+          @delete="handleDelete"
         />
       </div>
 
@@ -219,7 +221,7 @@
       message="Are you sure you want to delete this event? This action cannot be undone."
       variant="danger"
       confirm-text="Delete"
-      @confirm="handleDelete"
+      @confirm="handleDeleteConfirm"
     />
   </DashboardLayout>
 </template>
@@ -228,6 +230,8 @@
 import { ref, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useEvents } from '@/composables/useEvents'
+import { useNotificationStore } from '@/stores/notifications'
+import eventService from '@/services/eventService'
 import { formatDate, formatCurrency, getImageUrl } from '@/utils/formatters'
 import type { Event, EventFilters as EventFiltersType } from '@/types/api'
 import DashboardLayout from '@/components/layout/DashboardLayout.vue'
@@ -247,6 +251,7 @@ import {
 } from 'lucide-vue-next'
 
 const { events, loading, fetchEvents, createEvent, updateEvent, deleteEvent } = useEvents()
+const notifications = useNotificationStore()
 
 const viewMode = ref<'grid' | 'table'>('grid')
 const filters = ref<EventFiltersType>({})
@@ -290,11 +295,31 @@ async function handleEventSubmit(data: any) {
   }
 }
 
-async function handleDelete() {
+async function handleDeleteConfirm() {
   if (eventToDelete.value) {
     await deleteEvent(eventToDelete.value.id)
     eventToDelete.value = null
     loadEvents()
   }
 }
+
+async function handlePublish(eventId: string) {
+  try {
+    await eventService.publish(eventId)
+    notifications.success('Succès', 'Événement publié avec succès !')
+    await loadEvents()
+  } catch (error: any) {
+    const message = error.response?.data?.message || 'Impossible de publier l\'événement'
+    notifications.error('Erreur', message)
+    console.error('Error publishing event:', error)
+  }
+}
+
+function handleDelete(eventId: string) {
+  const event = events.value.find(e => e.id === eventId)
+  if (event) {
+    confirmDelete(event)
+  }
+}
+
 </script>

@@ -224,9 +224,12 @@ import Step2TicketTypes from '@/components/events/steps/Step2TicketTypes.vue'
 import Step3Gates from '@/components/events/steps/Step3Gates.vue'
 import Step4Media from '@/components/events/steps/Step4Media.vue'
 import { LoaderIcon } from 'lucide-vue-next'
+import eventService from '@/services/eventService'
+import { useNotificationStore } from '@/stores/notifications'
 
 const route = useRoute()
 const router = useRouter()
+const notifications = useNotificationStore()
 
 const isEditing = ref(false)
 const loading = ref(false)
@@ -257,9 +260,9 @@ const formData = ref({
     tiktok: '',
     website: ''
   },
-  ticket_types: [],
+  ticket_types: [] as any[],
   auto_create_gates: false,
-  gates: [],
+  gates: [] as any[],
   banner: null,
   gallery: []
 })
@@ -304,22 +307,130 @@ async function saveDraft() {
 async function handleSubmit() {
   loading.value = true
   try {
-    // TODO: Implement API call
-    console.log('Submitting:', formData.value)
+    const eventData: any = {
+      ...formData.value,
+      image_url: formData.value.banner, // Map banner to image_url
+      gallery_images: formData.value.gallery, // Map gallery to gallery_images
+      // Ensure datetime fields have seconds for Laravel validation
+      start_datetime: formData.value.start_datetime ? `${formData.value.start_datetime}:00` : formData.value.start_datetime,
+      end_datetime: formData.value.end_datetime ? `${formData.value.end_datetime}:00` : formData.value.end_datetime
+    }
+
+    // Clean up data before sending
+    if (!eventData.description) delete eventData.description
+    if (!eventData.dress_code) delete eventData.dress_code
+    
+    let response
+    if (isEditing.value && route.params.id) {
+      response = await eventService.update(route.params.id as string, eventData)
+      notifications.success('Événement mis à jour avec succès')
+    } else {
+      response = await eventService.create(eventData)
+      notifications.success('Événement créé avec succès')
+    }
     
     // Redirect after success
-    // router.push({ name: 'events' })
-  } catch (error) {
+    router.push({ name: 'events' })
+  } catch (error: any) {
     console.error('Error submitting event:', error)
+    notifications.error(
+      'Erreur lors de la sauvegarde', 
+      error.response?.data?.message || 'Une erreur est survenue'
+    )
   } finally {
     loading.value = false
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   if (route.params.id) {
     isEditing.value = true
-    // TODO: Load event data
+    loading.value = true
+    try {
+      const event = await eventService.getById(route.params.id as string)
+      
+      // Create a map of ticket type ID to name for easy lookup
+      const ticketTypeMap = new Map()
+      if (event.ticket_types) {
+        event.ticket_types.forEach((tt: any) => {
+          ticketTypeMap.set(tt.id, tt.name)
+        })
+      }
+      
+      // Populate form with event data
+      formData.value = {
+        title: event.title || '',
+        description: event.description || '',
+        status: event.status || 'draft',
+        start_datetime: event.start_datetime ? event.start_datetime.slice(0, 16) : '',
+        end_datetime: event.end_datetime ? event.end_datetime.slice(0, 16) : '',
+        location: event.location || '',
+        capacity: event.capacity || 100,
+        dress_code: event.dress_code || '',
+        allow_reentry: event.allow_reentry || false,
+        social_links: {
+          facebook: event.social_links?.facebook || '',
+          instagram: event.social_links?.instagram || '',
+          twitter: event.social_links?.twitter || '',
+          linkedin: event.social_links?.linkedin || '',
+          tiktok: event.social_links?.tiktok || '',
+          website: event.social_links?.website || ''
+        },
+        ticket_types: event.ticket_types || [],
+        auto_create_gates: false,
+        gates: event.gates?.map((gate: any) => {
+          // Convert ticket_type_ids array to ticket_type_names array
+          let ticketTypeNames: string[] = []
+          if (gate.pivot?.ticket_type_ids) {
+            try {
+              // Parse if it's a JSON string, otherwise use as is
+              const ids = typeof gate.pivot.ticket_type_ids === 'string' 
+                ? JSON.parse(gate.pivot.ticket_type_ids) 
+                : gate.pivot.ticket_type_ids
+              
+              ticketTypeNames = ids
+                .map((id: string) => ticketTypeMap.get(id))
+                .filter((name: string | undefined) => name !== undefined)
+            } catch (e) {
+              console.error('Error parsing ticket_type_ids:', e)
+            }
+          }
+
+          // Parse schedule if it's a JSON string
+          let schedule = { start_time: '08:00', end_time: '23:00' }
+          if (gate.pivot?.schedule) {
+            try {
+              schedule = typeof gate.pivot.schedule === 'string'
+                ? JSON.parse(gate.pivot.schedule)
+                : gate.pivot.schedule
+            } catch (e) {
+              console.error('Error parsing schedule:', e)
+            }
+          }
+
+          return {
+            gate_id: gate.id,
+            agent_id: gate.pivot?.agent_id || null,
+            operational_status: gate.pivot?.operational_status || 'active',
+            ticket_type_names: ticketTypeNames,
+            schedule: schedule,
+            max_capacity: gate.pivot?.max_capacity || null
+          }
+        }) || [],
+        banner: null,
+        gallery: [],
+        image_url: event.image_url || '',
+        gallery_images: event.gallery_images || []
+      }
+
+      console.log('Loaded form data:', formData.value)
+    } catch (error) {
+      console.error('Error loading event:', error)
+      notifications.error('Erreur', 'Impossible de charger l\'événement')
+      router.push({ name: 'events' })
+    } finally {
+      loading.value = false
+    }
   }
 })
 </script>

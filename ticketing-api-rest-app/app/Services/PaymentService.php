@@ -44,89 +44,63 @@ class PaymentService implements PaymentServiceContract
     public function createTransactionForTicket(array $ticketIds, array $customerData, int $amount, string $description): array
     {
         try {
-            // Prepare customer data
-            $fedapayCustomerData = [
-                'firstname' => $customerData['firstname'],
-                'lastname' => $customerData['lastname'],
-                'email' => $customerData['email'],
-            ];
+            // Récupérer les tickets pour obtenir les infos de l'événement et types
+            $tickets = \App\Models\Ticket::whereIn('id', $ticketIds)->with(['ticketType.event'])->get();
+            $firstTicket = $tickets->first();
+            $event = $firstTicket->ticketType->event;
 
-            // Only add phone_number if provided and looks valid
-            if (!empty($customerData['phone_number'])) {
-                $phoneNumber = $customerData['phone_number'];
-
-                // Detect country based on phone number format
-                $country = 'BJ'; // Default to Benin
-
-                // Benin international format: +229XXXXXXXXXX or 229XXXXXXXXXX (10 digits after country code)
-                if (preg_match('/^\+?229([0-9]{10})$/', $phoneNumber, $matches)) {
-                    $phoneNumber = ltrim($matches[1], '0'); // Extract the 10 digits and remove leading zero
-                    $country = 'BJ';
-                } elseif (preg_match('/^([69][0-9]{7})$/', $phoneNumber, $matches)) {
-                    // Benin local format: 6XXXXXXXX or 9XXXXXXXX (8 digits)
-                    $phoneNumber = $matches[1]; // Extract the 8 digits
-                    $country = 'BJ';
-                } elseif (preg_match('/^\+?33([0-9]{9})$/', $phoneNumber, $matches)) {
-                    // French international format: +33XXXXXXXXX or 33XXXXXXXXX (9 digits after country code)
-                    $phoneNumber = $matches[1]; // Extract the 9 digits
-                    $country = 'FR';
-                } elseif (preg_match('/^0([1-9][0-9]{8})$/', $phoneNumber, $matches)) {
-                    // French local format: 0XXXXXXXXX (10 digits)
-                    $phoneNumber = $matches[1]; // Extract the 9 digits without the leading 0
-                    $country = 'FR';
-                } else {
-                    // If format is unclear, skip phone number to avoid FedaPay error
-                    Log::warning('Phone number format not recognized, skipping for FedaPay customer', [
-                        'phone_number' => $phoneNumber
-                    ]);
-                    $phoneNumber = null;
-                }
-
-                if ($phoneNumber) {
-                    $fedapayCustomerData['phone_number'] = [
-                        'number' => $phoneNumber,
-                        'country' => $country,
+            // Calculer le résumé des types de tickets
+            $ticketTypesSummary = $tickets->groupBy('ticket_type_id')
+                ->map(function ($group) {
+                    $ticketType = $group->first()->ticketType;
+                    return [
+                        'type' => $ticketType->name,
+                        'count' => $group->count(),
+                        'price' => $ticketType->price,
                     ];
-                }
+                })
+                ->values()
+                ->toArray();
+
+            // 1. CRÉER L'ENREGISTREMENT PAYMENT
+            $payment = \App\Models\Payment::create([
+                'amount' => $amount,
+                'currency' => config('services.fedapay.currency', 'XOF'),
+                'status' => 'pending',
+
+                // Event details
+                'event_id' => $event->id,
+                'event_title' => $event->title,
+                'event_start_date' => $event->start_datetime,
+                'event_end_date' => $event->end_datetime,
+                'event_location' => $event->location,
+
+                // Customer details
+                'customer_firstname' => $customerData['firstname'],
+                'customer_lastname' => $customerData['lastname'],
+                'customer_email' => $customerData['email'],
+                'customer_phone' => $customerData['phone_number'] ?? null,
+
+                // Purchase details
+                'ticket_count' => count($ticketIds),
+                'ticket_types_summary' => $ticketTypesSummary,
+
+                // Metadata
+                'metadata' => [
+                    'ticket_ids' => $ticketIds,
+                    'description' => $description,
+                ],
+            ]);
+
+            // 2. LIER LES TICKETS AU PAYMENT
+            foreach ($ticketIds as $ticketId) {
+                $ticket = $this->ticketRepository->find($ticketId);
+                $this->ticketRepository->update($ticket, [
+                    'payment_id' => $payment->id
+                ]);
             }
 
-            Log::debug('FedaPay customer data before creation', $fedapayCustomerData);
-
-            // Create or get FedaPay customer
-            // Create or get FedaPay customer by email if possible (use retrieve instead of all)
-            $customer = null;
-            $email = $fedapayCustomerData['email'] ?? null;
-
-            /* if ($email) {
-                try {
-                    // Try to find existing customer by email using retrieve
-                    $existing = Customer::all(['email' => $email]);
-
-                    if ($existing) {
-                        if (is_array($existing) && count($existing) > 0) {
-                            $customer = $existing[0];
-                        } elseif (is_object($existing)) {
-                            // SDK may return an object with ->data (list) or a single customer object with ->id
-                            if (isset($existing->data) && is_array($existing->data) && count($existing->data) > 0) {
-                                $customer = $existing->data[0];
-                            } elseif (isset($existing->id)) {
-                                $customer = $existing;
-                            }
-                        }
-                    }
-                } catch (\Exception $e) {
-                    Log::warning('FedaPay customer lookup by email (retrieve) failed, will create new', [
-                        'email' => $email,
-                        'error' => $e->getMessage(),
-                    ]);
-                }
-            }
-
-            if (!$customer) {
-                $customer = Customer::create($fedapayCustomerData);
-            } */
-
-            // Créer une transaction FedaPay
+            // 3. CRÉER LA TRANSACTION FEDAPAY
             $transaction = Transaction::create([
                 'description' => $description,
                 'amount' => $amount,
@@ -139,18 +113,24 @@ class PaymentService implements PaymentServiceContract
                     'lastname' => $customerData['lastname'],
                     'email' => $customerData['email']
                 ],
-                //['id' => $customer->id],
-                'merchant_reference' => 'tickets-' . implode('-', $ticketIds),
+                'merchant_reference' => 'payment-' . $payment->id,  // ✅ Référence au payment
                 'custom_metadata' => [
-                    'ticket_ids' => $ticketIds, // Array of all ticket IDs
+                    'payment_id' => $payment->id,  // ✅ ID du payment
+                    'event_title' => $event->title,
                     'ticket_count' => count($ticketIds),
                 ],
             ]);
 
-            // Générer le token de paiement
+            // 4. METTRE À JOUR LE PAYMENT AVEC L'ID FEDAPAY
+            $payment->update([
+                'fedapay_transaction_id' => $transaction->id,
+            ]);
+
+            // 5. GÉNÉRER LE TOKEN
             $token = $transaction->generateToken();
 
             return [
+                'payment_id' => $payment->id,  // ✅ Retourner l'ID du payment
                 'transaction_id' => $transaction->id,
                 'token' => $token->token,
                 'payment_url' => $token->url,
@@ -158,12 +138,12 @@ class PaymentService implements PaymentServiceContract
                 'currency' => config('services.fedapay.currency', 'XOF'),
             ];
         } catch (\Exception $e) {
-            Log::error('FedaPay transaction creation failed', [
+            Log::error('Payment creation failed', [
                 'ticket_ids' => $ticketIds,
                 'error' => $e->getMessage(),
             ]);
 
-            throw new \Exception('Failed to create payment transaction: ' . $e->getMessage());
+            throw new \Exception('Failed to create payment: ' . $e->getMessage());
         }
     }
 
@@ -291,58 +271,62 @@ class PaymentService implements PaymentServiceContract
     protected function handleTransactionApproved(array $entity): void
     {
         $metadata = $entity['custom_metadata'] ?? [];
-        $ticketIds = $metadata['ticket_ids'] ?? null;
+        $paymentId = $metadata['payment_id'] ?? null;
 
-        // Support for old single ticket_id format (backward compatibility)
-        if (!$ticketIds && isset($metadata['ticket_id'])) {
-            $ticketIds = [$metadata['ticket_id']];
-        }
-
-        if (!$ticketIds || !is_array($ticketIds)) {
-            Log::warning('Transaction approved but no ticket_ids in metadata', ['entity' => $entity]);
+        if (!$paymentId) {
+            Log::warning('Transaction approved but no payment_id in metadata', ['entity' => $entity]);
             return;
         }
 
         try {
-            $updatedCount = 0;
+            // Récupérer le payment
+            $payment = \App\Models\Payment::find($paymentId);
 
-            foreach ($ticketIds as $ticketId) {
-                $ticket = $this->ticketRepository->find($ticketId);
-
-                if ($ticket) {
-                    $this->ticketRepository->update($ticket, [
-                        'status' => 'paid',
-                        'paid_at' => now(),
-                        'metadata' => array_merge($ticket->metadata ?? [], [
-                            'fedapay_transaction_id' => $entity['id'],
-                            'fedapay_reference' => $entity['reference'] ?? null,
-                            'payment_approved_at' => now()->toISOString(),
-                        ]),
-                    ]);
-
-                    $updatedCount++;
-
-                    // Envoyer notification de paiement confirmé pour le premier ticket seulement
-                    if ($updatedCount === 1) {
-                        $this->notificationService->sendPaymentConfirmation($ticketId, [
-                            'transaction_id' => $entity['id'],
-                            'reference' => $entity['reference'] ?? null,
-                            'amount' => $entity['amount'] ?? 0,
-                            'currency' => $entity['currency']['iso'] ?? 'XOF',
-                            'ticket_count' => count($ticketIds),
-                        ]);
-                    }
-                }
+            if (!$payment) {
+                Log::error('Payment not found', ['payment_id' => $paymentId]);
+                return;
             }
 
-            Log::info('Tickets marked as paid', [
-                'ticket_ids' => $ticketIds,
-                'updated_count' => $updatedCount,
+            // Marquer le payment comme approuvé
+            $payment->update([
+                'status' => 'approved',
+                'paid_at' => now(),
+                'fedapay_reference' => $entity['reference'] ?? null,
+                'metadata' => array_merge($payment->metadata ?? [], [
+                    'fedapay_approved_at' => now()->toISOString(),
+                    'fedapay_amount' => $entity['amount'] ?? null,
+                ]),
+            ]);
+
+            // Mettre à jour tous les tickets liés
+            $payment->tickets()->update([
+                'status' => 'paid',
+                'paid_at' => now(),
+            ]);
+
+            // Envoyer notifications
+            // 1. Confirmation de paiement
+            $this->notificationService->sendPaymentConfirmation($payment->tickets->first()->id, [
+                'payment_id' => $payment->id,
                 'transaction_id' => $entity['id'],
+                'reference' => $entity['reference'] ?? null,
+                'amount' => $payment->amount,
+                'currency' => $payment->currency,
+                'ticket_count' => $payment->ticket_count,
+            ]);
+
+            // 2. Envoyer les tickets individuels par email
+            foreach ($payment->tickets as $ticket) {
+                $this->notificationService->sendTicketConfirmation($ticket->id);
+            }
+
+            Log::info('Payment approved and tickets updated', [
+                'payment_id' => $payment->id,
+                'ticket_count' => $payment->tickets->count(),
             ]);
         } catch (\Exception $e) {
-            Log::error('Failed to update tickets after payment approval', [
-                'ticket_ids' => $ticketIds,
+            Log::error('Failed to process approved payment', [
+                'payment_id' => $paymentId,
                 'error' => $e->getMessage(),
             ]);
         }

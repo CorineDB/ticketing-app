@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\EventController;
 use App\Http\Controllers\Api\GateController;
+use App\Http\Controllers\Api\AgentController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\ScanController;
 use App\Http\Controllers\Api\TicketController;
@@ -11,6 +12,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\WebhookController;
 use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\BroadcastTestController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
 
@@ -34,7 +36,7 @@ Route::get('/health', function () {
 });
 
 // Auth routes
-Route::prefix('auths')->group(function () {
+Route::prefix('auth')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
     Route::post('/forget-password', [AuthController::class, 'forgetPassword']);
     Route::post('/reset-password', [AuthController::class, 'resetPassword']);
@@ -74,6 +76,9 @@ Route::post('/webhooks/fedapay', [WebhookController::class, 'fedapayWebhook']);
 // Payment callback (public, no authentication - FedaPay redirects users here)
 Route::get('/payment/callback', [PaymentController::class, 'callback'])->name('payment.callback');
 
+// Payment details (public - for purchase success page)
+Route::get('/payments/{id}', [PaymentController::class, 'show']);
+
 // Ticket purchase (public - no authentication required to buy tickets)
 Route::post('/tickets/purchase', [TicketController::class, 'purchase']);
 
@@ -99,6 +104,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Events
     Route::apiResource('events', EventController::class);
+    Route::patch('/events/{id}/publish', [EventController::class, 'publish']);
     Route::get('/events/{id}/stats', [EventController::class, 'stats']);
 
     // Ticket Types
@@ -119,10 +125,25 @@ Route::middleware('auth:sanctum')->group(function () {
     // Gates
     Route::apiResource('gates', GateController::class);
 
+    // Agents
+    Route::get('agents', [AgentController::class, 'index']);
+    Route::post('agents', [AgentController::class, 'store']);
+    Route::get('agents/{id}', [AgentController::class, 'show']);
+    Route::patch('agents/{id}/status', [AgentController::class, 'updateStatus']);
+    Route::delete('agents/{id}', [AgentController::class, 'destroy']);
+
     // Scan Protected Endpoints
     Route::prefix('scans')->group(function () {
         Route::post('/confirm', [ScanController::class, 'confirm'])
             ->middleware('throttle:scan-confirm');
         Route::get('/history', [ScanController::class, 'history']);
+    });
+
+    // Broadcast Test Endpoints (for development/testing)
+    Route::prefix('broadcast/test')->group(function () {
+        Route::post('/ticket-purchased', [BroadcastTestController::class, 'testTicketPurchased']);
+        Route::post('/ticket-scanned', [BroadcastTestController::class, 'testTicketScanned']);
+        Route::post('/capacity-alert', [BroadcastTestController::class, 'testCapacityAlert']);
+        Route::post('/all', [BroadcastTestController::class, 'testAll']);
     });
 });

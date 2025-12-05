@@ -8,7 +8,23 @@ ROLE=${CONTAINER_ROLE:-web}
 
 echo "🤖 Démarrage du conteneur en mode : $ROLE"
 
-if [ "$ROLE" = "worker" ]; then
+if [ "$ROLE" = "broadcasting" ]; then
+    # --- MODE BROADCASTING ---
+    # Lance le serveur WebSocket Reverb
+
+    echo "✅ Lancement du websocket Laravel..."
+    
+    # Utiliser le port fourni par Railway (par défaut 8080)
+    PORT=${PORT:-8080}
+    echo "Configuration du port Reverb sur $PORT..."
+    
+    # Force l'affichage des logs dans la console
+    export LOG_CHANNEL=stderr
+    export LOG_LEVEL=debug
+    
+    php artisan reverb:start --host=0.0.0.0 --port=$PORT
+
+elif [ "$ROLE" = "worker" ]; then
     # --- MODE WORKER ---
     # Ne lance PAS Nginx. Ne lance PAS les migrations (pour éviter les conflits).
     # Lance juste le traitement des queues.

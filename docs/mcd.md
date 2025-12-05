@@ -58,14 +58,14 @@ CREATE INDEX idx_ticket_types_event ON ticket_types(event_id);
 CREATE INDEX idx_ticket_types_name ON ticket_types(name);
 
 -- Gates
-CREATE TYPE gate_type_enum AS ENUM ('entrance','exit','vip','other');
+CREATE TYPE type_enum AS ENUM ('entrance','exit','vip','other');
 CREATE TYPE gate_status_enum AS ENUM ('active','pause','inactive');
 
 CREATE TABLE gates (
   id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
   name text NOT NULL,
   location text,
-  gate_type gate_type_enum NOT NULL DEFAULT 'entrance',
+  type type_enum NOT NULL DEFAULT 'entrance',
   status gate_status_enum NOT NULL DEFAULT 'active',
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()

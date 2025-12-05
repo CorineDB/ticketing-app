@@ -12,7 +12,7 @@ class AuthService {
    * Login with email and password
    */
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    const response = await api.post<AuthResponse>('/auths/login', credentials)
+    const response = await api.post<AuthResponse>('/auth/login', credentials)
     return response.data
   }
 
@@ -20,7 +20,7 @@ class AuthService {
    * Request OTP code
    */
   async requestOtp(data: OTPRequest): Promise<{ message: string }> {
-    const response = await api.post('/auths/otp/request', data)
+    const response = await api.post('/auth/otp/request', data)
     return response.data
   }
 
@@ -28,7 +28,7 @@ class AuthService {
    * Verify OTP and authenticate
    */
   async verifyOtp(data: OTPVerification): Promise<AuthResponse> {
-    const response = await api.post<AuthResponse>('/auths/otp/verify', data)
+    const response = await api.post<AuthResponse>('/auth/otp/verify', data)
     return response.data
   }
 
@@ -36,7 +36,7 @@ class AuthService {
    * Get current authenticated user
    */
   async me(): Promise<User> {
-    const response = await api.get<User>('/auths/me')
+    const response = await api.get<User>('/auth/me')
     return response.data
   }
 
@@ -44,14 +44,14 @@ class AuthService {
    * Logout current user
    */
   async logout(): Promise<void> {
-    await api.post('/auths/logout')
+    await api.post('/auth/logout')
   }
 
   /**
    * Change password
    */
   async changePassword(currentPassword: string, newPassword: string): Promise<void> {
-    await api.post('/auths/change-password', {
+    await api.post('/auth/change-password', {
       current_password: currentPassword,
       password: newPassword,
       password_confirmation: newPassword
@@ -62,7 +62,7 @@ class AuthService {
    * Request password reset
    */
   async forgotPassword(email: string): Promise<{ message: string }> {
-    const response = await api.post('/auths/forgot-password', { email })
+    const response = await api.post('/auth/forgot-password', { email })
     return response.data
   }
 
@@ -70,7 +70,7 @@ class AuthService {
    * Reset password with token
    */
   async resetPassword(token: string, email: string, password: string): Promise<void> {
-    await api.post('/auths/reset-password', {
+    await api.post('/auth/reset-password', {
       token,
       email,
       password,
@@ -82,7 +82,7 @@ class AuthService {
    * Update user profile
    */
   async updateProfile(data: Partial<User>): Promise<User> {
-    const response = await api.put<{ data: User }>('/auths/me', data)
+    const response = await api.put<{ data: User }>('/auth/me', data)
     return response.data.data
   }
 }

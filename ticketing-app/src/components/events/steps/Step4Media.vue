@@ -25,8 +25,13 @@
           class="hidden"
         />
         
-        <div v-if="bannerPreview">
-          <img :src="bannerPreview" alt="Banner preview" class="max-h-64 mx-auto rounded-lg mb-3" />
+        <div v-if="bannerPreview || existingBannerUrl">
+          <img 
+            :src="bannerPreview || existingBannerUrl" 
+            alt="Banner preview" 
+            class="max-h-64 mx-auto rounded-lg mb-3" 
+          />
+          <p v-if="existingBannerUrl && !bannerPreview" class="text-xs text-gray-500 mb-2">Image actuelle</p>
           <button
             @click.stop="removeBanner"
             class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
@@ -67,13 +72,35 @@
           class="hidden"
         />
         
-        <div v-if="galleryPreviews.length > 0" class="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div v-if="existingGalleryUrls.length > 0 || galleryPreviews.length > 0" class="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <!-- Existing images from database -->
           <div
-            v-for="(preview, index) in galleryPreviews"
-            :key="index"
+            v-for="(url, index) in existingGalleryUrls"
+            :key="`existing-${index}`"
             class="relative group"
           >
-            <img :src="preview" alt="Gallery image" class="w-full h-32 object-cover rounded-lg" />
+            <img :src="url" alt="Existing gallery image" class="w-full h-32 object-cover rounded-lg" />
+            <div class="absolute top-2 left-2 px-2 py-1 bg-blue-600 text-white text-xs rounded">
+              Existante
+            </div>
+            <button
+              @click.stop="removeExistingGalleryImage(index)"
+              class="absolute top-2 right-2 p-1 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              <XIcon class="w-4 h-4" />
+            </button>
+          </div>
+          
+          <!-- New images to upload -->
+          <div
+            v-for="(preview, index) in galleryPreviews"
+            :key="`new-${index}`"
+            class="relative group"
+          >
+            <img :src="preview" alt="New gallery image" class="w-full h-32 object-cover rounded-lg" />
+            <div class="absolute top-2 left-2 px-2 py-1 bg-green-600 text-white text-xs rounded">
+              Nouvelle
+            </div>
             <button
               @click.stop="removeGalleryImage(index)"
               class="absolute top-2 right-2 p-1 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
@@ -82,8 +109,9 @@
             </button>
           </div>
           
+          <!-- Add more button -->
           <div
-            v-if="galleryPreviews.length < 5"
+            v-if="existingGalleryUrls.length + galleryPreviews.length < 5"
             class="border-2 border-dashed border-gray-300 rounded-lg h-32 flex items-center justify-center hover:border-blue-400 transition-colors"
           >
             <PlusIcon class="w-8 h-8 text-gray-400" />
@@ -103,6 +131,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { UploadIcon, XIcon, PlusIcon, ImageIcon } from 'lucide-vue-next'
+import { getImageUrl } from '@/utils/formatters'
 
 const props = defineProps<{
   modelValue: any
@@ -118,6 +147,8 @@ const isDraggingBanner = ref(false)
 const isDraggingGallery = ref(false)
 const bannerPreview = ref<string>('')
 const galleryPreviews = ref<string[]>([])
+const existingBannerUrl = ref<string>('')
+const existingGalleryUrls = ref<string[]>([])
 
 const localData = computed({
   get: () => props.modelValue,
@@ -129,7 +160,7 @@ function triggerBannerUpload() {
 }
 
 function triggerGalleryUpload() {
-  if (galleryPreviews.value.length < 5) {
+  if (galleryPreviews.value.length + existingGalleryUrls.value.length < 5) {
     galleryInput.value?.click()
   }
 }
@@ -178,9 +209,11 @@ function processImage(file: File, type: 'banner' | 'gallery') {
     const result = e.target?.result as string
     if (type === 'banner') {
       bannerPreview.value = result
+      existingBannerUrl.value = '' // Clear existing URL when uploading new
       localData.value.banner = file
     } else {
-      if (galleryPreviews.value.length < 5) {
+      const totalImages = galleryPreviews.value.length + existingGalleryUrls.value.length
+      if (totalImages < 5) {
         galleryPreviews.value.push(result)
         if (!localData.value.gallery) {
           localData.value.gallery = []
@@ -194,6 +227,7 @@ function processImage(file: File, type: 'banner' | 'gallery') {
 
 function removeBanner() {
   bannerPreview.value = ''
+  existingBannerUrl.value = ''
   localData.value.banner = null
   if (bannerInput.value) {
     bannerInput.value.value = ''
@@ -205,10 +239,25 @@ function removeGalleryImage(index: number) {
   localData.value.gallery.splice(index, 1)
 }
 
+function removeExistingGalleryImage(index: number) {
+  existingGalleryUrls.value.splice(index, 1)
+  // Note: You might want to track deleted images to remove them on the backend
+}
+
 onMounted(() => {
-  // Load existing images if editing
-  if (localData.value.banner && typeof localData.value.banner === 'string') {
-    bannerPreview.value = localData.value.banner
+  // Load existing banner image if editing
+  if (localData.value.image_url) {
+    const fullUrl = getImageUrl(localData.value.image_url)
+    if (fullUrl) {
+      existingBannerUrl.value = fullUrl
+    }
+  }
+  
+  // Load existing gallery images if editing
+  if (localData.value.gallery_images && Array.isArray(localData.value.gallery_images)) {
+    existingGalleryUrls.value = localData.value.gallery_images
+      .map((url: string) => getImageUrl(url))
+      .filter((url: string | undefined) => url !== undefined) as string[]
   }
 })
 </script>

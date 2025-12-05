@@ -93,11 +93,11 @@ class EventService {
   }
 
   /**
-   * Publish an event
+   * Publish an event (change status from draft to published)
    */
   async publish(id: string): Promise<Event> {
-    const response = await api.post<{ data: Event }>(`/events/${id}/publish`)
-    return response.data.data
+    const response = await api.patch<{ event: Event }>(`/events/${id}/publish`)
+    return response.data.event
   }
 
   /**
@@ -154,41 +154,50 @@ class EventService {
   /**
    * Convert data to FormData for file upload support
    */
+  /**
+   * Convert data to FormData for file upload support
+   */
   private toFormData(data: CreateEventData | UpdateEventData): FormData {
     const formData = new FormData()
-
-    Object.entries(data).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        if (value instanceof File) {
-          formData.append(key, value)
-        } else if (Array.isArray(value)) {
-          // Handle arrays (like ticket_types)
-          value.forEach((item, index) => {
-            if (typeof item === 'object') {
-              // Handle array of objects
-              Object.entries(item).forEach(([subKey, subValue]) => {
-                // Only append if value is not empty string, undefined, or null
-                if (subValue !== undefined && subValue !== null && subValue !== '') {
-                  // Convert booleans to 0/1 for FormData
-                  const formValue = typeof subValue === 'boolean' ? (subValue ? '1' : '0') : String(subValue)
-                  formData.append(`${key}[${index}][${subKey}]`, formValue)
-                }
-              })
-            } else {
-              // Convert booleans to 0/1 for FormData
-              const formValue = typeof item === 'boolean' ? (item ? '1' : '0') : String(item)
-              formData.append(`${key}[${index}]`, formValue)
-            }
-          })
-        } else {
-          // Convert booleans to 0/1 for FormData
-          const formValue = typeof value === 'boolean' ? (value ? '1' : '0') : String(value)
-          formData.append(key, formValue)
-        }
-      }
-    })
-
+    this.appendFormData(formData, data)
     return formData
+  }
+
+  /**
+   * Helper to recursively append data to FormData
+   */
+  private appendFormData(formData: FormData, data: any, parentKey: string | null = null) {
+    if (data === null || data === undefined) {
+      return
+    }
+
+    if (data instanceof File) {
+      formData.append(parentKey || 'file', data)
+      return
+    }
+
+    if (Array.isArray(data)) {
+      data.forEach((item, index) => {
+        const key = parentKey ? `${parentKey}[${index}]` : `${index}`
+        this.appendFormData(formData, item, key)
+      })
+      return
+    }
+
+    if (typeof data === 'object' && !(data instanceof Date)) {
+      Object.keys(data).forEach(key => {
+        const value = data[key]
+        const formKey = parentKey ? `${parentKey}[${key}]` : key
+        this.appendFormData(formData, value, formKey)
+      })
+      return
+    }
+
+    // Handle primitive values
+    const value = typeof data === 'boolean' ? (data ? '1' : '0') : String(data)
+    if (parentKey) {
+      formData.append(parentKey, value)
+    }
   }
 }
 

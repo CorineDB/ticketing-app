@@ -29,14 +29,15 @@ class EventController extends Controller
         $data['organisateur_id'] = auth()->id();
         $data['created_by'] = auth()->id();
 
-        $event = $this->eventService->createWithTicketTypes($data);
+        // Use new method that handles gates and gallery
+        $event = $this->eventService->createWithTicketTypesAndGates($data);
         return response()->json($event, 201);
     }
 
     public function show(string $id)
     {
         $event = $this->eventService->get($id);
-        return response()->json($event->load(["organisateur", "ticketTypes", "tickets", "counter"]));
+        return response()->json($event->load(["organisateur", "ticketTypes", "tickets", "counter", "gates"]));
     }
 
     public function showBySlug(string $slug)
@@ -48,12 +49,12 @@ class EventController extends Controller
             return response()->json(['message' => 'Event not found.'], 404);
         }
 
-        return response()->json($event->load(["organisateur", "ticketTypes", "tickets", "counter"]));
+        return response()->json($event->load(["organisateur", "ticketTypes", "tickets", "counter", "gates"]));
     }
 
     public function update(CreateEventRequest $request, string $id)
     {
-        $event = $this->eventService->updateWithTicketTypes($id, $request->validated());
+        $event = $this->eventService->updateWithTicketTypesAndGates($id, $request->validated());
         return response()->json($event);
     }
 
@@ -61,6 +62,21 @@ class EventController extends Controller
     {
         $this->eventService->delete($id);
         return response()->json(null, 204);
+    }
+
+    public function publish(string $id)
+    {
+        try {
+            $event = $this->eventService->publish($id);
+            return response()->json([
+                'message' => 'Event published successfully',
+                'event' => $event
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 422);
+        }
     }
 
     public function stats(string $id)

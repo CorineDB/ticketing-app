@@ -38,6 +38,8 @@ const ScanRedirectView = () => import('@/views/Scanner/ScanRedirectView.vue')
 const PublicTicketView = () => import('@/views/PublicTicketView.vue')
 const PaymentResultView = () => import('@/views/Payments/PaymentResultView.vue')
 const ScanProcessView = () => import('@/views/Scanner/ScanProcessView.vue') // Correct position
+const BroadcastTestView = () => import('@/views/Dashboard/BroadcastTestView.vue')
+const EnhancedDashboard = () => import('@/views/Dashboard/EnhancedDashboard.vue')
 
 const routes: RouteRecordRaw[] = [
   // Public routes
@@ -101,7 +103,13 @@ const routes: RouteRecordRaw[] = [
     component: TicketPublicView,
     meta: { public: true }
   },
-  
+  {
+    path: '/purchase/:id',
+    name: 'purchase-success',
+    component: () => import('@/views/Payments/PurchaseSuccessView.vue'),
+    meta: { public: true }
+  },
+
   // --- NEW SCAN ROUTES ---
   {
     path: '/public/tickets/:id',
@@ -160,6 +168,18 @@ const routes: RouteRecordRaw[] = [
       requiresUserType: 'agent-de-controle'
     }
   },
+  {
+    path: '/dashboard/broadcast-test',
+    name: 'broadcast-test',
+    component: BroadcastTestView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/dashboard/enhanced',
+    name: 'enhanced-dashboard',
+    component: EnhancedDashboard,
+    meta: { requiresAuth: true }
+  },
 
   // Events
   {
@@ -171,6 +191,15 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/dashboard/events/new',
     name: 'event-create',
+    component: EventFormView,
+    meta: {
+      requiresAuth: true,
+      requiresPermission: 'manage_events'
+    }
+  },
+  {
+    path: '/dashboard/events/:id/edit',
+    name: 'event-edit',
     component: EventFormView,
     meta: {
       requiresAuth: true,

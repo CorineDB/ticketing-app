@@ -651,7 +651,7 @@ components:
         id: { type: string, format: uuid }
         name: { type: string }
         location: { type: string }
-        gate_type: { type: string, enum: [entrance, exit, vip] }
+        type: { type: string, enum: [entrance, exit, vip] }
         status: { type: string, enum: [active, pause, inactive], default: active }
         created_at: { type: string, format: date-time }
         updated_at: { type: string, format: date-time }
@@ -661,9 +661,9 @@ components:
       properties:
         name: { type: string }
         location: { type: string }
-        gate_type: { type: string, enum: [entrance, exit, vip] }
+        type: { type: string, enum: [entrance, exit, vip] }
         status: { type: string, enum: [active, pause, inactive], default: active }
-      required: [name, gate_type]
+      required: [name, type]
 
     Ticket:
       type: object

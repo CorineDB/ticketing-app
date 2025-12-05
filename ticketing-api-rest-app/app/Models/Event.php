@@ -18,6 +18,8 @@ class Event extends Model
         'title',
         'description',
         'image_url',
+        'social_links',        // NEW
+        'gallery_images',      // NEW
         'start_datetime',
         'end_datetime',
         'location',
@@ -35,6 +37,8 @@ class Event extends Model
         'end_datetime' => 'datetime',
         'allow_reentry' => 'boolean',
         'capacity' => 'integer',
+        'social_links' => 'array',      // NEW
+        'gallery_images' => 'array',    // NEW
     ];
 
     public function organisateur(): BelongsTo
@@ -60,6 +64,49 @@ class Event extends Model
     public function counter(): HasOne
     {
         return $this->hasOne(EventCounter::class);
+    }
+
+    // NEW: Gates relationship (Many-to-Many via pivot)
+    public function gates(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Gate::class, 'event_gate')
+            ->withPivot([
+                'agent_id',
+                'operational_status',
+                'schedule',
+                'ticket_type_ids',
+                'max_capacity'
+            ])
+            ->withCasts([
+                'schedule' => 'array',
+                'ticket_type_ids' => 'array'
+            ])
+            ->withTimestamps();
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::saving(function ($event) {
+            // Generate slug if it's null or empty
+            if (empty($event->slug) && !empty($event->title)) {
+                $event->slug = \Illuminate\Support\Str::slug($event->title);
+
+                // Ensure slug is unique
+                $originalSlug = $event->slug;
+                $count = 1;
+
+                while (
+                    static::where('slug', $event->slug)
+                        ->where('id', '!=', $event->id)
+                        ->exists()
+                ) {
+                    $event->slug = $originalSlug . '-' . $count;
+                    $count++;
+                }
+            }
+        });
     }
 
     public function scopeForAuthUser($query)

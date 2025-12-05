@@ -16,7 +16,7 @@ class CreateGateRequest extends FormRequest
         return [
             'name' => 'required|string|max:255',
             'location' => 'nullable|string|max:255',
-            'gate_type' => 'required|in:entrance,exit,vip,other',
+            'type' => 'required|in:entrance,exit,vip,other',
             'status' => 'nullable|in:active,pause,inactive',
         ];
     }

@@ -28,7 +28,7 @@ status (ticket) possible values (string, validated in app): issued, reserved, pa
 
 Default : issued
 
-gate_type possible values: entrance, exit, vip, other. (string)
+type possible values: entrance, exit, vip, other. (string)
 
 Default : entrance
 
