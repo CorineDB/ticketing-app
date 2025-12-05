@@ -15,14 +15,36 @@ class UserController extends Controller
         $this->userService = $userService;
     }
 
-    public function index()
+    public function index(Request $request)
     {
         if (!auth()->check() || !auth()->user()->isSuperAdmin()) {
             return response()->json(['message' => 'Unauthorized.'], 403);
         }
 
-        $organizers = $this->userService->getOrganizers();
-        return response()->json(['data' => $organizers]);
+        // Get all users with optional filters
+        $users = $this->userService->all(['*'], ['role', 'organisateur']);
+
+        // Apply filters if provided
+        $search = $request->query('search');
+        $roleId = $request->query('role_id');
+        $status = $request->query('status');
+
+        if ($search || $roleId || $status) {
+            $users = $users->filter(function ($user) use ($search, $roleId, $status) {
+                if ($search && !str_contains(strtolower($user->name . ' ' . $user->email), strtolower($search))) {
+                    return false;
+                }
+                if ($roleId && (!$user->role || $user->role->id !== $roleId)) {
+                    return false;
+                }
+                if ($status && ($user->status ?? 'active') !== $status) {
+                    return false;
+                }
+                return true;
+            })->values();
+        }
+
+        return response()->json(['data' => $users]);
     }
 
     public function store(Request $request)

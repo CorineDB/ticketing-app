@@ -17,7 +17,7 @@ class RoleController extends Controller
 
     public function index()
     {
-        $roles = $this->roleService->list();
+        $roles = $this->roleService->all();
         return response()->json(['data' => $roles]);
     }
 
