@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 import { useScan } from '@/composables/useScan'
 import TicketInfoCard from '@/components/scan/TicketInfoCard.vue'
 import api from '@/services/api'
@@ -45,6 +46,8 @@ interface Ticket {
 }
 
 const route = useRoute()
+const router = useRouter()
+const authStore = useAuthStore()
 
 // Scan mode (with signature)
 const { scanTicket, ticketInfo, loading: scanLoading, error: scanError } = useScan()
@@ -67,7 +70,20 @@ onMounted(async () => {
   const ticketId = route.params.id as string
   
   if (isScanMode.value) {
-    // Scan/verification mode
+    // If user is authenticated, redirect to the full scan page
+    if (authStore.isAuthenticated) {
+      const signature = route.query.sig as string
+      router.push({
+        name: 'ScanRedirect',
+        query: {
+          ticket_id: ticketId,
+          qr_hmac: signature
+        }
+      })
+      return
+    }
+    
+    // Scan/verification mode for non-authenticated users
     const signature = route.query.sig as string
     if (ticketId && signature) {
       try {
