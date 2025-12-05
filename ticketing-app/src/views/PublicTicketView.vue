@@ -83,7 +83,7 @@ onMounted(async () => {
       } else {
         // Redirect to ticket details page in dashboard
         router.push({
-          name: 'ticket-details',
+          name: 'ticket-detail',
           params: { id: ticketId }
         })
       }
@@ -91,7 +91,7 @@ onMounted(async () => {
     } else if (token) {
       // Token mode - redirect to ticket details page
       router.push({
-        name: 'ticket-details',
+        name: 'ticket-detail',
         params: { id: ticketId }
       })
       return
