@@ -176,6 +176,7 @@
     </div>
 
     <!-- Modals -->
+    <!-- TODO: Uncomment when modals are created
     <UserFormModal
       v-model="showUserModal"
       :user="selectedUser"
@@ -193,6 +194,7 @@
       :roles="roles"
       @submit="handleRoleAssign"
     />
+    -->
 
     <ConfirmModal
       v-model="showDeleteModal"
@@ -215,9 +217,10 @@ import type { User, UserFilters } from '@/types/api'
 import DashboardLayout from '@/components/layout/DashboardLayout.vue'
 import Badge from '@/components/common/Badge.vue'
 import StatusBadge from '@/components/common/StatusBadge.vue'
-import UserFormModal from '@/components/users/UserFormModal.vue'
-import UserDetailModal from '@/components/users/UserDetailModal.vue'
-import AssignRoleModal from '@/components/users/AssignRoleModal.vue'
+// TODO: Create these components
+// import UserFormModal from '@/components/users/UserFormModal.vue'
+// import UserDetailModal from '@/components/users/UserDetailModal.vue'
+// import AssignRoleModal from '@/components/users/AssignRoleModal.vue'
 import ConfirmModal from '@/components/common/ConfirmModal.vue'
 import {
   PlusIcon,
