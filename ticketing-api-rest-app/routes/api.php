@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\ScanController;
 use App\Http\Controllers\Api\TicketController;
 use App\Http\Controllers\Api\TicketTypeController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\OrganizerController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\WebhookController;
@@ -159,6 +160,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::apiResource('users', UserController::class);
     Route::post('/organizers', [UserController::class, 'storeOrganizer']);
+
+    // Organisateurs (Organizers)
+    Route::apiResource('organisateurs', OrganizerController::class);
 
     // Events
     Route::apiResource('events', EventController::class);

@@ -21,7 +21,8 @@ class OrganizerController extends Controller
      */
     public function index()
     {
-        // Will be implemented next
+        $organizers = $this->userService->getOrganizers();
+        return response()->json(['data' => $organizers]);
     }
 
     /**
@@ -39,7 +40,13 @@ class OrganizerController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $organizer = $this->userService->find($id);
+
+        if (!$organizer || $organizer->type !== 'organizer') {
+            return response()->json(['message' => 'Organizer not found'], 404);
+        }
+
+        return response()->json(['data' => $organizer]);
     }
 
     /**
@@ -47,7 +54,14 @@ class OrganizerController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $organizer = $this->userService->find($id);
+
+        if (!$organizer || $organizer->type !== 'organizer') {
+            return response()->json(['message' => 'Organizer not found'], 404);
+        }
+
+        $updated = $this->userService->update($organizer, $request->all());
+        return response()->json(['data' => $updated]);
     }
 
     /**
@@ -55,6 +69,13 @@ class OrganizerController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $organizer = $this->userService->find($id);
+
+        if (!$organizer || $organizer->type !== 'organizer') {
+            return response()->json(['message' => 'Organizer not found'], 404);
+        }
+
+        $this->userService->delete($organizer);
+        return response()->json(null, 204);
     }
 }

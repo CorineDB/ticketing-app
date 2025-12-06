@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import authService from '@/services/authService'
+import { updateEchoAuth, disconnectEcho } from '@/services/websocket'
 import type { User, LoginCredentials, OTPRequest, OTPVerification } from '@/types/api'
 
 export const useAuthStore = defineStore('auth', () => {
@@ -33,6 +34,9 @@ export const useAuthStore = defineStore('auth', () => {
       const response = await authService.login(credentials);
 
       localStorage.setItem("auth_token", response.access_token);
+
+      // Update Echo auth token
+      updateEchoAuth(response.access_token);
 
       const fetchedUser = await fetchUser();
 
@@ -144,6 +148,9 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   function logout() {
+    // Disconnect Echo
+    disconnectEcho();
+
     // Clear local storage
     localStorage.removeItem('auth_token')
     localStorage.removeItem('auth_user')
