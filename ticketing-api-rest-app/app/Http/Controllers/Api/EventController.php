@@ -58,6 +58,17 @@ class EventController extends Controller
 
     public function update(CreateEventRequest $request, string $id)
     {
+        // Get the event to check ownership
+        $event = $this->eventService->get($id);
+        
+        // Check if user is the owner or super-admin
+        $user = auth()->user();
+        if ($event->organisateur_id !== $user->id && !$user->isSuperAdmin()) {
+            return response()->json([
+                'message' => 'Vous n\'êtes pas autorisé à modifier cet événement.'
+            ], 403);
+        }
+        
         $event = $this->eventService->updateWithTicketTypesAndGates($id, $request->validated());
         return response()->json($event);
     }
