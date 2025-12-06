@@ -1,8 +1,8 @@
 /**
  * Format currency value
  */
-export function formatCurrency(amount: number, currency: string = 'USD'): string {
-  return new Intl.NumberFormat('en-US', {
+export function formatCurrency(amount: number, currency: string = 'XOF'): string {
+  return new Intl.NumberFormat('fr-FR', {
     style: 'currency',
     currency: currency
   }).format(amount)

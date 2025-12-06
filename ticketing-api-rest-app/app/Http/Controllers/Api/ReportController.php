@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Ticket;
 use App\Models\Scan;
-use App\Models\Order;
+use App\Models\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -16,7 +16,7 @@ class ReportController extends Controller
      */
     public function getSalesReport(Request $request)
     {
-        $query = Order::query();
+        $query = Payment::query();
 
         // Apply date filters if provided
         if ($request->has('start_date')) {
@@ -27,7 +27,7 @@ class ReportController extends Controller
         }
 
         // Get total tickets sold
-        $totalTicketsSold = Ticket::whereHas('order', function ($q) use ($request) {
+        $totalTicketsSold = Ticket::whereHas('payment', function ($q) use ($request) {
             if ($request->has('start_date')) {
                 $q->where('created_at', '>=', $request->start_date);
             }
@@ -37,8 +37,8 @@ class ReportController extends Controller
         })->count();
 
         // Get total revenue
-        $totalRevenue = $query->where('payment_status', 'completed')
-            ->sum('total_amount');
+        $totalRevenue = $query->where('status', 'completed')
+            ->sum('amount');
 
         // Get average ticket price
         $averageTicketPrice = $totalTicketsSold > 0
@@ -46,15 +46,15 @@ class ReportController extends Controller
             : 0;
 
         // Get sales by status
-        $salesByStatus = $query->select('payment_status', DB::raw('count(*) as count'))
-            ->groupBy('payment_status')
+        $salesByStatus = $query->select('status', DB::raw('count(*) as count'))
+            ->groupBy('status')
             ->get()
-            ->pluck('count', 'payment_status');
+            ->pluck('count', 'status');
 
         // Get top selling events
         $topEvents = Ticket::select('event_id', DB::raw('count(*) as tickets_sold'))
-            ->whereHas('order', function ($q) use ($request) {
-                $q->where('payment_status', 'completed');
+            ->whereHas('payment', function ($q) use ($request) {
+                $q->where('status', 'completed');
                 if ($request->has('start_date')) {
                     $q->where('created_at', '>=', $request->start_date);
                 }
@@ -166,12 +166,12 @@ class ReportController extends Controller
         $scanData = $this->getScanActivityReport($request)->getData()->data;
 
         // Get daily trends
-        $dailyTrends = Order::whereBetween('created_at', [$startDate, $endDate])
-            ->where('payment_status', 'completed')
+        $dailyTrends = Payment::whereBetween('created_at', [$startDate, $endDate])
+            ->where('status', 'completed')
             ->select(
                 DB::raw('DATE(created_at) as date'),
                 DB::raw('count(*) as orders'),
-                DB::raw('sum(total_amount) as revenue')
+                DB::raw('sum(amount) as revenue')
             )
             ->groupBy('date')
             ->orderBy('date')

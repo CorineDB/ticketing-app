@@ -7,13 +7,13 @@
           <h1 class="text-3xl font-bold text-gray-900">Events</h1>
           <p class="mt-2 text-gray-600">Manage all your events</p>
         </div>
-        <button
-          @click="showEventModal = true"
+        <RouterLink
+          :to="{ name: 'event-create' }"
           class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
         >
           <PlusIcon class="w-5 h-5" />
           Create Event
-        </button>
+        </RouterLink>
       </div>
 
       <!-- Filters -->

@@ -59,11 +59,11 @@ export function formatTime(date: string | Date | undefined): string {
 /**
  * Format currency amount
  * @param amount Amount in smallest currency unit
- * @param currency Currency code (default: 'USD')
- * @returns Formatted currency string (e.g., "$12.50")
+ * @param currency Currency code (default: 'XOF' - Franc CFA)
+ * @returns Formatted currency string (e.g., "12 500 F CFA")
  */
-export function formatCurrency(amount: number, currency: string = 'USD'): string {
-  return new Intl.NumberFormat('en-US', {
+export function formatCurrency(amount: number, currency: string = 'XOF'): string {
+  return new Intl.NumberFormat('fr-FR', {
     style: 'currency',
     currency
   }).format(amount)

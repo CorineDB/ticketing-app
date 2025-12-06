@@ -199,7 +199,7 @@ const routes: RouteRecordRaw[] = [
     component: EventFormView,
     meta: {
       requiresAuth: true,
-      requiresPermission: 'manage_events'
+      requiresAnyRole: ['super-admin', 'organizer']
     }
   },
   {
@@ -208,7 +208,7 @@ const routes: RouteRecordRaw[] = [
     component: EventFormView,
     meta: {
       requiresAuth: true,
-      requiresPermission: 'manage_events'
+      requiresAnyRole: ['super-admin', 'organizer']
     }
   },
   {
@@ -216,15 +216,6 @@ const routes: RouteRecordRaw[] = [
     name: 'event-detail',
     component: EventDetailView,
     meta: { requiresAuth: true }
-  },
-  {
-    path: '/dashboard/events/:id/edit',
-    name: 'event-edit',
-    component: EventFormView,
-    meta: {
-      requiresAuth: true,
-      requiresPermission: 'manage_events'
-    }
   },
 
   // Tickets
@@ -257,7 +248,7 @@ const routes: RouteRecordRaw[] = [
     component: ScanHistoryView,
     meta: {
       requiresAuth: true,
-      //requiresUserType: 'agent-de-controle'
+      requiresAnyRole: ['super-admin', 'organizer', 'agent-de-controle']
     }
   },
 
@@ -288,7 +279,7 @@ const routes: RouteRecordRaw[] = [
     component: UsersListView,
     meta: {
       requiresAuth: true,
-      requiresPermission: 'manage_users'
+      requiresAnyRole: ['super-admin', 'organizer']
     }
   },
   {
@@ -305,7 +296,7 @@ const routes: RouteRecordRaw[] = [
     component: ReportsView,
     meta: {
       requiresAuth: true,
-      requiresPermission: 'view_reports'
+      requiresAnyRole: ['super-admin', 'organizer']
     }
   }
 ]
@@ -336,6 +327,18 @@ router.beforeEach((to, from, next) => {
   if (to.meta.requiresUserType && authStore.user) {
     if (authStore.user.role.slug !== to.meta.requiresUserType) {
       notifications.error('Access Denied', 'You do not have permission to access this page')
+      next({ name: 'dashboard' })
+      return
+    }
+  }
+
+  // Check if user has any of the required roles
+  if (to.meta.requiresAnyRole && authStore.user) {
+    const userRole = authStore.user.role.slug
+    const requiredRoles = to.meta.requiresAnyRole as string[]
+
+    if (!requiredRoles.includes(userRole)) {
+      notifications.error('Access Denied', 'You do not have the required role')
       next({ name: 'dashboard' })
       return
     }
