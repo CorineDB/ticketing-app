@@ -17,7 +17,9 @@ class UserController extends Controller
 
     public function index(Request $request)
     {
-        if (!auth()->check() || !auth()->user()->isSuperAdmin()) {
+        $user = auth()->user();
+
+        if (!auth()->check() || (!$user->isSuperAdmin() && !$user->isOrganizer())) {
             return response()->json(['message' => 'Unauthorized.'], 403);
         }
 
