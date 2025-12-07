@@ -100,7 +100,7 @@ export interface CreateOrganizationData {
   website?: string
 }
 
-export interface UpdateOrganizationData extends Partial<CreateOrganizationData> {}
+export interface UpdateOrganizationData extends Partial<CreateOrganizationData> { }
 
 export interface OrganizationFilters {
   search?: string
@@ -119,6 +119,15 @@ export interface Event {
   slug: string
   description?: string
   image_url?: string
+  social_links?: {
+    facebook?: string
+    instagram?: string
+    twitter?: string
+    linkedin?: string
+    tiktok?: string
+    website?: string
+  }
+  gallery_images?: string[]
   location: string
   venue: string
   address?: string
@@ -227,36 +236,32 @@ export interface UpdateTicketTypeData extends Partial<CreateTicketTypeData> {
 // ==================== GATE TYPES ====================
 
 export type GateType = 'entrance' | 'exit' | 'vip' | 'other'
-export type GateStatus = 'active' | 'pause' | 'inactive'
+export type GateStatus = 'active' | 'inactive'
 
 export interface Gate {
   id: string
-  event_id: string
-  event?: Event
   name: string
-  gate_type: GateType
+  type: GateType  // Changed from type
   location?: string
   status: GateStatus
-  scanner_id?: number // Assigned scanner
-  scanner?: User
   created_at: string
   updated_at: string
 }
 
 export interface CreateGateData {
-  event_id: string
+  event_id?: string
   name: string
-  gate_type: GateType
+  type: GateType
   location?: string
   status?: GateStatus
   scanner_id?: number
 }
 
-export interface UpdateGateData extends Partial<CreateGateData> {}
+export interface UpdateGateData extends Partial<CreateGateData> { }
 
 export interface GateFilters {
   event_id?: string
-  gate_type?: GateType
+  type?: GateType
   status?: GateStatus
   scanner_id?: number
 }
@@ -697,22 +702,18 @@ export interface BaseFilters {
 // ==================== REPORT TYPES ====================
 
 export interface SalesReport {
-  event_id: string
-  event_name: string
-  start_date: string
-  end_date: string
-  total_tickets: number
-  total_revenue: number
-  ticket_types: {
-    name: string
-    quantity: number
-    revenue: number
-  }[]
-  payment_methods: {
-    method: string
-    quantity: number
-    revenue: number
-  }[]
+  totalTicketsSold: number
+  totalRevenue: number
+  averageTicketPrice: number
+  salesByStatus: Record<string, number>
+  topEvents: Array<{
+    event_id: string
+    tickets_sold: number
+    event: {
+      id: string
+      title: string
+    }
+  }>
 }
 
 export interface AttendanceReport {
@@ -732,7 +733,22 @@ export interface AttendanceReport {
 }
 
 export interface ScanActivityReport {
-  totalScans: number;
-  successfulScans: number;
-  failedScans: number;
+  totalScans: number
+  successfulScans: number
+  failedScans: number
+  successRate: number
+  scansByType: Record<string, number>
+  scansByResult: Record<string, number>
+  hourlyDistribution: Array<{
+    hour: number
+    count: number
+  }>
+  topScanners: Array<{
+    scanned_by: string
+    scan_count: number
+    scanner?: {
+      id: string
+      name: string
+    }
+  }>
 }

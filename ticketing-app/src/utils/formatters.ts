@@ -59,11 +59,11 @@ export function formatTime(date: string | Date | undefined): string {
 /**
  * Format currency amount
  * @param amount Amount in smallest currency unit
- * @param currency Currency code (default: 'USD')
- * @returns Formatted currency string (e.g., "$12.50")
+ * @param currency Currency code (default: 'XOF' - Franc CFA)
+ * @returns Formatted currency string (e.g., "12 500 F CFA")
  */
-export function formatCurrency(amount: number, currency: string = 'USD'): string {
-  return new Intl.NumberFormat('en-US', {
+export function formatCurrency(amount: number, currency: string = 'XOF'): string {
+  return new Intl.NumberFormat('fr-FR', {
     style: 'currency',
     currency
   }).format(amount)
@@ -171,8 +171,9 @@ export function getImageUrl(imagePath: string | undefined): string | undefined {
     return imagePath
   }
 
-  // Get API base URL from config
-  const baseURL = import.meta.env.VITE_API_URL || 'http://192.168.8.107:8000'
+  // Get API base URL from config and remove /api suffix if present
+  const apiURL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
+  const baseURL = apiURL.replace(/\/api\/?$/, '')
 
   // Remove trailing slash from baseURL if present
   const cleanBaseUrl = baseURL.replace(/\/$/, '')

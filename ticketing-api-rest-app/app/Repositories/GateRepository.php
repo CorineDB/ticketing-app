@@ -20,6 +20,6 @@ class GateRepository extends BaseRepository implements GateRepositoryContract
 
     public function findByType(string $type)
     {
-        return $this->model->where('gate_type', $type)->get();
+        return $this->model->where('type', $type)->get();
     }
 }

@@ -74,7 +74,7 @@
         </template>
 
         <!-- Scanner (Scanner role) -->
-        <template v-if="isScanner || isSuperAdmin">
+        <template v-if="isScanner || isOrganizer || isSuperAdmin">
           <div class="pt-4 pb-2">
             <div class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">
               Scanner
@@ -82,7 +82,7 @@
           </div>
 
           <NavLink
-            to="/dashboard/scanner"
+            to="/scanner"
             :icon="ScanIcon"
             label="Scan Tickets"
             @click="$emit('close')"

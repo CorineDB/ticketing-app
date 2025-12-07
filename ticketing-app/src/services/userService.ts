@@ -26,7 +26,14 @@ class UserService {
    * Get all users
    */
   async getAll(filters?: Record<string, any>): Promise<PaginatedResponse<User>> {
-    const response = await api.get<PaginatedResponse<User>>('/users', { params: filters })
+    // Remove empty, null, or undefined values from filters
+    const cleanFilters = filters
+      ? Object.fromEntries(
+        Object.entries(filters).filter(([_, value]) => value !== '' && value !== null && value !== undefined)
+      )
+      : {}
+
+    const response = await api.get<PaginatedResponse<User>>('/users', { params: cleanFilters })
     return response.data
   }
 

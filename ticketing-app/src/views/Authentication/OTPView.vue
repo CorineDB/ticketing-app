@@ -69,7 +69,7 @@
               </label>
               <div class="flex gap-2 justify-center">
                 <input
-                  v-for="(digit, index) in otp"
+                  v-for="(_, index) in otp"
                   :key="index"
                   :ref="(el) => otpInputs[index] = el as HTMLInputElement"
                   v-model="otp[index]"
@@ -177,7 +177,7 @@ async function handleSendOTP() {
   error.value = ''
 
   try {
-    await authStore.requestOTP({ phone: phone.value })
+    await authStore.requestOtp({ phone: phone.value })
     step.value = 'otp'
     startResendCountdown()
 
@@ -198,7 +198,7 @@ async function handleVerifyOTP() {
 
   try {
     const otpCode = otp.value.join('')
-    const success = await authStore.verifyOTP({
+    const success = await authStore.verifyOtp({
       phone: phone.value,
       otp: otpCode
     })

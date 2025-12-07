@@ -27,10 +27,32 @@ class TicketScanLogSeeder extends Seeder
         $paidTickets = Ticket::where('status', 'paid')->get();
         $gates = Gate::all();
         $agentRole = Role::where('slug', 'agent-de-controle')->first();
-        $agents = $agentRole ? User::where('role_id', $agentRole->id)->get() : User::where('email', 'admin@example.com')->get(); // Fallback to admin if no agents
+
+        // Try to get agents by role, otherwise fallback to any user to ensure seeding works
+        $agents = collect();
+        if ($agentRole) {
+            $agents = User::where('role_id', $agentRole->id)->get();
+        }
+
+        if ($agents->isEmpty()) {
+            // Fallback to admin or any user if no specific agents found
+            $agents = User::where('email', 'admin@example.com')->get();
+            if ($agents->isEmpty()) {
+                $agents = User::take(1)->get();
+            }
+        }
 
         if ($paidTickets->isEmpty() || $gates->isEmpty() || $agents->isEmpty()) {
             $this->command->warn('Skipping TicketScanLogSeeder: Not enough paid tickets, gates, or agents available.');
+            return;
+        }
+
+        // Ensure we have at least one entrance and one exit gate
+        $entranceGates = $gates->where('type', 'entrance');
+        $exitGates = $gates->where('type', 'exit');
+
+        if ($entranceGates->isEmpty() || $exitGates->isEmpty()) {
+            $this->command->warn('Skipping TicketScanLogSeeder: Missing entrance or exit gates.');
             return;
         }
 
@@ -39,8 +61,8 @@ class TicketScanLogSeeder extends Seeder
 
         foreach ($ticketsToScan as $ticket) {
             $agent = $agents->random();
-            $gateEntry = $gates->where('gate_type', 'entrance')->random();
-            $gateExit = $gates->where('gate_type', 'exit')->random();
+            $gateEntry = $entranceGates->random();
+            $gateExit = $exitGates->random();
 
             // Simulate Entry Scan
             $scanTimeEntry = $faker->dateTimeBetween($ticket->paid_at ?? '-1 week', 'now');

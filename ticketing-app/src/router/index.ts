@@ -22,8 +22,8 @@ const TicketPublicView = () => import('@/views/Tickets/TicketPublicView.vue')
 const CheckoutView = () => import('@/views/Payments/CheckoutView.vue')
 const PaymentCallbackView = () => import('@/views/Payments/PaymentCallbackView.vue')
 
-const ScannerView = () => import('@/views/Scanners/ScannerView.vue')
-const ScanHistoryView = () => import('@/views/Scanners/ScanHistoryView.vue')
+const ScannerView = () => import('@/views/Scanner/ScannerView.vue')
+const ScanHistoryView = () => import('@/views/Scanner/ScanHistoryView.vue')
 
 const OrganizationsListView = () => import('@/views/Organizations/OrganizationsListView.vue')
 const OrganizationDetailView = () => import('@/views/Organizations/OrganizationDetailView.vue')
@@ -32,6 +32,14 @@ const UsersListView = () => import('@/views/Users/UsersListView.vue')
 const ProfileView = () => import('@/views/Users/ProfileView.vue')
 
 const ReportsView = () => import('@/views/Reports/ReportsView.vue')
+
+// NEW VIEWS
+const ScanRedirectView = () => import('@/views/Scanner/ScanRedirectView.vue')
+const PublicTicketView = () => import('@/views/PublicTicketView.vue')
+const PaymentResultView = () => import('@/views/Payments/PaymentResultView.vue')
+const ScanProcessView = () => import('@/views/Scanner/ScanProcessView.vue') // Correct position
+const BroadcastTestView = () => import('@/views/Dashboard/BroadcastTestView.vue')
+const EnhancedDashboard = () => import('@/views/Dashboard/EnhancedDashboard.vue')
 
 const routes: RouteRecordRaw[] = [
   // Public routes
@@ -84,17 +92,49 @@ const routes: RouteRecordRaw[] = [
     meta: { public: true }
   },
   {
+    path: '/payment/result',
+    name: 'payment-result',
+    component: PaymentResultView,
+    meta: { public: true, requiresAuth: false }
+  },
+  {
     path: '/tickets/:code',
     name: 'ticket-public',
     component: TicketPublicView,
     meta: { public: true }
   },
+  {
+    path: '/purchase/:id',
+    name: 'purchase-success',
+    component: () => import('@/views/Payments/PurchaseSuccessView.vue'),
+    meta: { public: true }
+  },
+
+  // --- NEW SCAN ROUTES ---
+  {
+    path: '/public/tickets/:id',
+    name: 'PublicTicketView',
+    component: PublicTicketView,
+    meta: { public: true }
+  },
+  {
+    path: '/verify',  // Changed from /dashboard/scan to /verify to match backend
+    name: 'ScanRedirect',
+    component: ScanRedirectView,
+    meta: { public: true }
+  },
+  // -----------------------
 
   // Authenticated routes - All prefixed with /dashboard
   {
     path: '/dashboard',
     name: 'dashboard',
     component: DashboardView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/dashboard/settings',
+    redirect: { name: 'profile' },
     meta: { requiresAuth: true }
   },
   {
@@ -117,12 +157,33 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: '/dashboard/scanner',
-    name: 'scanner-dashboard',
+    name: 'ScannerDashboard', // Renamed from scanner-dashboard to match redirection
     component: ScannerDashboard,
     meta: {
       requiresAuth: true,
       requiresUserType: 'agent-de-controle'
     }
+  },
+  {
+    path: '/dashboard/scan/process',
+    name: 'ScanProcess',
+    component: ScanProcessView,
+    meta: {
+      requiresAuth: true,
+      requiresUserType: 'agent-de-controle'
+    }
+  },
+  {
+    path: '/dashboard/broadcast-test',
+    name: 'broadcast-test',
+    component: BroadcastTestView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/dashboard/enhanced',
+    name: 'enhanced-dashboard',
+    component: EnhancedDashboard,
+    meta: { requiresAuth: true }
   },
 
   // Events
@@ -138,14 +199,8 @@ const routes: RouteRecordRaw[] = [
     component: EventFormView,
     meta: {
       requiresAuth: true,
-      requiresPermission: 'manage_events'
+      requiresAnyRole: ['super-admin', 'organizer']
     }
-  },
-  {
-    path: '/dashboard/events/:id',
-    name: 'event-detail',
-    component: EventDetailView,
-    meta: { requiresAuth: true }
   },
   {
     path: '/dashboard/events/:id/edit',
@@ -153,8 +208,14 @@ const routes: RouteRecordRaw[] = [
     component: EventFormView,
     meta: {
       requiresAuth: true,
-      requiresPermission: 'manage_events'
+      requiresAnyRole: ['super-admin', 'organizer']
     }
+  },
+  {
+    path: '/dashboard/events/:id',
+    name: 'event-detail',
+    component: EventDetailView,
+    meta: { requiresAuth: true }
   },
 
   // Tickets
@@ -173,7 +234,7 @@ const routes: RouteRecordRaw[] = [
 
   // Scanner
   {
-    path: '/dashboard/scanner',
+    path: '/scanner',
     name: 'scanner',
     component: ScannerView,
     meta: {
@@ -187,7 +248,7 @@ const routes: RouteRecordRaw[] = [
     component: ScanHistoryView,
     meta: {
       requiresAuth: true,
-      requiresUserType: 'agent-de-controle'
+      requiresAnyRole: ['super-admin', 'organizer', 'agent-de-controle']
     }
   },
 
@@ -218,7 +279,7 @@ const routes: RouteRecordRaw[] = [
     component: UsersListView,
     meta: {
       requiresAuth: true,
-      requiresPermission: 'manage_users'
+      requiresAnyRole: ['super-admin', 'organizer']
     }
   },
   {
@@ -235,7 +296,7 @@ const routes: RouteRecordRaw[] = [
     component: ReportsView,
     meta: {
       requiresAuth: true,
-      requiresPermission: 'view_reports'
+      requiresAnyRole: ['super-admin', 'organizer']
     }
   }
 ]
@@ -263,17 +324,29 @@ router.beforeEach((to, from, next) => {
   }
 
   // Check user type requirement
-  /* if (to.meta.requiresUserType && authStore.user) {
-    if (authStore.user.type !== to.meta.requiresUserType) {
+  if (to.meta.requiresUserType && authStore.user) {
+    if (authStore.user.role.slug !== to.meta.requiresUserType) {
       notifications.error('Access Denied', 'You do not have permission to access this page')
       next({ name: 'dashboard' })
       return
     }
-  } */
+  }
+
+  // Check if user has any of the required roles
+  if (to.meta.requiresAnyRole && authStore.user) {
+    const userRole = authStore.user.role.slug
+    const requiredRoles = to.meta.requiresAnyRole as string[]
+
+    if (!requiredRoles.includes(userRole)) {
+      notifications.error('Access Denied', 'You do not have the required role')
+      next({ name: 'dashboard' })
+      return
+    }
+  }
 
   // Check permission requirement
-  /* if (to.meta.requiresPermission && authStore.user) {
-    const hasPermission = authStore.user.permissions?.some(
+  if (to.meta.requiresPermission && authStore.user) {
+    const hasPermission = authStore.user.role.permissions?.some(
       (p) => p.slug === to.meta.requiresPermission
     )
 
@@ -282,7 +355,7 @@ router.beforeEach((to, from, next) => {
       next({ name: 'dashboard' })
       return
     }
-  } */
+  }
 
   next()
 })

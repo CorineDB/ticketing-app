@@ -38,7 +38,7 @@ class TicketConfirmationMail extends Mailable
      */
     public function content(): Content
     {
-        $magicLink = config('app.frontend_url', env('FRONTEND_URL', 'http://localhost:5173')).'/tickets/' . $this->ticket->id . '?token=' . $this->ticket->magic_link_token;
+        $magicLink = config('app.frontend_url', env('CLIENT_APP_URL', 'http://localhost:5173')).'/tickets/' . $this->ticket->id . '?token=' . $this->ticket->magic_link_token;
         return new Content(
             view: 'emails.ticket-confirmation',
             with: [
@@ -55,7 +55,7 @@ class TicketConfirmationMail extends Mailable
      *
      * @return array<int, \Illuminate\Mail\Mailables\Attachment>
      */
-    public function attachments(): array
+    /*public function attachments(): array
     {
         $attachments = [];
 
@@ -67,5 +67,5 @@ class TicketConfirmationMail extends Mailable
         }
 
         return $attachments;
-    }
+    }*/
 }

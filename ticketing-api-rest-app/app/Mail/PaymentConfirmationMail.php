@@ -37,7 +37,7 @@ class PaymentConfirmationMail extends Mailable
      */
     public function content(): Content
     {
-        $magicLink = config('app.frontend_url', env('FRONTEND_URL', 'http://localhost:5173')).'/tickets/' . $this->ticket->id . '?token=' . $this->ticket->magic_link_token;
+        $magicLink = config('app.frontend_url', env('CLIENT_APP_URL', 'http://localhost:5173')).'/tickets/' . $this->ticket->id . '?token=' . $this->ticket->magic_link_token;
         return new Content(
             view: 'emails.payment-confirmation',
             with: [

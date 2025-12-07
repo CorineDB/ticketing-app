@@ -58,8 +58,7 @@
               </div>
               <div>
                 <h3 class="text-lg font-semibold text-gray-900">{{ org.name }}</h3>
-                <StatusBadge :status="org.status || 'active'" type="organisateur" />
-              </div>
+                                 <StatusBadge :status="org.status || 'active'" type="custom" />              </div>
             </div>
           </div>
 
@@ -155,8 +154,8 @@ import { formatCurrency } from '@/utils/formatters'
 import type { Organization } from '@/types/api'
 import DashboardLayout from '@/components/layout/DashboardLayout.vue'
 import StatusBadge from '@/components/common/StatusBadge.vue'
-import OrganizationFormModal from '@/components/organisateurs/OrganizationFormModal.vue'
-import OrganizationDetailModal from '@/components/organisateurs/OrganizationDetailModal.vue'
+import OrganizationFormModal from '@/components/organizations/OrganizationFormModal.vue'
+import OrganizationDetailModal from '@/components/organizations/OrganizationDetailModal.vue'
 import ConfirmModal from '@/components/common/ConfirmModal.vue'
 import {
   PlusIcon,

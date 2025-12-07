@@ -15,14 +15,18 @@ class UserController extends Controller
         $this->userService = $userService;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        if (!auth()->check() || !auth()->user()->isSuperAdmin()) {
+        $user = auth()->user();
+
+        if (!auth()->check() || (!$user->isSuperAdmin() && !$user->isOrganizer())) {
             return response()->json(['message' => 'Unauthorized.'], 403);
         }
 
-        $organizers = $this->userService->getOrganizers();
-        return response()->json(['data' => $organizers]);
+        // Get all users - NO relations to avoid errors
+        $users = $this->userService->all();
+
+        return response()->json(['data' => $users]);
     }
 
     public function store(Request $request)

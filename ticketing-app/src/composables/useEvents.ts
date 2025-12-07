@@ -19,13 +19,24 @@ export function useEvents() {
     loading.value = true
     error.value = null
     try {
-      const response: PaginatedResponse<Event> = await eventService.getAll(filters)
-      events.value = response.data
-      pagination.value = {
-        total: response?.total,
-        per_page: response?.per_page,
-        current_page: response?.current_page,
-        last_page: response?.last_page
+      const response = await eventService.getAll(filters)
+      // Handle both paginated and non-paginated responses
+      if (Array.isArray(response.data)) {
+        events.value = response.data
+        pagination.value = {
+          total: response.data.length,
+          per_page: response.data.length,
+          current_page: 1,
+          last_page: 1
+        }
+      } else {
+        events.value = response.data
+        pagination.value = {
+          total: response.meta?.total || 0,
+          per_page: response.meta?.per_page || 10,
+          current_page: response.meta?.current_page || 1,
+          last_page: response.meta?.last_page || 1
+        }
       }
     } catch (e: any) {
       error.value = e.response?.data?.message || 'Failed to fetch events'
@@ -39,13 +50,24 @@ export function useEvents() {
     loading.value = true
     error.value = null
     try {
-      const response: PaginatedResponse<Event> = await eventService.getAllPublicEvents(filters)
-      events.value = response.data
-      pagination.value = {
-        total: response?.total,
-        per_page: response?.per_page,
-        current_page: response?.current_page,
-        last_page: response?.last_page
+      const response = await eventService.getAllPublicEvents(filters)
+      // Handle both paginated and non-paginated responses
+      if (Array.isArray(response.data)) {
+        events.value = response.data
+        pagination.value = {
+          total: response.data.length,
+          per_page: response.data.length,
+          current_page: 1,
+          last_page: 1
+        }
+      } else {
+        events.value = response.data
+        pagination.value = {
+          total: response.meta?.total || 0,
+          per_page: response.meta?.per_page || 10,
+          current_page: response.meta?.current_page || 1,
+          last_page: response.meta?.last_page || 1
+        }
       }
     } catch (e: any) {
       error.value = e.response?.data?.message || 'Failed to fetch events'
@@ -208,13 +230,24 @@ export function useEvents() {
     loading.value = true
     error.value = null
     try {
-      const response: PaginatedResponse<Event> = await eventService.getMyEvents(filters)
-      events.value = response.data
-      pagination.value = {
-        total: response.total,
-        per_page: response.per_page,
-        current_page: response.current_page,
-        last_page: response.last_page
+      const response = await eventService.getMyEvents(filters)
+      // Handle both paginated and non-paginated responses
+      if (Array.isArray(response.data)) {
+        events.value = response.data
+        pagination.value = {
+          total: response.data.length,
+          per_page: response.data.length,
+          current_page: 1,
+          last_page: 1
+        }
+      } else {
+        events.value = response.data
+        pagination.value = {
+          total: response.meta?.total || 0,
+          per_page: response.meta?.per_page || 10,
+          current_page: response.meta?.current_page || 1,
+          last_page: response.meta?.last_page || 1
+        }
       }
     } catch (e: any) {
       error.value = e.response?.data?.message || 'Failed to fetch my events'

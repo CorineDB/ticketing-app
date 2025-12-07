@@ -16,30 +16,78 @@ class PaymentController extends Controller
     {
         Log::info('FedaPay payment callback received', [
             'query_params' => $request->query(),
-            'all_params' => $request->all(),
         ]);
 
-        // Extract common FedaPay callback parameters
         $status = $request->query('status');
         $transactionId = $request->query('id') ?? $request->query('transaction_id');
-        $reference = $request->query('reference');
 
-        // Get frontend URL from config or environment
-        $frontendUrl = config('app.frontend_url', env('FRONTEND_URL', 'http://localhost:5173'));
+        $frontendUrl = config('app.frontend_url', env('CLIENT_APP_URL', 'http://localhost:5173'));
 
-        // Build redirect URL with payment status
-        $redirectUrl = $frontendUrl . '/payment/result?' . http_build_query([
-            'status' => $status,
-            'transaction_id' => $transactionId,
-            'reference' => $reference,
-        ]);
+        // Récupérer le payment via transaction_id
+        $payment = \App\Models\Payment::where('fedapay_transaction_id', $transactionId)->first();
+
+        if ($status === 'approved' && $payment) {
+            // ✅ Redirection vers page de tickets avec payment_id
+            $redirectUrl = $frontendUrl . '/purchase/' . $payment->id . '?status=success';
+        } else {
+            // ❌ Redirection vers page d'erreur
+            $redirectUrl = $frontendUrl . '/payment/result?' . http_build_query([
+                'status' => $status,
+                'transaction_id' => $transactionId,
+            ]);
+        }
 
         Log::info('Redirecting to frontend', [
             'redirect_url' => $redirectUrl,
-            'status' => $status,
+            'payment_id' => $payment->id ?? null,
         ]);
 
-        // Redirect to frontend with payment status
-        return redirect($redirectUrl);
+        return redirect()->away($redirectUrl);
+    }
+
+    /**
+     * Get payment details with tickets
+     */
+    public function show(string $paymentId)
+    {
+        $payment = \App\Models\Payment::with(['tickets.ticketType', 'event'])
+            ->findOrFail($paymentId);
+
+        return response()->json([
+            'payment' => [
+                'id' => $payment->id,
+                'amount' => $payment->amount,
+                'currency' => $payment->currency,
+                'status' => $payment->status,
+                'paid_at' => $payment->paid_at,
+                'event' => [
+                    'title' => $payment->event_title,
+                    'start_date' => $payment->event_start_date,
+                    'end_date' => $payment->event_end_date,
+                    'location' => $payment->event_location,
+                ],
+                'customer' => [
+                    'firstname' => $payment->customer_firstname,
+                    'lastname' => $payment->customer_lastname,
+                    'email' => $payment->customer_email,
+                ],
+                'ticket_count' => $payment->ticket_count,
+                'ticket_types_summary' => $payment->ticket_types_summary,
+            ],
+            'tickets' => $payment->tickets->map(function ($ticket) {
+                return [
+                    'id' => $ticket->id,
+                    'code' => $ticket->code,
+                    'status' => $ticket->status,
+                    'magic_link_token' => $ticket->magic_link_token,
+                    'qr_data' => $ticket->qr_data,
+                    'ticket_type' => [
+                        'id' => $ticket->ticketType->id,
+                        'name' => $ticket->ticketType->name,
+                        'price' => $ticket->ticketType->price,
+                    ],
+                ];
+            }),
+        ]);
     }
 }

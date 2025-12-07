@@ -176,7 +176,7 @@ components:
         id: { type: string, format: uuid }
         name: { type: string }
         location: { type: string, nullable: true }
-        gate_type:
+        type:
           type: string
           enum: [entrance, exit, vip, other]
           description: "entrance|exit|vip|other"
@@ -188,7 +188,7 @@ components:
           default: active
         created_at: { type: string, format: date-time }
         updated_at: { type: string, format: date-time }
-      required: [name, gate_type, status]
+      required: [name, type, status]
 
 
     TicketScanLog:
@@ -974,7 +974,7 @@ paths:
               properties:
                 name: { type: string }
                 location: { type: string }
-                gate_type: { type: string, default: entrance }
+                type: { type: string, default: entrance }
                 status: { type: string, default: active }
       responses:
         '201':

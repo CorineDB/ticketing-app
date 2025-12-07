@@ -21,7 +21,7 @@ class TicketService {
    * Get single ticket by ID
    */
   async getById(id: string): Promise<Ticket> {
-    const response = await api.get<{ data: Ticket }>(`/tickets/${id}`)
+    const response = await api.get<Ticket>(`/tickets/${id}`)
     return response.data
   }
 
@@ -29,7 +29,7 @@ class TicketService {
    * Get single ticket by ID
    */
   async getPublicById(id: string): Promise<Ticket> {
-    const response = await api.get<{ data: Ticket }>(`public/tickets/${id}`)
+    const response = await api.get<Ticket>(`public/tickets/${id}`)
     return response.data
   }
 
@@ -38,7 +38,7 @@ class TicketService {
    */
   async getByCode(code: string, token?: string): Promise<Ticket> {
     const params = token ? { token } : {}
-    const response = await api.get<{ data: Ticket }>(`/tickets/code/${code}`, { params })
+    const response = await api.get<Ticket>(`/tickets/code/${code}`, { params })
     return response.data
   }
 
@@ -98,7 +98,7 @@ class TicketService {
    * Download ticket as PDF
    */
   async downloadQR(id: string, token: string): Promise<Blob> {
-    const response = await api.get(`public/tickets/${id}/qr/download?token=${token}`, {
+    const response = await api.get(`/public/tickets/${id}/qr/download?token=${token}`, {
       responseType: 'blob'
     })
     return response.data
@@ -131,6 +131,14 @@ class TicketService {
       message: string
       ticket?: Ticket
     }>('/tickets/validate', { code })
+    return response.data
+  }
+
+  /**
+   * Regenerate QR code for a ticket
+   */
+  async regenerateQRCode(id: string): Promise<any> {
+    const response = await api.post(`/tickets/${id}/regenerate-qr`)
     return response.data
   }
 

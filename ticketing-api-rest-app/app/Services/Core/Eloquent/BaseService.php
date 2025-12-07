@@ -36,7 +36,7 @@ abstract class BaseService implements BaseServiceInterface
         return $this->repository->paginate($limit, $columns, $relations);
     }
 
-    public function list(int $limit = 15, array $columns = ['*'], array $relations = ['*'])
+    public function list(int $limit = 15, array $columns = ['*'], array $relations = [])
     {
         return $this->paginate($limit, $columns, $relations);
     }
@@ -48,7 +48,8 @@ abstract class BaseService implements BaseServiceInterface
 
     public function create(array $data): Model
     {
-        return DB::transaction(fn () =>
+        return DB::transaction(
+            fn() =>
             $this->repository->create($data)
         );
     }

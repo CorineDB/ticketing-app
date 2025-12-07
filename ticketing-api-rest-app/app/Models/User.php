@@ -22,11 +22,17 @@ class User extends Authenticatable
         'password',
         'type',
         'role_id',
+        'phone',
+        'photo',
     ];
 
     protected $hidden = [
         'password',
         'remember_token',
+    ];
+
+    protected $appends = [
+        'avatar',
     ];
 
     protected function casts(): array
@@ -35,6 +41,11 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function getAvatarAttribute()
+    {
+        return $this->photo;
     }
 
     public function role(): BelongsTo
@@ -55,6 +66,12 @@ class User extends Authenticatable
     public function scanLogs(): HasMany
     {
         return $this->hasMany(TicketScanLog::class, 'agent_id');
+    }
+
+    // Méthode pour vérifier si l'utilisateur a un rôle spécifique
+    public function hasRole(string $roleSlug): bool
+    {
+        return $this->role && $this->role->slug === $roleSlug;
     }
 
     // Méthode pour vérifier si l'utilisateur a une permission spécifique

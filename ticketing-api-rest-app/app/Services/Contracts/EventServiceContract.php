@@ -8,7 +8,11 @@ interface EventServiceContract extends BaseServiceInterface
 {
     public function createWithTicketTypes(array $data);
 
+    public function createWithTicketTypesAndGates(array $data);
+
     public function updateWithTicketTypes($id, array $data);
+
+    public function updateWithTicketTypesAndGates($id, array $data);
 
     public function getByOrganisateur(string $organisateurId);
 
@@ -17,4 +21,6 @@ interface EventServiceContract extends BaseServiceInterface
     public function search(array $filters);
 
     public function getEventStats(string $eventId);
+
+    public function publish(string $eventId);
 }

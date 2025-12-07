@@ -96,7 +96,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { useScanner } from '@/composables/useScanner'
 import { formatTime } from '@/utils/formatters'
 import DashboardLayout from '@/components/layout/DashboardLayout.vue'
@@ -110,6 +111,7 @@ import {
   XCircleIcon
 } from 'lucide-vue-next'
 
+const route = useRoute()
 const scanType = ref<'entry' | 'exit'>('entry')
 const lastScanResult = ref<any>(null)
 
@@ -120,8 +122,26 @@ const {
   performTwoStepScan
 } = useScanner()
 
+// Check if we arrived from a QR code link and trigger automatic scan
+onMounted(async () => {
+  const ticketId = route.query.ticket_id as string
+  const qrHmac = route.query.qr_hmac as string
+  
+  if (ticketId && qrHmac) {
+    // Construct QR data format that parseQRCode expects
+    const qrData = JSON.stringify({
+      ticket_id: ticketId,
+      qr_hmac: qrHmac
+    })
+    
+    // Trigger the scan automatically
+    await handleScan(qrData)
+  }
+})
+
 async function handleScan(qrData: string) {
   try {
+    console.log("Handling scanned data: ", qrData);
     // Parse QR code data
     const scanRequest = parseQRCode(qrData)
 
@@ -129,7 +149,7 @@ async function handleScan(qrData: string) {
       lastScanResult.value = {
         success: false,
         result: 'invalid',
-        message: 'Invalid QR code format'
+        message: 'Invalid QR code format s'
       }
       return
     }

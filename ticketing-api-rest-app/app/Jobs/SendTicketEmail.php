@@ -17,7 +17,9 @@ class SendTicketEmail implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public $tries = 3;
-    public $timeout = 60;
+
+    // CORRECTION ICI : On passe de 60 à 180 secondes
+    public $timeout = 300;
 
     /**
      * Create a new job instance.
@@ -32,11 +34,30 @@ class SendTicketEmail implements ShouldQueue
      */
     public function handle(): void
     {
+        // Ensure relationships are loaded
+        $this->ticket->loadMissing(['ticketType.event']);
+
         // Check if buyer email exists
         if (empty($this->ticket->buyer_email)) {
             Log::warning('Cannot send ticket confirmation email: buyer email is missing', [
                 'ticket_id' => $this->ticket->id,
                 'buyer_name' => $this->ticket->buyer_name,
+            ]);
+            return;
+        }
+
+        // Check for missing relationships which might cause view rendering errors
+        if (!$this->ticket->ticketType) {
+            Log::error('Cannot send ticket confirmation email: Ticket Type missing', [
+                'ticket_id' => $this->ticket->id,
+            ]);
+            return;
+        }
+
+        if (!$this->ticket->ticketType->event) {
+            Log::error('Cannot send ticket confirmation email: Event missing', [
+                'ticket_id' => $this->ticket->id,
+                'ticket_type_id' => $this->ticket->ticket_type_id,
             ]);
             return;
         }
@@ -54,6 +75,7 @@ class SendTicketEmail implements ShouldQueue
                 'ticket_id' => $this->ticket->id,
                 'email' => $this->ticket->buyer_email,
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
             ]);
 
             throw $e; // Re-throw to trigger retry mechanism

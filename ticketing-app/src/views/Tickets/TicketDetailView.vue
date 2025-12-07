@@ -15,6 +15,12 @@
                 Resend Ticket
               </button>
               <button
+                @click="regenerateQR"
+                class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+              >
+                Regenerate QR Code
+              </button>
+              <button
                 @click="invalidateTicket"
                 class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
               >
@@ -51,7 +57,7 @@
 
         <div class="bg-white rounded-xl shadow-lg p-6 text-center">
           <h2 class="text-xl font-semibold mb-4">Ticket QR Code</h2>
-          <TicketQRCode :ticket="ticket" />
+          <TicketQRCode :ticket="ticket" @download="downloadTicket" />
           <p class="mt-4 text-gray-600">Scan this QR code for entry.</p>
         </div>
       </div>
@@ -69,9 +75,10 @@ import TicketQRCode from '@/components/tickets/TicketQRCode.vue' // This compone
 import TicketStatusBadge from '@/components/tickets/TicketStatusBadge.vue' // This component needs to be created
 import { useTickets } from '@/composables/useTickets'
 import { useEvents } from '@/composables/useEvents' // Import useEvents
+import ticketService from '@/services/ticketService'
 
 const route = useRoute()
-const { ticket, loading, error, fetchTicketById, resendTicketEmail, updateTicketStatus } = useTickets()
+const { ticket, loading, error, fetchTicketById, resendTicketEmail, updateTicketStatus, regenerateQRCode } = useTickets()
 const { events, fetchEvents } = useEvents() // Destructure events and fetchEvents
 
 onMounted(() => {
@@ -100,6 +107,43 @@ const invalidateTicket = async () => {
     if (!error.value) {
       fetchTicketById(ticket.value.id) // Refresh data
     }
+  }
+}
+
+const regenerateQR = async () => {
+  if (ticket.value?.id && confirm('Are you sure you want to regenerate the QR code for this ticket?')) {
+    try {
+      await regenerateQRCode(ticket.value.id)
+      if (!error.value) {
+        alert('QR code regenerated successfully!')
+      } else {
+        alert(`Error: ${error.value}`)
+      }
+    } catch (e: any) {
+      alert(`Failed to regenerate QR code: ${e.message || 'Unknown error'}`)
+    }
+  }
+}
+
+async function downloadTicket() {
+  if (!ticket.value?.id || !ticket.value?.magic_link_token) return
+  
+  try {
+    // Download QR code image
+    const blob = await ticketService.downloadQR(ticket.value.id, ticket.value.magic_link_token)
+    
+    // Create download link
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `ticket-${ticket.value.code || ticket.value.id}-qr.png`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+  } catch (error) {
+    console.error('Failed to download ticket:', error)
+    alert('Failed to download ticket. Please try again.')
   }
 }
 </script>

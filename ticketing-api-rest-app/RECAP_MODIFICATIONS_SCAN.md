@@ -12,7 +12,7 @@ $qrData = config('app.url') . "/t/{$ticket->id}?sig={$signature}";
 
 **Après:**
 ```php
-$frontendUrl = config('app.frontend_url', env('FRONTEND_URL', 'http://localhost:5173'));
+$frontendUrl = config('app.frontend_url', env('CLIENT_APP_URL', 'http://localhost:5173'));
 $qrData = $frontendUrl . "/dashboard/scan?t={$ticket->id}&sig={$signature}";
 // Résultat: http://localhost:5173/dashboard/scan?t=019ac9fc-b13d-72c0-b27e-c1295d21b7a3&sig=...
 ```
@@ -40,7 +40,7 @@ $qrData = $frontendUrl . "/dashboard/scan?t={$ticket->id}&sig={$signature}";
 Ticket ID: 019ac9fc-b13d-72c0-b27e-c1295d21b7a3
 Signature: 16a0f30637122c6f4fb031c93e3da1712aaccfe8929cd2aff39fc38df588ae59
 Agent ID: 9d518178-44e1-4f6c-92f4-13bf0d899d79
-Gate ID: 5939d63e-3ede-440e-bc30-413b896c0eb2
+Gate ID: acac322c-97a5-4887-b33a-6296cbd57060
 Bearer Token: 9|GT5eSHw0dNeybuhfjEtklwmWWAE3TDhqPwP9Kila2e542b32
 ```
 

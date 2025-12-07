@@ -1,7 +1,7 @@
 <template>
   <div
     :class="[
-      'max-w-sm w-full bg-white shadow-lg rounded-lg pointer-events-auto ring-1 ring-black ring-opacity-5 overflow-hidden',
+      'w-full sm:max-w-sm bg-white shadow-lg rounded-lg pointer-events-auto ring-1 ring-black ring-opacity-5 overflow-hidden',
       typeClasses
     ]"
   >
@@ -10,9 +10,9 @@
         <div class="flex-shrink-0">
           <component :is="icon" :class="['h-6 w-6', iconColorClass]" />
         </div>
-        <div class="ml-3 w-0 flex-1 pt-0.5">
-          <p class="text-sm font-medium text-gray-900">{{ notification.title }}</p>
-          <p v-if="notification.message" class="mt-1 text-sm text-gray-500">
+        <div class="ml-3 flex-1 min-w-0">
+          <p class="text-sm font-medium text-gray-900 break-words">{{ notification.title }}</p>
+          <p v-if="notification.message" class="mt-1 text-sm text-gray-500 break-words">
             {{ notification.message }}
           </p>
         </div>

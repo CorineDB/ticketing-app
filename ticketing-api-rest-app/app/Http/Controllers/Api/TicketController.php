@@ -9,6 +9,7 @@ use App\Services\Contracts\TicketServiceContract;
 use App\Services\Contracts\PaymentServiceContract;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class TicketController extends Controller
 {
@@ -25,12 +26,19 @@ class TicketController extends Controller
 
     public function index(Request $request)
     {
+        $code = $request->query('code');
+
+        if ($code) {
+            $ticket = $this->ticketService->getByCode($code);
+            return response()->json(['data' => $ticket ? [$ticket->load(['event', 'ticketType'])] : []]);
+        }
+
         $eventId = $request->query('event_id');
 
         if ($eventId) {
             $tickets = $this->ticketService->getByEvent($eventId);
         } else {
-            $tickets = $this->ticketService->list(limit:1000, relations: ['event', 'ticketType']);
+            $tickets = $this->ticketService->list(limit: 1000, relations: ['event', 'ticketType']);
         }
 
         return response()->json(['data' => $tickets]);
@@ -114,6 +122,12 @@ class TicketController extends Controller
                 ], 201);
             });
         } catch (\Exception $e) {
+            Log::error('Ticket purchase transaction failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'data' => $data,
+            ]);
+
             return response()->json([
                 'error' => 'Échec de la création de la transaction',
                 'message' => $e->getMessage()
@@ -203,6 +217,16 @@ class TicketController extends Controller
         }
     }
 
+    public function regenerateCode(string $id)
+    {
+        try {
+            $result = $this->ticketService->regenerateQRCodeSecret($id);
+            return response()->json($result);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], $e->getCode() ?: 400);
+        }
+    }
+
     public function markPaid(string $id)
     {
         $ticket = $this->ticketService->markAsPaid($id);
@@ -214,6 +238,5 @@ class TicketController extends Controller
         $ticket = $this->ticketService->sendTicketByEmail($id);
         return response()->json($ticket);
     }
-
 
 }

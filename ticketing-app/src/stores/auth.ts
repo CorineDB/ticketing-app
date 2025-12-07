@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import authService from '@/services/authService'
+import { updateEchoAuth, disconnectEcho } from '@/services/websocket'
 import type { User, LoginCredentials, OTPRequest, OTPVerification } from '@/types/api'
 
 export const useAuthStore = defineStore('auth', () => {
@@ -18,11 +19,11 @@ export const useAuthStore = defineStore('auth', () => {
   const isScanner = computed(() => user.value?.type === 'agent-de-controle')
   const isCashier = computed(() => user.value?.type === 'comptable')
   const isParticipant = computed(() => user.value?.type === 'participant') */
-  const isSuperAdmin = computed(() => user.value?.role.slug === 'super-admin')
-  const isOrganizer = computed(() => user.value?.role.slug === 'organizer')
-  const isScanner = computed(() => user.value?.role.slug === 'agent-de-controle')
-  const isCashier = computed(() => user.value?.role.slug === 'comptable')
-  const isParticipant = computed(() => user.value?.role.slug === 'participant')
+  const isSuperAdmin = computed(() => user.value?.role?.slug === 'super-admin')
+  const isOrganizer = computed(() => user.value?.role?.slug === 'organizer')
+  const isScanner = computed(() => user.value?.role?.slug === 'agent-de-controle')
+  const isCashier = computed(() => user.value?.role?.slug === 'comptable')
+  const isParticipant = computed(() => user.value?.role?.slug === 'participant')
 
   // Actions
   async function login(credentials: LoginCredentials): Promise<boolean> {
@@ -33,6 +34,9 @@ export const useAuthStore = defineStore('auth', () => {
       const response = await authService.login(credentials);
 
       localStorage.setItem("auth_token", response.access_token);
+
+      // Update Echo auth token
+      updateEchoAuth(response.access_token);
 
       const fetchedUser = await fetchUser();
 
@@ -144,6 +148,9 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   function logout() {
+    // Disconnect Echo
+    disconnectEcho();
+
     // Clear local storage
     localStorage.removeItem('auth_token')
     localStorage.removeItem('auth_user')

@@ -11,22 +11,22 @@ class TicketTypeService {
    */
   async getAll(eventId: string): Promise<TicketType[]> {
     const response = await api.get<{ data: TicketType[] }>(`/events/${eventId}/ticket-types`)
-    return response.data
+    return response.data.data
   }
 
   /**
    * Get single ticket type by ID
    */
   async getById(id: string): Promise<TicketType> {
-    const response = await api.get<{ data: TicketType }>(`/ticket-types/${id}`)
+    const response = await api.get<TicketType>(`/ticket-types/${id}`)
     return response.data
   }
 
   /**
-   * Get single ticket type by ID
+   * Get single ticket type by ID (public endpoint)
    */
   async getPublicById(id: string): Promise<TicketType> {
-    const response = await api.get<{ data: TicketType }>(`/public/ticket-types/${id}`)
+    const response = await api.get<TicketType>(`/public/ticket-types/${id}`)
     return response.data
   }
 
@@ -35,7 +35,7 @@ class TicketTypeService {
    */
   async create(data: CreateTicketTypeData): Promise<TicketType> {
     const response = await api.post<{ data: TicketType }>('/ticket-types', data)
-    return response.data
+    return response.data.data
   }
 
   /**
@@ -43,7 +43,7 @@ class TicketTypeService {
    */
   async update(id: string, data: UpdateTicketTypeData): Promise<TicketType> {
     const response = await api.put<{ data: TicketType }>(`/ticket-types/${id}`, data)
-    return response.data
+    return response.data.data
   }
 
   /**
@@ -58,7 +58,7 @@ class TicketTypeService {
    */
   async activate(id: string): Promise<TicketType> {
     const response = await api.post<{ data: TicketType }>(`/ticket-types/${id}/activate`)
-    return response.data
+    return response.data.data
   }
 
   /**
@@ -66,7 +66,7 @@ class TicketTypeService {
    */
   async deactivate(id: string): Promise<TicketType> {
     const response = await api.post<{ data: TicketType }>(`/ticket-types/${id}/deactivate`)
-    return response.data
+    return response.data.data
   }
 }
 

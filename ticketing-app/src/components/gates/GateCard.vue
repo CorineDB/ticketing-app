@@ -180,7 +180,7 @@ const gateIcon = computed(() => {
     vip: CrownIcon,
     other: CircleDotIcon
   }
-  return icons[props.gate.gate_type]
+  return icons[props.gate.type]
 })
 
 const gateTypeLabel = computed(() => {
@@ -190,7 +190,7 @@ const gateTypeLabel = computed(() => {
     vip: 'VIP',
     other: 'Other'
   }
-  return labels[props.gate.gate_type]
+  return labels[props.gate.type]
 })
 
 const gateTypeColors = computed(() => {
@@ -216,7 +216,7 @@ const gateTypeColors = computed(() => {
       badge: 'bg-gray-50 text-gray-700'
     }
   }
-  return colors[props.gate.gate_type]
+  return colors[props.gate.type]
 })
 </script>
 

@@ -21,6 +21,7 @@ class EventRepository extends BaseRepository implements EventRepositoryContract
     public function findUpcomingEvents()
     {
         return $this->model
+            ->forAuthUser() // Apply scope here
             ->where('start_datetime', '>=', now())
             ->orderBy('start_datetime', 'asc')
             ->get();
@@ -28,12 +29,12 @@ class EventRepository extends BaseRepository implements EventRepositoryContract
 
     public function searchEvents(array $filters)
     {
-        $query = $this->model->newQuery();
+        $query = $this->model->newQuery()->forAuthUser();
 
         if (isset($filters['q'])) {
             $query->where(function ($q) use ($filters) {
                 $q->where('title', 'like', '%' . $filters['q'] . '%')
-                  ->orWhere('description', 'like', '%' . $filters['q'] . '%');
+                    ->orWhere('description', 'like', '%' . $filters['q'] . '%');
             });
         }
 
@@ -45,14 +46,19 @@ class EventRepository extends BaseRepository implements EventRepositoryContract
             $query->where('end_datetime', '<=', $filters['date_to']);
         }
 
+        // Filter by published status for public pages
+        if (isset($filters['published_only']) && $filters['published_only']) {
+            $query->where('status', 'published');
+        }
+
         return $query->orderBy('start_datetime', 'asc')->get();
     }
 
     public function findBySlugAndOrganisateurId(string $slug, string $organisateurId)
     {
         return $this->model->where('slug', $slug)
-                           ->where('organisateur_id', $organisateurId)
-                           ->first();
+            ->where('organisateur_id', $organisateurId)
+            ->first();
     }
 
     public function findBySlug(string $slug)

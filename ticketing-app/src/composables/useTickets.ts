@@ -21,10 +21,10 @@ export function useTickets() {
       const response: PaginatedResponse<Ticket> = await ticketService.getAll(filters)
       tickets.value = response.data
       pagination.value = {
-        total: response.total,
-        per_page: response.per_page,
-        current_page: response.current_page,
-        last_page: response.last_page
+        total: response.meta?.total || 0,
+        per_page: response.meta?.per_page || 10,
+        current_page: response.meta?.current_page || 1,
+        last_page: response.meta?.last_page || 1
       }
     } catch (e: any) {
       error.value = e.response?.data?.message || 'Failed to fetch tickets'
@@ -222,6 +222,22 @@ export function useTickets() {
     }
   }
 
+  const regenerateQRCode = async (id: string) => {
+    loading.value = true
+    error.value = null
+    try {
+      await ticketService.regenerateQRCode(id)
+      // Refresh ticket data to get the new QR code
+      await fetchTicket(id)
+    } catch (e: any) {
+      error.value = e.response?.data?.message || 'Failed to regenerate QR code'
+      console.error('Error regenerating QR code:', e)
+      throw e
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     tickets,
     ticket,
@@ -239,6 +255,7 @@ export function useTickets() {
     refundTicket,
     validateTicket,
     resendTicketEmail,
-    updateTicketStatus
+    updateTicketStatus,
+    regenerateQRCode
   }
 }

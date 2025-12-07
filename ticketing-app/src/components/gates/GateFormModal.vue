@@ -25,12 +25,12 @@
 
       <!-- Gate Type -->
       <div>
-        <label for="gate_type" class="block text-sm font-medium text-gray-700 mb-1">
+        <label for="type" class="block text-sm font-medium text-gray-700 mb-1">
           Gate Type <span class="text-red-500">*</span>
         </label>
         <select
-          id="gate_type"
-          v-model="formData.gate_type"
+          id="type"
+          v-model="formData.type"
           required
           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         >
@@ -126,20 +126,20 @@ const isEdit = computed(() => !!props.gate)
 
 const formData = ref<{
   name: string
-  gate_type: GateType | ''
+  type: GateType | ''
   location: string
   status: GateStatus
   scanner_id: string | null
 }>({
   name: '',
-  gate_type: '',
+  type: '',
   location: '',
   status: 'active',
   scanner_id: null
 })
 
 const isFormValid = computed(() => {
-  return formData.value.name.trim() !== '' && formData.value.gate_type !== ''
+  return formData.value.name.trim() !== '' && formData.value.type !== ''
 })
 
 // Watch for gate changes to populate form
@@ -147,7 +147,7 @@ watch(() => props.gate, (gate) => {
   if (gate) {
     formData.value = {
       name: gate.name,
-      gate_type: gate.gate_type,
+      type: gate.type,
       location: gate.location || '',
       status: gate.status,
       scanner_id: gate.scanner_id || null
@@ -160,7 +160,7 @@ watch(() => props.gate, (gate) => {
 function resetForm() {
   formData.value = {
     name: '',
-    gate_type: '',
+    type: '',
     location: '',
     status: 'active',
     scanner_id: null
@@ -173,7 +173,7 @@ function handleSubmit() {
   const data: CreateGateData | UpdateGateData = {
     event_id: props.eventId,
     name: formData.value.name,
-    gate_type: formData.value.gate_type as GateType,
+    type: formData.value.type as GateType,
     location: formData.value.location || undefined,
     status: formData.value.status,
     scanner_id: formData.value.scanner_id || undefined

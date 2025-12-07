@@ -66,7 +66,7 @@ components:
         id: { type: string, format: uuid }
         name: { type: string }
         location: { type: string }
-        gate_type: { type: string, enum: [entrance, exit, vip, other] }
+        type: { type: string, enum: [entrance, exit, vip, other] }
         status: { type: string, enum: [active, pause, inactive] }
         created_at: { type: string, format: date-time }
         updated_at: { type: string, format: date-time }

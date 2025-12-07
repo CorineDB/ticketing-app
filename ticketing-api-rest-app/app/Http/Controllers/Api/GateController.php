@@ -18,25 +18,25 @@ class GateController extends Controller
     public function index()
     {
         $gates = $this->gateService->list();
-        return response()->json(['data' => $gates]);
+        return response()->json($gates);
     }
 
     public function store(CreateGateRequest $request)
     {
         $gate = $this->gateService->create($request->validated());
-        return response()->json($gate, 201);
+        return response()->json(['data' => $gate], 201);
     }
 
     public function show(string $id)
     {
         $gate = $this->gateService->get($id);
-        return response()->json($gate);
+        return response()->json(['data' => $gate]);
     }
 
     public function update(CreateGateRequest $request, string $id)
     {
         $gate = $this->gateService->update($id, $request->validated());
-        return response()->json($gate);
+        return response()->json(['data' => $gate]);
     }
 
     public function destroy(string $id)
