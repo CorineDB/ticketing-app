@@ -12,8 +12,8 @@ class DashboardService {
    * Get super admin dashboard stats
    */
   async getSuperAdminStats(): Promise<DashboardStats> {
-    const response = await api.get<{ data: DashboardStats }>('/dashboard/super-admin')
-    return response.data.data
+    const response = await api.get<DashboardStats>('/dashboard/super-admin')
+    return response.data
   }
 
   /**

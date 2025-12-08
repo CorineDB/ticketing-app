@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Ticket;
-use App\Models\Scan;
+use App\Models\TicketScanLog;
 use App\Models\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -84,7 +84,7 @@ class ReportController extends Controller
      */
     public function getScanActivityReport(Request $request)
     {
-        $query = Scan::query();
+        $query = TicketScanLog::query();
 
         // Apply date filters if provided
         if ($request->has('start_date')) {
@@ -122,17 +122,17 @@ class ReportController extends Controller
 
         // Get hourly scan distribution
         $hourlyScans = (clone $query)
-            ->select(DB::raw('HOUR(scan_time) as hour'), DB::raw('count(*) as count'))
+            ->select(DB::raw('EXTRACT(HOUR FROM scan_time) as hour'), DB::raw('count(*) as count'))
             ->groupBy('hour')
             ->orderBy('hour')
             ->get();
 
         // Get top scanners (agents)
         $topScanners = (clone $query)
-            ->select('scanned_by', DB::raw('count(*) as scan_count'))
-            ->whereNotNull('scanned_by')
-            ->with('scanner:id,name')
-            ->groupBy('scanned_by')
+            ->select('agent_id', DB::raw('count(*) as scan_count'))
+            ->whereNotNull('agent_id')
+            ->with('agent:id,name')
+            ->groupBy('agent_id')
             ->orderByDesc('scan_count')
             ->limit(5)
             ->get();

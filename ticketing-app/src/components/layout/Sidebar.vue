@@ -81,12 +81,12 @@
             </div>
           </div>
 
-          <NavLink
+          <!-- <NavLink
             to="/scanner"
             :icon="ScanIcon"
             label="Scan Tickets"
             @click="$emit('close')"
-          />
+          /> -->
           <NavLink
             to="/dashboard/scanner/history"
             :icon="HistoryIcon"
