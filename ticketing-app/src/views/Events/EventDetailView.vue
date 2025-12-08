@@ -1000,57 +1000,6 @@ function printTicketType(ticketType: TicketType) {
 }
 
 
-// Gate handlers
-function editGate(gate: Gate) {
-  selectedGate.value = gate
-  showGateModal.value = true
-}
 
-function confirmDeleteGate(gate: Gate) {
-  gateToDelete.value = gate
-  showDeleteGateModal.value = true
-}
-
-async function handleGateSubmit(data: any) {
-  if (selectedGate.value) {
-    await updateGate(selectedGate.value.id, data)
-  } else {
-    await createGate({ ...data, event_id: event.value?.id })
-  }
-  selectedGate.value = null
-  if (event.value?.id) {
-    await fetchGates(event.value.id)
-  }
-}
-
-async function handleDeleteGate() {
-  if (gateToDelete.value) {
-    await deleteGate(gateToDelete.value.id)
-    gateToDelete.value = null
-    if (event.value?.id) {
-      await fetchGates(event.value.id)
-    }
-  }
-}
-
-function assignAgentToGate(gate: Gate) {
-  gateToAssign.value = gate
-  showAssignAgentModal.value = true
-}
-
-async function handleAssignAgent(agentId: string) {
-  if (!gateToAssign.value || !event.value) return
-
-  try {
-    await useGates().assignAgent(event.value.id, gateToAssign.value.id, agentId)
-    notifications.success('Succès', 'Agent assigné avec succès')
-    showAssignAgentModal.value = false
-    gateToAssign.value = null
-    await fetchGates(event.value.id)
-  } catch (error: any) {
-    const message = error.response?.data?.message || "Impossible d'assigner l'agent"
-    notifications.error('Erreur', message)
-  }
-}
 
 </script>

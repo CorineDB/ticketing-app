@@ -1,132 +1,77 @@
 <template>
-  <TransitionRoot appear :show="isOpen" as="template">
-    <Dialog as="div" @close="closeModal" class="relative z-50">
-      <TransitionChild
-        as="template"
-        enter="duration-300 ease-out"
-        enter-from="opacity-0"
-        enter-to="opacity-100"
-        leave="duration-200 ease-in"
-        leave-from="opacity-100"
-        leave-to="opacity-0"
-      >
-        <div class="fixed inset-0 bg-black/25 backdrop-blur-sm" />
-      </TransitionChild>
+  <Modal
+    v-model="isOpen"
+    title="Assigner un agent"
+    size="md"
+    :confirm-disabled="!selectedAgentId || submitting"
+    @confirm="handleSubmit"
+    @close="closeModal"
+  >
+    <div class="space-y-4">
+      <p class="text-sm text-gray-500">
+        Sélectionnez un agent de contrôle pour la porte <strong>{{ gate?.name }}</strong>.
+      </p>
 
-      <div class="fixed inset-0 overflow-y-auto">
-        <div class="flex min-h-full items-center justify-center p-4 text-center">
-          <TransitionChild
-            as="template"
-            enter="duration-300 ease-out"
-            enter-from="opacity-0 scale-95"
-            enter-to="opacity-100 scale-100"
-            leave="duration-200 ease-in"
-            leave-from="opacity-100 scale-100"
-            leave-to="opacity-0 scale-95"
+      <div v-if="loading" class="flex justify-center py-8">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+
+      <div v-else-if="error" class="bg-red-50 text-red-600 p-3 rounded-lg text-sm">
+        {{ error }}
+      </div>
+
+      <div v-else class="space-y-4">
+        <!-- Search -->
+        <div class="relative">
+          <SearchIcon class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <input
+            v-model="searchQuery"
+            type="text"
+            placeholder="Rechercher un agent..."
+            class="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+
+        <!-- Agent List -->
+        <div class="max-h-60 overflow-y-auto space-y-2">
+          <div
+            v-for="agent in filteredAgents"
+            :key="agent.id"
+            @click="selectedAgentId = agent.id"
+            :class="[
+              'p-3 rounded-lg border cursor-pointer transition-colors flex items-center gap-3',
+              selectedAgentId === agent.id
+                ? 'border-blue-500 bg-blue-50'
+                : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
+            ]"
           >
-            <DialogPanel class="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-              <DialogTitle as="h3" class="text-lg font-medium leading-6 text-gray-900 flex items-center justify-between">
-                <span>Assigner un agent</span>
-                <button @click="closeModal" class="text-gray-400 hover:text-gray-500">
-                  <XIcon class="w-5 h-5" />
-                </button>
-              </DialogTitle>
+            <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-medium text-xs">
+              {{ getInitials(agent.name) }}
+            </div>
+            <div class="flex-1">
+              <div class="text-sm font-medium text-gray-900">{{ agent.name }}</div>
+              <div class="text-xs text-gray-500">{{ agent.email }}</div>
+            </div>
+            <div v-if="selectedAgentId === agent.id" class="text-blue-600">
+              <CheckCircleIcon class="w-5 h-5" />
+            </div>
+          </div>
 
-              <div class="mt-4">
-                <p class="text-sm text-gray-500 mb-4">
-                  Sélectionnez un agent de contrôle pour la porte <strong>{{ gate?.name }}</strong>.
-                </p>
-
-                <div v-if="loading" class="flex justify-center py-8">
-                  <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                </div>
-
-                <div v-else-if="error" class="bg-red-50 text-red-600 p-3 rounded-lg text-sm mb-4">
-                  {{ error }}
-                </div>
-
-                <div v-else class="space-y-4">
-                  <!-- Search -->
-                  <div class="relative">
-                    <SearchIcon class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                    <input
-                      v-model="searchQuery"
-                      type="text"
-                      placeholder="Rechercher un agent..."
-                      class="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
-
-                  <!-- Agent List -->
-                  <div class="max-h-60 overflow-y-auto space-y-2">
-                    <div
-                      v-for="agent in filteredAgents"
-                      :key="agent.id"
-                      @click="selectedAgentId = agent.id"
-                      :class="[
-                        'p-3 rounded-lg border cursor-pointer transition-colors flex items-center gap-3',
-                        selectedAgentId === agent.id
-                          ? 'border-blue-500 bg-blue-50'
-                          : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
-                      ]"
-                    >
-                      <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-medium text-xs">
-                        {{ getInitials(agent.name) }}
-                      </div>
-                      <div class="flex-1">
-                        <div class="text-sm font-medium text-gray-900">{{ agent.name }}</div>
-                        <div class="text-xs text-gray-500">{{ agent.email }}</div>
-                      </div>
-                      <div v-if="selectedAgentId === agent.id" class="text-blue-600">
-                        <CheckCircleIcon class="w-5 h-5" />
-                      </div>
-                    </div>
-
-                    <div v-if="filteredAgents.length === 0" class="text-center py-4 text-gray-500 text-sm">
-                      Aucun agent trouvé
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="mt-6 flex justify-end gap-3">
-                <button
-                  type="button"
-                  class="inline-flex justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-                  @click="closeModal"
-                >
-                  Annuler
-                </button>
-                <button
-                  type="button"
-                  class="inline-flex justify-center rounded-lg border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                  :disabled="!selectedAgentId || submitting"
-                  @click="handleSubmit"
-                >
-                  <span v-if="submitting">Assignation...</span>
-                  <span v-else>Assigner</span>
-                </button>
-              </div>
-            </DialogPanel>
-          </TransitionChild>
+          <div v-if="filteredAgents.length === 0" class="text-center py-4 text-gray-500 text-sm">
+            Aucun agent trouvé
+          </div>
         </div>
       </div>
-    </Dialog>
-  </TransitionRoot>
+    </div>
+  </Modal>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
-import {
-  TransitionRoot,
-  TransitionChild,
-  Dialog,
-  DialogPanel,
-  DialogTitle,
-} from '@headlessui/vue'
-import { XIcon, SearchIcon, CheckCircleIcon } from 'lucide-vue-next'
+import { ref, computed, watch } from 'vue'
+import { SearchIcon, CheckCircleIcon } from 'lucide-vue-next'
 import type { Gate } from '@/types/api'
 import agentService, { type Agent } from '@/services/agentService'
+import Modal from '@/components/common/Modal.vue'
 
 const props = defineProps<{
   modelValue: boolean
