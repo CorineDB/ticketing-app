@@ -50,7 +50,7 @@ export function useEvents() {
     loading.value = true
     error.value = null
     try {
-      const response = await eventService.getAllPublicEvents(filters)
+      const response = await eventService.getPublicOngoingEvents(filters)
       // Handle both paginated and non-paginated responses
       if (Array.isArray(response.data)) {
         events.value = response.data

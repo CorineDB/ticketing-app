@@ -11,10 +11,19 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use App\Models\Permission; // Add this line
 use App\Models\Event; // Add this line for canManageThisEvent
+use App\Models\Scopes\OrganizerScope;
 
 class User extends Authenticatable
 {
     use HasFactory, Notifiable, HasUuids, HasApiTokens;
+
+    /**
+     * The "booted" method of the model.
+     */
+    protected static function booted(): void
+    {
+        static::addGlobalScope(new OrganizerScope);
+    }
 
     protected $fillable = [
         'name',
@@ -24,6 +33,7 @@ class User extends Authenticatable
         'role_id',
         'phone',
         'photo',
+        'organisateur_id',
     ];
 
     protected $hidden = [

@@ -93,20 +93,56 @@
     </div>
 
     <!-- Gate Info -->
-    <div class="space-y-2">
-      <div v-if="gate.location" class="flex items-center text-sm text-gray-600">
-        <MapPinIcon class="w-4 h-4 mr-2" />
+    <div class="space-y-3">
+      <!-- Location -->
+      <div v-if="gate.location" class="flex items-center gap-2 text-sm text-gray-600">
+        <MapPinIcon class="w-4 h-4 text-gray-400" />
         <span>{{ gate.location }}</span>
       </div>
 
-      <div v-if="gate.scanner" class="flex items-center text-sm text-gray-600">
-        <UserIcon class="w-4 h-4 mr-2" />
-        <span>Scanner: {{ gate.scanner.name }}</span>
-      </div>
+      <!-- Agent/Scanner Info -->
+      <div class="mt-3 pt-3 border-t border-gray-100">
+        <div v-if="gate.pivot?.agent" class="space-y-2">
+          <div class="flex items-center gap-3">
+            <!-- Agent Avatar -->
+            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold text-sm">
+              {{ getInitials(gate.pivot.agent.name) }}
+            </div>
+            
+            <!-- Agent Details -->
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2">
+                <p class="text-sm font-medium text-gray-900 truncate">
+                  {{ gate.pivot.agent.name }}
+                </p>
+                <span class="px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-700 rounded">
+                  Agent
+                </span>
+              </div>
+              <div class="flex items-center gap-3 mt-1">
+                <p v-if="gate.pivot.agent.email" class="text-xs text-gray-500 truncate flex items-center gap-1">
+                  <MailIcon class="w-3 h-3" />
+                  {{ gate.pivot.agent.email }}
+                </p>
+                <p v-if="gate.pivot.agent.phone" class="text-xs text-gray-500 flex items-center gap-1">
+                  <PhoneIcon class="w-3 h-3" />
+                  {{ gate.pivot.agent.phone }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
 
-      <div v-else class="flex items-center text-sm text-gray-400">
-        <UserIcon class="w-4 h-4 mr-2" />
-        <span>No scanner assigned</span>
+        <!-- No Agent Assigned -->
+        <div v-else class="flex items-center gap-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+          <div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
+            <UserIcon class="w-5 h-5 text-amber-600" />
+          </div>
+          <div class="flex-1">
+            <p class="text-sm font-medium text-amber-900">Aucun agent assigné</p>
+            <p class="text-xs text-amber-700">Assignez un agent de contrôle</p>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -140,6 +176,8 @@ import {
   TrashIcon,
   UserIcon,
   MapPinIcon,
+  MailIcon,
+  PhoneIcon,
   PlayIcon,
   PauseIcon,
   StopCircleIcon,
@@ -172,6 +210,16 @@ defineEmits<{
 }>()
 
 const showMenu = ref(false)
+
+// Helper function to get initials from name
+function getInitials(name: string): string {
+  return name
+    .split(' ')
+    .map(n => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2)
+}
 
 const gateIcon = computed(() => {
   const icons: Record<GateType, any> = {

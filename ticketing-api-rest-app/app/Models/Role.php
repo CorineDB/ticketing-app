@@ -7,14 +7,24 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model; // Reverted to Model
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany; // Add this
+use App\Models\Scopes\RoleOwnershipScope;
 
 class Role extends Model // Reverted to extend Model
 {
     use HasFactory, HasUuids;
 
+    /**
+     * The "booted" method of the model.
+     */
+    protected static function booted(): void
+    {
+        static::addGlobalScope(new RoleOwnershipScope);
+    }
+
     protected $fillable = [
         'name',
         'slug',
+        'created_by',
     ];
 
     protected $keyType = 'string'; // Added for UUIDs

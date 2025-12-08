@@ -6,10 +6,10 @@ export function usePermissions() {
 
   const can = (permission: string): boolean => {
     if (!authStore.user) return false
-    
+
     // Super admin has all permissions
     if (authStore.isSuperAdmin) return true
-    
+
     // Check user permissions
     return authStore.user.permissions?.some(p => p.slug === permission) || false
   }
@@ -43,6 +43,10 @@ export function usePermissions() {
   const isCashier = computed(() => authStore.isCashier)
   const isParticipant = computed(() => authStore.isParticipant)
 
+  // Specific permission checks
+  const canManageUsers = computed(() => can('manage-users') || isSuperAdmin.value)
+  const canAssignRoles = computed(() => can('assign-roles') || isSuperAdmin.value)
+
   return {
     can,
     cannot,
@@ -55,6 +59,8 @@ export function usePermissions() {
     isOrganizer,
     isScanner,
     isCashier,
-    isParticipant
+    isParticipant,
+    canManageUsers,
+    canAssignRoles
   }
 }

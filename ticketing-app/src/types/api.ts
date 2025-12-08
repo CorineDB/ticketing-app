@@ -16,8 +16,10 @@ export interface User {
   avatar?: string
   organisateur_id?: string
   organisateur?: User
+  role_id?: string
   role?: Role
   permissions?: Permission[]
+  status?: 'active' | 'inactive' | 'suspended'
   created_at: string
   updated_at: string
   last_login_at?: string
@@ -29,6 +31,7 @@ export interface Role {
   slug: string
   description?: string
   permissions: Permission[]
+  permission_ids?: string[]
   created_at: string
   updated_at: string
 }
@@ -201,6 +204,7 @@ export interface TicketType {
   currency: string
   usage_limit: number
   quantity: number
+  quota: number  // Total quota for this ticket type
   quantity_sold: number
   quantity_available: number
   color?: string

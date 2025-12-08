@@ -201,17 +201,17 @@ function getInitials(name: string): string {
     .slice(0, 2)
 }
 
-function viewOrganization(org?: User) {
+function viewOrganization(org: Organization | null = null) {
   selectedOrg.value = org
   showDetailModal.value = true
 }
 
-function editOrganization(org?: User) {
+function editOrganization(org: Organization | null = null) {
   selectedOrg.value = org
   showOrgModal.value = true
 }
 
-function confirmDelete(org?: User) {
+function confirmDelete(org: Organization | null = null) {
   orgToDelete.value = org
   showDeleteModal.value = true
 }

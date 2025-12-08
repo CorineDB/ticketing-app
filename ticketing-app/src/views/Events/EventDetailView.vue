@@ -313,14 +313,14 @@
                       <div class="flex items-center justify-between">
                         <span class="text-sm text-gray-600">Disponibles</span>
                         <span class="text-sm font-medium text-gray-900">
-                          {{ ticketType.quantity_available }} / {{ ticketType.quantity }}
+                          {{ ticketType.quantity_available }} / {{ ticketType.quota }}
                         </span>
                       </div>
 
                       <div class="bg-gray-200 rounded-full h-2">
                         <div
                           class="bg-green-600 h-2 rounded-full transition-all"
-                          :style="{ width: `${(ticketType.quantity_available / ticketType.quantity * 100)}%` }"
+                          :style="{ width: `${(ticketType.quantity_available / ticketType.quota * 100)}%` }"
                         ></div>
                       </div>
 
@@ -330,6 +330,13 @@
                     </div>
 
                     <div v-if="can('manage_ticket_types')" class="flex gap-2 mt-4 pt-4 border-t border-gray-200">
+                      <button
+                        @click="printTicketType(ticketType)"
+                        class="flex-1 px-3 py-2 text-sm text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors flex items-center justify-center gap-2"
+                      >
+                        <PrinterIcon class="w-4 h-4" />
+                        Imprimer
+                      </button>
                       <button
                         @click="editTicketType(ticketType)"
                         class="flex-1 px-3 py-2 text-sm text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
@@ -384,6 +391,7 @@
                     :gate="gate"
                     @edit="editGate"
                     @delete="confirmDeleteGate"
+                    @assignScanner="assignAgentToGate"
                   />
                 </div>
 
@@ -581,6 +589,12 @@
       @submit="handleGateSubmit"
     />
 
+    <AssignAgentModal
+      v-model="showAssignAgentModal"
+      :gate="gateToAssign"
+      @submit="handleAssignAgent"
+    />
+
     <ConfirmModal
       v-model="showDeleteModal"
       title="Supprimer l'événement"
@@ -589,6 +603,7 @@
       confirm-text="Supprimer"
       @confirm="handleDelete"
     />
+
 
     <ConfirmModal
       v-model="showDeleteTicketTypeModal"
@@ -619,6 +634,7 @@ import { useGates } from '@/composables/useGates'
 import { usePermissions } from '@/composables/usePermissions'
 import { useNotificationStore } from '@/stores/notifications'
 import eventService from '@/services/eventService'
+import gateService from '@/services/gateService'
 import { formatDate, formatCurrency, formatTime, getImageUrl } from '@/utils/formatters'
 import type { TicketType, Gate } from '@/types/api'
 import DashboardLayout from '@/components/layout/DashboardLayout.vue'
@@ -629,6 +645,7 @@ import EventStats from '@/components/events/EventStats.vue'
 import TicketTypeFormModal from '@/components/tickets/TicketTypeFormModal.vue'
 import GateCard from '@/components/gates/GateCard.vue'
 import GateFormModal from '@/components/gates/GateFormModal.vue'
+import AssignAgentModal from '@/components/gates/AssignAgentModal.vue'
 import ConfirmModal from '@/components/common/ConfirmModal.vue'
 import {
   CalendarIcon,
@@ -674,12 +691,14 @@ const activeTab = ref('overview')
 
 const showTicketTypeModal = ref(false)
 const showGateModal = ref(false)
+const showAssignAgentModal = ref(false)
 const showDeleteModal = ref(false)
 const showDeleteTicketTypeModal = ref(false)
 const showDeleteGateModal = ref(false)
 
 const selectedTicketType = ref<TicketType | null>(null)
 const selectedGate = ref<Gate | null>(null)
+const gateToAssign = ref<Gate | null>(null)
 const ticketTypeToDelete = ref<TicketType | null>(null)
 const gateToDelete = ref<Gate | null>(null)
 
@@ -787,6 +806,206 @@ function editGate(gate: Gate) {
   showGateModal.value = true
 }
 
+function confirmDeleteGate(gateId: string) {
+  const gate = event.value?.gates?.find(g => g.id === gateId)
+  if (gate) {
+    gateToDelete.value = gate
+    showDeleteGateModal.value = true
+  }
+}
+
+async function handleGateSubmit(data: any) {
+  if (selectedGate.value) {
+    await updateGate(selectedGate.value.id, data)
+  } else {
+    await createGate({ ...data, event_id: event.value?.id })
+  }
+  selectedGate.value = null
+  if (event.value?.id) {
+    await fetchGates(event.value.id)
+  }
+}
+
+async function handleDeleteGate() {
+  if (gateToDelete.value) {
+    await deleteGate(gateToDelete.value.id)
+    gateToDelete.value = null
+    if (event.value?.id) {
+      await fetchGates(event.value.id)
+    }
+  }
+}
+
+function assignAgentToGate(gate: Gate) {
+  gateToAssign.value = gate
+  showAssignAgentModal.value = true
+}
+
+async function handleAssignAgent(agentId: string) {
+  if (!gateToAssign.value || !event.value) return
+
+  try {
+    await gateService.assignAgent(event.value.id, gateToAssign.value.id, agentId)
+    notifications.success('Succès', 'Agent assigné avec succès')
+    // Refresh gates to show updated agent
+    await fetchGates(event.value.id)
+  } catch (error: any) {
+    const message = error.response?.data?.message || 'Impossible d\'assigner l\'agent'
+    notifications.error('Erreur', message)
+  }
+}
+
+
+// Print ticket type
+function printTicketType(ticketType: TicketType) {
+  const printWindow = window.open('', '_blank')
+  if (!printWindow) return
+
+  const printContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Type de Ticket - ${ticketType.name}</title>
+      <style>
+        @media print {
+          @page { margin: 2cm; }
+        }
+        body {
+          font-family: Arial, sans-serif;
+          padding: 20px;
+          max-width: 800px;
+          margin: 0 auto;
+        }
+        .header {
+          text-align: center;
+          margin-bottom: 30px;
+          border-bottom: 3px solid #2563eb;
+          padding-bottom: 20px;
+        }
+        .header h1 {
+          color: #1e40af;
+          margin: 0 0 10px 0;
+        }
+        .event-name {
+          color: #6b7280;
+          font-size: 18px;
+        }
+        .details {
+          margin: 30px 0;
+        }
+        .detail-row {
+          display: flex;
+          justify-content: space-between;
+          padding: 15px;
+          border-bottom: 1px solid #e5e7eb;
+        }
+        .detail-row:nth-child(even) {
+          background-color: #f9fafb;
+        }
+        .detail-label {
+          font-weight: bold;
+          color: #374151;
+        }
+        .detail-value {
+          color: #1f2937;
+        }
+        .footer {
+          margin-top: 40px;
+          text-align: center;
+          color: #6b7280;
+          font-size: 12px;
+          border-top: 1px solid #e5e7eb;
+          padding-top: 20px;
+        }
+        .print-button {
+          display: block;
+          margin: 20px auto;
+          padding: 10px 30px;
+          background-color: #2563eb;
+          color: white;
+          border: none;
+          border-radius: 8px;
+          cursor: pointer;
+          font-size: 16px;
+        }
+        .print-button:hover {
+          background-color: #1d4ed8;
+        }
+        @media print {
+          .print-button { display: none; }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="header">
+        <h1>Type de Ticket</h1>
+        <div class="event-name">${event.value?.title || 'Événement'}</div>
+      </div>
+
+      <div class="details">
+        <div class="detail-row">
+          <span class="detail-label">Nom du type :</span>
+          <span class="detail-value">${ticketType.name}</span>
+        </div>
+        ${ticketType.description ? `
+        <div class="detail-row">
+          <span class="detail-label">Description :</span>
+          <span class="detail-value">${ticketType.description}</span>
+        </div>
+        ` : ''}
+        <div class="detail-row">
+          <span class="detail-label">Prix :</span>
+          <span class="detail-value">${formatCurrency(ticketType.price)}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Quota total :</span>
+          <span class="detail-value">${ticketType.quota || 'Illimité'}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Disponibles :</span>
+          <span class="detail-value">${ticketType.quantity_available} / ${ticketType.quota}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Vendus :</span>
+          <span class="detail-value">${ticketType.quantity_sold || 0}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Limite d'utilisation :</span>
+          <span class="detail-value">${ticketType.usage_limit || 1} fois</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Statut :</span>
+          <span class="detail-value">${ticketType.is_active ? 'Actif' : 'Inactif'}</span>
+        </div>
+      </div>
+
+      <div class="footer">
+        <p>Document généré le ${new Date().toLocaleDateString('fr-FR', { 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        })}</p>
+        <p>${event.value?.organisateur?.name || 'Organisation'}</p>
+      </div>
+
+      <button class="print-button" onclick="window.print()">Imprimer</button>
+    </body>
+    </html>
+  `
+
+  printWindow.document.write(printContent)
+  printWindow.document.close()
+}
+
+
+// Gate handlers
+function editGate(gate: Gate) {
+  selectedGate.value = gate
+  showGateModal.value = true
+}
+
 function confirmDeleteGate(gate: Gate) {
   gateToDelete.value = gate
   showDeleteGateModal.value = true
@@ -813,4 +1032,25 @@ async function handleDeleteGate() {
     }
   }
 }
+
+function assignAgentToGate(gate: Gate) {
+  gateToAssign.value = gate
+  showAssignAgentModal.value = true
+}
+
+async function handleAssignAgent(agentId: string) {
+  if (!gateToAssign.value || !event.value) return
+
+  try {
+    await useGates().assignAgent(event.value.id, gateToAssign.value.id, agentId)
+    notifications.success('Succès', 'Agent assigné avec succès')
+    showAssignAgentModal.value = false
+    gateToAssign.value = null
+    await fetchGates(event.value.id)
+  } catch (error: any) {
+    const message = error.response?.data?.message || "Impossible d'assigner l'agent"
+    notifications.error('Erreur', message)
+  }
+}
+
 </script>

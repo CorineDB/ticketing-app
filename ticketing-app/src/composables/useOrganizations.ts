@@ -18,13 +18,25 @@ export function useOrganizations() {
     loading.value = true
     error.value = null
     try {
-      const response: PaginatedResponse<Organization> = await organizationService.getAll(filters)
-      organisateurs.value = response.data
-      pagination.value = {
-        total: response.meta.total,
-        per_page: response.meta.per_page,
-        current_page: response.meta.current_page,
-        last_page: response.meta.last_page
+      const response = await organizationService.getAll(filters)
+      // Backend returns {data: [...]} without pagination
+      if (Array.isArray(response.data)) {
+        organisateurs.value = response.data
+        pagination.value = {
+          total: response.data.length,
+          per_page: response.data.length,
+          current_page: 1,
+          last_page: 1
+        }
+      } else {
+        // Handle paginated response if backend changes
+        organisateurs.value = response.data
+        pagination.value = {
+          total: response.meta?.total || 0,
+          per_page: response.meta?.per_page || 10,
+          current_page: response.meta?.current_page || 1,
+          last_page: response.meta?.last_page || 1
+        }
       }
     } catch (e: any) {
       error.value = e.response?.data?.message || 'Failed to fetch organisateurs'

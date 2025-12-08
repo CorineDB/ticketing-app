@@ -64,7 +64,14 @@ class GateService {
    * Delete a gate
    */
   async delete(id: string): Promise<void> {
-    await api.delete(`${this.BASE_URL}/${id}`)
+    await api.delete(`/gates/${id}`)
+  }
+
+  async assignAgent(eventId: string, gateId: string, agentId: string): Promise<Gate> {
+    const response = await api.post<{ data: Gate }>(`/events/${eventId}/gates/${gateId}/assign-agent`, {
+      agent_id: agentId
+    })
+    return response.data.data
   }
 
   /**

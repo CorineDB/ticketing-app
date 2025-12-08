@@ -37,10 +37,7 @@ class OrganizationService {
    * Create a new organisateur
    */
   async create(data: CreateOrganizationData): Promise<Organization> {
-    const formData = this.toFormData(data)
-    const response = await api.post<{ data: Organization }>('/organisateurs', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    })
+    const response = await api.post<{ data: Organization }>('/organisateurs', data)
     return response.data.data
   }
 
@@ -48,11 +45,7 @@ class OrganizationService {
    * Update an existing organisateur
    */
   async update(id: string, data: UpdateOrganizationData): Promise<Organization> {
-    const formData = this.toFormData(data)
-    formData.append('_method', 'PUT')
-    const response = await api.post<{ data: Organization }>(`/organisateurs/${id}`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    })
+    const response = await api.put<{ data: Organization }>(`/organisateurs/${id}`, data)
     return response.data.data
   }
 

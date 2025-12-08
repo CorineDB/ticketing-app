@@ -18,10 +18,23 @@ class EventController extends Controller
 
     public function index(Request $request)
     {
+        $filters = $request->only(['q', 'date_from', 'date_to', 'published_only']);
+
+        // No automatic filter - show all events unless user explicitly filters
+        $events = $this->eventService->search($filters);
+        return response()->json(['data' => $events->load(["organisateur", "ticketTypes", "counter"])]);
+    }
+
+    /**
+     * Get public events (published and ongoing)
+     */
+    public function publicEvents(Request $request)
+    {
         $filters = $request->only(['q', 'date_from', 'date_to']);
 
-        // For public routes, only show published events
+        // Force published_only and ongoing events for public
         $filters['published_only'] = true;
+        $filters['ongoing_only'] = true;
 
         $events = $this->eventService->search($filters);
         return response()->json(['data' => $events->load(["organisateur", "ticketTypes", "counter"])]);
@@ -60,7 +73,7 @@ class EventController extends Controller
     {
         // Get the event to check ownership
         $event = $this->eventService->get($id);
-        
+
         // Check if user is the owner or super-admin
         $user = auth()->user();
         if ($event->organisateur_id !== $user->id && !$user->isSuperAdmin()) {
@@ -68,7 +81,7 @@ class EventController extends Controller
                 'message' => 'Vous n\'êtes pas autorisé à modifier cet événement.'
             ], 403);
         }
-        
+
         $event = $this->eventService->updateWithTicketTypesAndGates($id, $request->validated());
         return response()->json($event);
     }

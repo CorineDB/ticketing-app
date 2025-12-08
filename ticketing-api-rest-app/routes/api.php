@@ -111,8 +111,10 @@ Route::prefix('auth')->group(function () {
 
 // Public routes (no authentication required)
 Route::prefix('public')->group(function () {
-    // Events
+    // Events - all events (no filter)
     Route::get('/events', [EventController::class, 'index']);
+    // Public events - only published and ongoing
+    Route::get('/events/public', [EventController::class, 'publicEvents']);
     Route::get('/events/{id}', [EventController::class, 'show']);
     Route::get('/events/slug/{slug}', [EventController::class, 'showBySlug']);
     Route::get('/events/{id}/ticket-types', [TicketTypeController::class, 'index']);
@@ -186,6 +188,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Gates
     Route::apiResource('gates', GateController::class);
+    Route::post('/events/{eventId}/gates/{gateId}/assign-agent', [GateController::class, 'assignAgent']);
+
 
     // Agents
     Route::get('agents', [AgentController::class, 'index']);

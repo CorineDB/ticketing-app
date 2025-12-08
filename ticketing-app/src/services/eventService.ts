@@ -27,6 +27,16 @@ class EventService {
   }
 
   /**
+   * Get public ongoing events (published and ongoing only)
+   */
+  async getPublicOngoingEvents(filters?: EventFilters): Promise<any> {
+    const params = this.buildQueryParams(filters)
+    const response = await api.get<{ data: Event[] }>('/public/events/public', { params })
+    return response.data
+  }
+
+
+  /**
    * Get single event by ID (authenticated)
    */
   async getById(id: string): Promise<Event> {

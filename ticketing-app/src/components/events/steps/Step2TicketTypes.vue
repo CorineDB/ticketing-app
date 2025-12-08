@@ -80,7 +80,7 @@
               Quota disponible
             </label>
             <input
-              v-model.number="ticket.quantity"
+              v-model.number="ticket.quota"
               type="number"
               min="0"
               placeholder="100"
@@ -159,7 +159,7 @@ function addTicketType() {
     name: '',
     description: '',
     price: 0,
-    quantity: 100,
+    quota: 100,  // Changed from quantity to quota
     usage_limit: 1,
     is_active: true
   })

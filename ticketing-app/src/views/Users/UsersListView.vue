@@ -115,7 +115,7 @@
                   {{ user.organisateur?.name || '-' }}
                 </td>
                 <td class="py-3 px-4">
-                  <StatusBadge :status="user.status" type="custom" />
+                  <StatusBadge :status="user.status || 'active'" type="custom" />
                 </td>
                 <td class="py-3 px-4 text-sm text-gray-600">
                   {{ user.last_login_at ? formatDate(user.last_login_at) : 'Never' }}
@@ -130,7 +130,6 @@
                       <EyeIcon class="w-4 h-4" />
                     </button>
                     <button
-                      v-if="canManageUsers"
                       @click="editUser(user)"
                       class="p-2 text-gray-600 hover:bg-gray-100 rounded-lg"
                       title="Edit"
@@ -138,7 +137,6 @@
                       <EditIcon class="w-4 h-4" />
                     </button>
                     <button
-                      v-if="canAssignRoles"
                       @click="assignRole(user)"
                       class="p-2 text-purple-600 hover:bg-purple-50 rounded-lg"
                       title="Assign role"
@@ -146,7 +144,6 @@
                       <ShieldIcon class="w-4 h-4" />
                     </button>
                     <button
-                      v-if="canManageUsers"
                       @click="confirmDelete(user)"
                       class="p-2 text-red-600 hover:bg-red-50 rounded-lg"
                       title="Delete"
@@ -176,7 +173,6 @@
     </div>
 
     <!-- Modals -->
-    <!-- TODO: Uncomment when modals are created
     <UserFormModal
       v-model="showUserModal"
       :user="selectedUser"
@@ -194,7 +190,6 @@
       :roles="roles"
       @submit="handleRoleAssign"
     />
-    -->
 
     <ConfirmModal
       v-model="showDeleteModal"
@@ -217,10 +212,9 @@ import type { User, UserFilters } from '@/types/api'
 import DashboardLayout from '@/components/layout/DashboardLayout.vue'
 import Badge from '@/components/common/Badge.vue'
 import StatusBadge from '@/components/common/StatusBadge.vue'
-// TODO: Create these components
-// import UserFormModal from '@/components/users/UserFormModal.vue'
-// import UserDetailModal from '@/components/users/UserDetailModal.vue'
-// import AssignRoleModal from '@/components/users/AssignRoleModal.vue'
+import UserFormModal from '@/components/users/UserFormModal.vue'
+import UserDetailModal from '@/components/users/UserDetailModal.vue'
+import AssignRoleModal from '@/components/users/AssignRoleModal.vue'
 import ConfirmModal from '@/components/common/ConfirmModal.vue'
 import {
   PlusIcon,
@@ -237,13 +231,14 @@ const { users, loading, fetchUsers, createUser, updateUser, deleteUser } = useUs
 const { roles, fetchRoles } = useRoles()
 const {
   canManageUsers,
-  canAssignRoles
+  canAssignRoles,
+  isSuperAdmin
 } = usePermissions()
 
 const filters = ref<UserFilters>({
   search: '',
-  role_id: '',
-  status: ''
+  role_id: undefined,
+  status: undefined
 })
 
 const showUserModal = ref(false)
@@ -276,8 +271,8 @@ function debouncedSearch() {
 function clearFilters() {
   filters.value = {
     search: '',
-    role_id: '',
-    status: ''
+    role_id: undefined,
+    status: undefined
   }
   fetchUsers(filters.value)
 }

@@ -44,4 +44,52 @@ class GateController extends Controller
         $this->gateService->delete($id);
         return response()->json(null, 204);
     }
+
+    /**
+     * Assign an agent to a gate for an event
+     */
+    public function assignAgent(string $eventId, string $gateId)
+    {
+        $validated = request()->validate([
+            'agent_id' => 'required|exists:users,id',
+        ]);
+
+        // Verify the agent has the correct role
+        $agent = \App\Models\User::with('role')->find($validated['agent_id']);
+
+        if (!$agent || $agent->role->slug !== 'agent-de-controle') {
+            return response()->json([
+                'message' => 'The selected user is not an agent.'
+            ], 422);
+        }
+
+        // Update the pivot table
+        $event = \App\Models\Event::findOrFail($eventId);
+        $event->gates()->updateExistingPivot($gateId, [
+            'agent_id' => $validated['agent_id']
+        ]);
+
+        // Return the updated gate with agent relationship
+        $gate = $event->gates()
+            ->withPivot([
+                'agent_id',
+                'operational_status',
+                'schedule',
+                'ticket_type_ids',
+                'max_capacity'
+            ])
+            ->where('gates.id', $gateId)
+            ->first();
+
+        // Load the agent relationship on the pivot
+        if ($gate && $gate->pivot && $gate->pivot->agent_id) {
+            $gate->pivot->setRelation('agent', \App\Models\User::find($gate->pivot->agent_id));
+        }
+
+        return response()->json([
+            'message' => 'Agent assigned successfully',
+            'data' => $gate
+        ]);
+    }
 }
+
