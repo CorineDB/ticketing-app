@@ -1,5 +1,5 @@
 export const API_CONFIG = {
-  baseURL: import.meta.env.VITE_API_URL || "https://adorable-connection-production.up.railway.app",
+  baseURL: import.meta.env.VITE_API_URL || "https://ticketing-api-free-production-77fd.up.railway.app",
   timeout: 30000
 }
 

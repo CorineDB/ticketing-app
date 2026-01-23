@@ -2,7 +2,7 @@ import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig, AxiosResp
 import router from '@/router'
 
 const api: AxiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'https://adorable-connection-production.up.railway.app/api',
+  baseURL: import.meta.env.VITE_API_URL || 'https://ticketing-api-free-production-77fd.up.railway.app/api',
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
