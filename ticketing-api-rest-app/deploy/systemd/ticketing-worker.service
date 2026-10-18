@@ -1,0 +1,20 @@
+[Unit]
+Description=Laravel Queue Worker - Ticketing API
+After=network-online.target postgresql.service
+Wants=network-online.target
+Requires=postgresql.service
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/ticketing-app/ticketing-api-rest-app
+ExecStart=/usr/bin/php artisan queue:work --tries=3 --timeout=300 --memory=512 --max-time=3600
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=ticketing-worker
+
+[Install]
+WantedBy=multi-user.target
