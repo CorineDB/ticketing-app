@@ -1,20 +1,21 @@
+# Reverse proxy + HTTPS automatique (Let's Encrypt) pour l'API.
+# Le domaine doit pointer (A record) vers l'Elastic IP de l'EC2 et les ports
+# 80/443 doivent être ouverts dans le Security Group.
+#
+# Routage :
+#   /app/*  -> conteneur "broadcasting" (Laravel Reverb WebSocket)
+#   reste   -> conteneur "web" (Nginx + PHP-FPM dans l'image)
+
 api.ticketing.corinebocoga.com {
-    encode gzip zstd
-    log
+	encode gzip zstd
+	log
 
-    @ws path /app/*
-    handle @ws {
-        reverse_proxy broadcasting:8080 {
-            header_up Host {host}
-            header_up X-Real-IP {remote}
-            header_up X-Forwarded-For {remote}
-            header_up X-Forwarded-Proto {scheme}
-            header_up Connection {>Connection}
-            header_up Upgrade {>Upgrade}
-        }
-    }
+	@reverb path /app/*
+	handle @reverb {
+		reverse_proxy broadcasting:8080
+	}
 
-    handle {
-        reverse_proxy web:8080
-    }
+	handle {
+		reverse_proxy web:8080
+	}
 }

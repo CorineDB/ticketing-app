@@ -66,17 +66,16 @@ jobs:
           IMAGE_NAME: ${{ env.IMAGE_NAME }}
         run: |
           set -euo pipefail
+          # APP_DIR = racine du monorepo clonée sur l'EC2 (docker-compose.yml est dans ticketing-api-rest-app/)
           ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new -i ~/.ssh/deploy_key "${EC2_USER}@${EC2_HOST}" "
             set -e
-            cd /home/ubuntu/app || cd /var/www/ticketing-app
-            # Exporter les variables pour docker compose
+            cd /home/ubuntu/app/ticketing-api-rest-app
             export IMAGE_TAG='${IMAGE_TAG}'
             export IMAGE_NAME='${IMAGE_NAME}'
-            docker compose pull || true
+            docker compose pull web worker broadcasting scheduler
             docker compose up -d --remove-orphans
-            docker compose exec -T web php artisan migrate --force || docker compose run --rm web php artisan migrate --force
-            docker compose exec -T web php artisan config:cache || true
-            docker compose exec -T web php artisan route:cache || true
-            docker compose exec -T web php artisan view:cache || true
-            docker system prune -f
+            docker compose exec -T web php artisan config:cache
+            docker compose exec -T web php artisan route:cache
+            docker compose exec -T web php artisan view:cache
+            docker image prune -f
           "
