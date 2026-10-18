@@ -33,9 +33,10 @@ sudo usermod -aG docker ubuntu
 newgrp docker
 
 # Cloner le monorepo (le compose vit dans ticketing-api-rest-app/)
+# NB: repo Git = github.com/cocorine999/ticketing_backend (remote "origin-github")
 mkdir -p ~/app && cd ~/app
-git clone https://github.com/CorineDB/ticketing-app.git
-cd ticketing-app/ticketing-api-rest-app
+git clone https://github.com/cocorine999/ticketing_backend.git
+cd ticketing_backend/ticketing-api-rest-app
 ```
 
 ## Étape 2 - `.env` de production
@@ -58,7 +59,7 @@ Valeurs **obligatoires dans ce mode** :
 
 ## Étape 3bis - Premier lancement + clé
 ```bash
-cd ~/app/ticketing-app/ticketing-api-rest-app
+cd ~/app/ticketing_backend/ticketing-api-rest-app
 docker compose up -d postgres
 docker compose run --rm web php artisan key:generate
 docker compose up -d
@@ -80,7 +81,7 @@ Push sur `main` touchant `ticketing-api-rest-app/**` → workflow `Build and Dep
 
 ## Rollback
 ```bash
-cd ~/app/ticketing-app/ticketing-api-rest-app
+cd ~/app/ticketing_backend/ticketing-api-rest-app
 export IMAGE_TAG=<sha_précédent>
 docker compose pull web worker broadcasting scheduler
 docker compose up -d
